@@ -129,6 +129,9 @@ export type CardSuite = 'DIAMONDS' | 'CLUBS' | 'SPADES' | 'HEARTS';
 // Represents the face of a card. Ace is 1, and J, Q and K are 11, 12 and 13 respectively.
 export type CardFace = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13;
 
+// Buy-in value for default poker games
+export const DEFAULT_BUY_IN = 2000;
+
 // Represents one card in a deck of cards
 export interface Card {
   face: CardFace;

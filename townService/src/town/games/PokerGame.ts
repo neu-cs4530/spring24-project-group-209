@@ -1,5 +1,6 @@
 import Player from '../../lib/Player';
 import {
+  DeckOfCards,
   GameMove,
   PlayerID,
   PokerGameState,
@@ -14,12 +15,13 @@ import Game from './Game';
 export default class PokerGame extends Game<PokerGameState, PokerMove> {
   /**
    * Creates a new PokerGame.
+   * @param deck Provides the deck object to be used for this poker game
    * @param priorGame If provided, the new game will be created such that if any player from
    * the previous poker game joins the new game they will be seated at the same seat as before,
    * their balance from the previous game will carry over,
    * and the blind will be the next seat after the previous blind.
    */
-  public constructor(priorGame?: PokerGame) {
+  public constructor(deck: DeckOfCards, priorGame?: PokerGame) {
     super({
       moves: [],
       smallBlind: 0,
@@ -27,7 +29,7 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
       occupiedSeats: new Map<SeatNumber, PlayerID | undefined>(),
       readyPlayers: new Map<SeatNumber, boolean | undefined>(),
       playerBalances: new Map<SeatNumber, number | undefined>(),
-    }); // This is not necessarily accurate, written to get rid of suntax errors in shell file
+    }); // This is not necessarily accurate, written to get rid of syntax errors in shell file
     throw new Error('Method not implemented.');
   }
 
@@ -81,7 +83,8 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
    * - If all seats are assigned, updates the game to WAITING_TO_START.
    *
    * @throws InvalidParametersError if the player is already in the game (PLAYER_ALREADY_IN_GAME_MESSAGE)
-   * @throws InvalidParametersError if the game is full (GAME_FULL_MESSAGE)
+   * @throws InvalidParametersError if the game is full - maximum of 8 seats (GAME_FULL_MESSAGE)
+   * @throws InvalidParametersError if the game is already in progress even with empty seats
    *
    * @param player the player to join the game
    */
@@ -100,6 +103,8 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
    * If the game state is currently "WAITING_TO_START", updates the game's status to WAITING_FOR_PLAYERS.
    *
    * If the game state is currently "WAITING_FOR_PLAYERS" or "OVER", the game state is unchanged.
+   *
+   * If the game state is currently "OVER", leaving additionally does not remove the player from the list of players.
    *
    * @param player The player to remove from the game
    * @throws InvalidParametersError if the player is not in the game (PLAYER_NOT_IN_GAME_MESSAGE)
