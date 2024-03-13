@@ -45,6 +45,9 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
    *  - If any players in the game were in the previous game, the blind will be the next occupied seat after the blind from the previous game.
    *  - If a player from the previous game left the game and then joined this one, they will be treated as a new player.
    *
+   * Once the blind has been determined, the small and big blinds will be subtracted from the player's balances and hands will be dealt.
+   * Hands should be dealt starting from seat zero to seat seven, dealing 2 to each at once.
+   *
    * @throws InvalidParametersError if the player is not in the game (PLAYER_NOT_IN_GAME_MESSAGE)
    * @throws InvalidParametersError if the game is not in the WAITING_TO_START or WAITING_FOR_PLAYERS state (GAME_NOT_STARTABLE_MESSAGE)
    *
