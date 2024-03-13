@@ -29,6 +29,7 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
       occupiedSeats: new Map<SeatNumber, PlayerID | undefined>(),
       readyPlayers: new Map<SeatNumber, boolean | undefined>(),
       playerBalances: new Map<SeatNumber, number | undefined>(),
+
     }); // This is not necessarily accurate, written to get rid of syntax errors in shell file
     throw new Error('Method not implemented.');
   }
