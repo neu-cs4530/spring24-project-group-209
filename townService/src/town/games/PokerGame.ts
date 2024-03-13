@@ -1,6 +1,5 @@
 import Player from '../../lib/Player';
 import {
-  DeckOfCards,
   GameMove,
   PlayerID,
   PokerGameState,
@@ -15,13 +14,12 @@ import Game from './Game';
 export default class PokerGame extends Game<PokerGameState, PokerMove> {
   /**
    * Creates a new PokerGame.
-   * @param deck Provides the deck object to be used for this poker game
    * @param priorGame If provided, the new game will be created such that if any player from
    * the previous poker game joins the new game they will be seated at the same seat as before,
    * their balance from the previous game will carry over,
    * and the blind will be the next seat after the previous blind.
    */
-  public constructor(deck: DeckOfCards, priorGame?: PokerGame) {
+  public constructor(priorGame?: PokerGame) {
     super({
       moves: [],
       smallBlind: 0,
@@ -29,8 +27,7 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
       occupiedSeats: new Map<SeatNumber, PlayerID | undefined>(),
       readyPlayers: new Map<SeatNumber, boolean | undefined>(),
       playerBalances: new Map<SeatNumber, number | undefined>(),
-
-    }); // This is not necessarily accurate, written to get rid of syntax errors in shell file
+    }); // This is not necessarily accurate, written to get rid of suntax errors in shell file
     throw new Error('Method not implemented.');
   }
 
@@ -45,10 +42,6 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
    *  - If no players in the game were in the previous game, or if there was no previous game, the blind is the first occupied seat.
    *  - If any players in the game were in the previous game, the blind will be the next occupied seat after the blind from the previous game.
    *  - If a player from the previous game left the game and then joined this one, they will be treated as a new player.
-   *
-
-   * Once the blind has been determined, the small and big blinds will be subtracted from the player's balances and hands will be dealt.
-   * Hands should be dealt starting from seat zero to seat seven, dealing 2 to each at once.
    *
    * @throws InvalidParametersError if the player is not in the game (PLAYER_NOT_IN_GAME_MESSAGE)
    * @throws InvalidParametersError if the game is not in the WAITING_TO_START or WAITING_FOR_PLAYERS state (GAME_NOT_STARTABLE_MESSAGE)
@@ -88,8 +81,7 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
    * - If all seats are assigned, updates the game to WAITING_TO_START.
    *
    * @throws InvalidParametersError if the player is already in the game (PLAYER_ALREADY_IN_GAME_MESSAGE)
-   * @throws InvalidParametersError if the game is full - maximum of 8 seats (GAME_FULL_MESSAGE)
-   * @throws InvalidParametersError if the game is already in progress even with empty seats
+   * @throws InvalidParametersError if the game is full (GAME_FULL_MESSAGE)
    *
    * @param player the player to join the game
    */
@@ -108,8 +100,6 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
    * If the game state is currently "WAITING_TO_START", updates the game's status to WAITING_FOR_PLAYERS.
    *
    * If the game state is currently "WAITING_FOR_PLAYERS" or "OVER", the game state is unchanged.
-   *
-   * If the game state is currently "OVER", leaving additionally does not remove the player from the list of players.
    *
    * @param player The player to remove from the game
    * @throws InvalidParametersError if the player is not in the game (PLAYER_NOT_IN_GAME_MESSAGE)
