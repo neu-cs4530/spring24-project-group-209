@@ -171,6 +171,46 @@ export interface PokerGameState extends WinnableGameState {
   smallBlind: SeatNumber;
 }
 
+export type BlackjackAction = 'BET' | 'HIT' | 'STAND';
+
+/**
+ * Type for the seat position at a blackjack table,
+ * used to limit the max number of players.
+ */
+export type SeatNumber = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
+
+/**
+ * Type for the amount bet in a blackjack hand, or undefined if the
+ * action was not a bet
+ */
+export type BetAmount = Integer | undefined;
+
+/**
+ * Type for a move in Blackjack
+ */
+export interface BlackjackMove {
+  moveType: BlackjackAction;
+  betAmount: BetAmount;
+}
+
+/**
+ * Type for the state of a blackjack game
+ * The state of the game is represented as a list of moves, the playerIDs of the players in each seat,
+ * the starting balances of the players in those seats, and the seat which will be the next small blind.
+ * Players will be assigned to the first free seat when joining
+ */
+export interface BlackjackGameState extends WinnableGameState {
+  // The moves in this game
+  moves: ReadOnlyArray<BlackjackMove>;
+  // A map that represents the player at each seat in the table, if there is a player in that seat.
+  occupiedSeats: Map<SeatNumber, PlayerID | undefined>;
+  // A map representing which players in the game are ready to start.
+  readyPlayers: Map<SeatNumber, boolean | undefined>;
+  // A map representing the balance of players in each seat.
+  playerBalances: Map<SeatNumber, Integer | undefined>;
+}
+
+
 /**
  * Type for the state of a TicTacToe game
  * The state of the game is represented as a list of moves, and the playerIDs of the players (x and o)
