@@ -8,15 +8,10 @@ import {
   PLAYER_NOT_IN_GAME_MESSAGE,
 } from '../../lib/InvalidParametersError';
 import Player from '../../lib/Player';
-import {
-  Card,
-  DEFAULT_BIG_BLIND,
-  DEFAULT_BUY_IN,
-  DEFAULT_SMALL_BLIND,
-  SeatNumber,
-} from '../../types/CoveyTownSocket';
+import { Card, SeatNumber } from '../../types/CoveyTownSocket';
 import BasicDeck from './BasicDeck';
 import PokerGame from './PokerGame';
+import { DEFAULT_BIG_BLIND, DEFAULT_BUY_IN, DEFAULT_SMALL_BLIND } from './PokerGameDefaults';
 
 /**
  * Mock deck which allows rigged draws for testing
@@ -36,7 +31,9 @@ class TestDeck extends BasicDeck {
   drawCard(): Card {
     const cardToReturn: Card | undefined = this._nextCardQueue.pop();
     if (cardToReturn) {
-      this._cardsDrawn.push(cardToReturn);
+      this._cardsRemaining.filter(
+        c => c.face !== cardToReturn.face && c.suite !== cardToReturn.suite,
+      );
       return cardToReturn;
     }
     return super.drawCard();

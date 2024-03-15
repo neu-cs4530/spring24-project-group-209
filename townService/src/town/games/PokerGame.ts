@@ -21,7 +21,7 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
    * their balance from the previous game will carry over,
    * and the blind will be the next seat after the previous blind.
    */
-  public constructor(deck: DeckOfCards, priorGame?: PokerGame) {
+  public constructor(deck?: DeckOfCards, priorGame?: PokerGame) {
     super({
       moves: [],
       smallBlind: 0,
