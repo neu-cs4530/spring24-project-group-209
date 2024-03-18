@@ -1,18 +1,37 @@
+import InvalidParametersError, {
+  GAME_FULL_MESSAGE,
+  GAME_NOT_STARTABLE_MESSAGE,
+  PLAYER_ALREADY_IN_GAME_MESSAGE,
+  PLAYER_NOT_IN_GAME_MESSAGE,
+} from '../../lib/InvalidParametersError';
 import Player from '../../lib/Player';
 import {
   DeckOfCards,
   GameMove,
   PlayerID,
+  PokerAction,
   PokerGameState,
   PokerMove,
   SeatNumber,
 } from '../../types/CoveyTownSocket';
+import BasicDeck from './BasicDeck';
 import Game from './Game';
+import { DEFAULT_BIG_BLIND, DEFAULT_BUY_IN, DEFAULT_SMALL_BLIND } from './PokerGameDefaults';
 
 /**
  * A PokerGame is a game which implements the rules of poker.
  */
 export default class PokerGame extends Game<PokerGameState, PokerMove> {
+  protected _deck: DeckOfCards;
+
+  protected _preferredSeats?: Map<PlayerID, SeatNumber>;
+
+  protected _oldBalances?: Map<PlayerID, number>;
+
+  protected _foldedPlayers: Map<SeatNumber, boolean> = new Map<SeatNumber, boolean>();
+
+  private _pot: number;
+
   /**
    * Creates a new PokerGame.
    * @param deck Provides the deck object to be used for this poker game
@@ -22,15 +41,87 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
    * and the blind will be the next seat after the previous blind.
    */
   public constructor(deck?: DeckOfCards, priorGame?: PokerGame) {
+    const initialOccupiedSeats = new Map<SeatNumber, PlayerID | undefined>();
+    const initialReadyPlayers = new Map<SeatNumber, boolean | undefined>();
+    const initialPlayerBalances = new Map<SeatNumber, number | undefined>();
+    for (let i = 0; i < 8; i++) {
+      initialOccupiedSeats.set(i as SeatNumber, undefined);
+      initialReadyPlayers.set(i as SeatNumber, undefined);
+      initialPlayerBalances.set(i as SeatNumber, undefined);
+    }
+
+    let priorSmallBlind = 0 as SeatNumber;
+    if (priorGame) priorSmallBlind = priorGame.state.smallBlind;
+
     super({
       moves: [],
-      smallBlind: 0,
+      smallBlind: priorSmallBlind,
       status: 'WAITING_FOR_PLAYERS',
-      occupiedSeats: new Map<SeatNumber, PlayerID | undefined>(),
-      readyPlayers: new Map<SeatNumber, boolean | undefined>(),
-      playerBalances: new Map<SeatNumber, number | undefined>(),
-    }); // This is not necessarily accurate, written to get rid of syntax errors in shell file
-    throw new Error('Method not implemented.');
+      occupiedSeats: initialOccupiedSeats,
+      readyPlayers: initialReadyPlayers,
+      playerBalances: initialPlayerBalances,
+    });
+
+    for (let i = 0; i < 8; i++) {
+      this._foldedPlayers.set(i as SeatNumber, false);
+    }
+
+    if (deck) {
+      this._deck = deck;
+    } else {
+      this._deck = new BasicDeck();
+    }
+
+    if (priorGame) {
+      this._preferredSeats = new Map<PlayerID, SeatNumber>();
+      this._oldBalances = new Map<PlayerID, number>();
+      for (let i = 0; i < 8; i++) {
+        const p = priorGame.state.occupiedSeats.get(i as SeatNumber);
+        if (p) {
+          this._preferredSeats.set(p, i as SeatNumber);
+          this._oldBalances.set(p, priorGame.state.playerBalances.get(i as SeatNumber));
+        }
+      }
+    }
+
+    this._pot = 0;
+  }
+
+  /**
+   * Gets the next occupied seat in the turn order
+   */
+  private _getNextSeat(from: SeatNumber): SeatNumber {
+    let current: SeatNumber;
+    if (from === 7) current = 0;
+    else current = (from + 1) as SeatNumber;
+
+    while (
+      this.state.occupiedSeats.get(current) === undefined ||
+      this._foldedPlayers.get(current)
+    ) {
+      if (current === 7) current = 0;
+      else current += 1;
+    }
+
+    return current;
+  }
+
+  private _getNextOpenSeat(): SeatNumber | undefined {
+    let current = 0 as SeatNumber;
+
+    while (this.state.occupiedSeats.get(current) !== undefined) {
+      if (current === 7) return undefined;
+      current += 1;
+    }
+
+    return current;
+  }
+
+  private _getPlayerSeat(player: Player): SeatNumber | undefined {
+    for (let i = 0; i < 8; i++) {
+      if (this.state.occupiedSeats.get(i as SeatNumber) === player.id) return i as SeatNumber;
+    }
+    return undefined;
   }
 
   /**
@@ -54,7 +145,50 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
    * @param player The player who is ready to start the game
    */
   public startGame(player: Player): void {
-    throw new Error('Method not implemented.');
+    const seat = this._getPlayerSeat(player);
+    if (seat === undefined) throw new InvalidParametersError(PLAYER_NOT_IN_GAME_MESSAGE);
+    if (
+      (this.state.status !== 'WAITING_TO_START' && this.state.status !== 'WAITING_FOR_PLAYERS') ||
+      (this.state.status === 'WAITING_FOR_PLAYERS' && this._players.length === 1)
+    )
+      throw new InvalidParametersError(GAME_NOT_STARTABLE_MESSAGE);
+
+    this.state.readyPlayers.set(seat, true);
+
+    for (let i = 0; i < 8; i++) {
+      if (this.state.readyPlayers.get(i as SeatNumber) === false) return;
+    }
+
+    if (!this._preferredSeats || this._preferredSeats.size === 0) this.state.smallBlind = 0;
+    else this.state.smallBlind = this._getNextSeat(this.state.smallBlind);
+    this.state.status = 'IN_PROGRESS';
+
+    this.state.playerBalances.set(
+      this.state.smallBlind,
+      this.state.playerBalances.get(this.state.smallBlind) - DEFAULT_SMALL_BLIND,
+    );
+    this.state.playerBalances.set(
+      this._getNextSeat(this.state.smallBlind),
+      this.state.playerBalances.get(this._getNextSeat(this.state.smallBlind)) - DEFAULT_BIG_BLIND,
+    );
+
+    this._pot = DEFAULT_SMALL_BLIND + DEFAULT_BIG_BLIND;
+
+    for (let i = 0; i < 8; i++) {
+      const p = this.state.occupiedSeats.get(i as SeatNumber);
+      if (p) {
+        const newMoves = [
+          ...this.state.moves,
+          { moveType: 'DEAL' as PokerAction, card: this._deck.drawCard(), player: i as SeatNumber },
+          { moveType: 'DEAL' as PokerAction, card: this._deck.drawCard(), player: i as SeatNumber },
+        ];
+        const newState: PokerGameState = {
+          ...this.state,
+          moves: newMoves,
+        };
+        this.state = newState;
+      }
+    }
   }
 
   /**
@@ -78,6 +212,20 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
     throw new Error('Method not implemented.');
   }
 
+  private _oneRemainingPlayer(): SeatNumber | undefined {
+    let numberInGame = 0;
+    let lastPlayer;
+    for (let i = 0; i < 8; i++) {
+      const folded = this._foldedPlayers.get(i as SeatNumber);
+      if (!folded && this.state.occupiedSeats.get(i as SeatNumber)) {
+        numberInGame += 1;
+        lastPlayer = i as SeatNumber;
+      }
+    }
+    if (numberInGame === 1) return lastPlayer;
+    return undefined;
+  }
+
   /**
    * Joins a player to the game.
    * - Assigns the player to a seat. If the player was in the prior game,
@@ -92,7 +240,30 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
    * @param player the player to join the game
    */
   protected _join(player: Player): void {
-    throw new Error('Method not implemented.');
+    if (this._getPlayerSeat(player) !== undefined) {
+      throw new InvalidParametersError(PLAYER_ALREADY_IN_GAME_MESSAGE);
+    }
+    const nextOpen = this._getNextOpenSeat();
+    if (nextOpen === undefined) throw new InvalidParametersError(GAME_FULL_MESSAGE);
+    if (this.state.status !== 'WAITING_FOR_PLAYERS')
+      throw new InvalidParametersError(GAME_FULL_MESSAGE);
+    if (this._preferredSeats && this._oldBalances) {
+      const preferred = this._preferredSeats.get(player.id);
+      if (preferred && this.state.occupiedSeats.get(preferred) === undefined) {
+        this.state.occupiedSeats.set(preferred, player.id);
+        this.state.readyPlayers.set(preferred, false);
+        this.state.playerBalances.set(preferred, this._oldBalances.get(player.id));
+        return;
+      }
+    }
+    this.state.occupiedSeats.set(nextOpen, player.id);
+    this.state.readyPlayers.set(nextOpen, false);
+    this._foldedPlayers.set(nextOpen, false);
+
+    if (this._oldBalances && this._oldBalances.get(player.id))
+      this.state.playerBalances.set(nextOpen, this._oldBalances.get(player.id));
+    else this.state.playerBalances.set(nextOpen, DEFAULT_BUY_IN);
+    if (this._getNextOpenSeat() === undefined) this.state.status = 'WAITING_TO_START';
   }
 
   /**
@@ -113,6 +284,54 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
    * @throws InvalidParametersError if the player is not in the game (PLAYER_NOT_IN_GAME_MESSAGE)
    */
   protected _leave(player: Player): void {
-    throw new Error('Method not implemented.');
+    const seat = this._getPlayerSeat(player);
+    if (seat === undefined) throw new InvalidParametersError(PLAYER_NOT_IN_GAME_MESSAGE);
+    switch (this.state.status) {
+      case 'IN_PROGRESS': {
+        const newMoves = [...this.state.moves, { moveType: 'FOLD' as PokerAction, player: seat }];
+        const newState: PokerGameState = {
+          ...this.state,
+          moves: newMoves,
+        };
+        this.state = newState;
+
+        this.state.occupiedSeats.set(seat, undefined);
+        this.state.playerBalances.set(seat, undefined);
+        this.state.readyPlayers.set(seat, undefined);
+        this._foldedPlayers.set(seat, false);
+
+        const remaining = this._oneRemainingPlayer();
+        if (remaining) {
+          this.state.winner = this.state.occupiedSeats.get(remaining);
+          this.state.status = 'OVER';
+          this.state.playerBalances.set(
+            remaining,
+            this.state.playerBalances.get(remaining) + this._pot,
+          );
+        }
+        return;
+      }
+      case 'WAITING_TO_START': {
+        this.state.occupiedSeats.set(seat, undefined);
+        this.state.playerBalances.set(seat, undefined);
+        this.state.readyPlayers.set(seat, undefined);
+        this._foldedPlayers.set(seat, false);
+
+        this.state.status = 'WAITING_FOR_PLAYERS';
+        return;
+      }
+      case 'WAITING_FOR_PLAYERS': {
+        this.state.occupiedSeats.set(seat, undefined);
+        this.state.playerBalances.set(seat, undefined);
+        this.state.readyPlayers.set(seat, undefined);
+        this._foldedPlayers.set(seat, false);
+        return;
+      }
+      case 'OVER': {
+        return;
+      }
+      default:
+        throw new Error('Method not implemented.');
+    }
   }
 }
