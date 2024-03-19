@@ -27,6 +27,7 @@ import useVideoContext from '../VideoCall/VideoFrontend/hooks/useVideoContext/us
 
 export default function TownSelection(): JSX.Element {
   const [userName, setUserName] = useState<string>('');
+  const [pass, setPass] = useState<string>('');
   const [newTownName, setNewTownName] = useState<string>('');
   const [newTownIsPublic, setNewTownIsPublic] = useState<boolean>(true);
   const [townIDToJoin, setTownIDToJoin] = useState<string>('');
@@ -60,6 +61,14 @@ export default function TownSelection(): JSX.Element {
           toast({
             title: 'Unable to join town',
             description: 'Please select a username',
+            status: 'error',
+          });
+          return;
+        }
+        if (!pass || pass.length === 0) {
+          toast({
+            title: 'Unable to join town',
+            description: 'Please select a password',
             status: 'error',
           });
           return;
@@ -133,7 +142,7 @@ export default function TownSelection(): JSX.Element {
         }
       }
     },
-    [setTownController, userName, toast, videoConnect, loginController],
+    [setTownController, userName, pass, toast, videoConnect, loginController],
   );
 
   const handleCreate = async () => {
@@ -141,6 +150,14 @@ export default function TownSelection(): JSX.Element {
       toast({
         title: 'Unable to create town',
         description: 'Please select a username before creating a town',
+        status: 'error',
+      });
+      return;
+    }
+    if (!pass || pass.length === 0) {
+      toast({
+        title: 'Unable to create town',
+        description: 'Please select a password before creating a town',
         status: 'error',
       });
       return;
@@ -240,7 +257,7 @@ export default function TownSelection(): JSX.Element {
         <Stack>
           <Box p='4' borderWidth='1px' borderRadius='lg'>
             <Heading as='h2' size='lg'>
-              Select a username
+              Select a username and password
             </Heading>
 
             <FormControl>
@@ -251,6 +268,14 @@ export default function TownSelection(): JSX.Element {
                 placeholder='Your name'
                 value={userName}
                 onChange={event => setUserName(event.target.value)}
+              />
+              <FormLabel htmlFor='name'>Password</FormLabel>
+              <Input
+                autoFocus
+                name='password'
+                placeholder='Your password'
+                value={pass}
+                onChange={event => setPass(event.target.value)}
               />
             </FormControl>
           </Box>
