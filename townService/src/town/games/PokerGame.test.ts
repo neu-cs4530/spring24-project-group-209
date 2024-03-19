@@ -4,6 +4,7 @@ import {
   GAME_FULL_MESSAGE,
   GAME_NOT_IN_PROGRESS_MESSAGE,
   GAME_NOT_STARTABLE_MESSAGE,
+  MOVE_NOT_YOUR_TURN_MESSAGE,
   PLAYER_ALREADY_IN_GAME_MESSAGE,
   PLAYER_NOT_IN_GAME_MESSAGE,
 } from '../../lib/InvalidParametersError';
@@ -1418,7 +1419,7 @@ describe('PokerGame', () => {
           playerID: players[1].id,
           move: { moveType: 'CALL', raiseAmount: undefined },
         }),
-      ).toThrowError(PLAYER_NOT_IN_GAME_MESSAGE);
+      ).toThrowError(MOVE_NOT_YOUR_TURN_MESSAGE);
     });
     it('should throw an error if a player attempts to check when they need to bet more', () => {
       game.join(players[2]);
@@ -1446,7 +1447,7 @@ describe('PokerGame', () => {
       game.applyMove({
         gameID: game.id,
         playerID: players[3].id,
-        move: { moveType: 'CHECK', raiseAmount: undefined },
+        move: { moveType: 'CALL', raiseAmount: undefined },
       });
 
       game.applyMove({
@@ -1641,6 +1642,8 @@ describe('PokerGame', () => {
           move: { moveType: 'CHECK' },
         });
 
+        cardsDrawn = game.state.moves.filter(m => m.moveType === 'DEAL');
+
         expect(cardsDrawn.filter(m => m.player === undefined).length).toBe(3);
 
         game.applyMove({
@@ -1660,6 +1663,8 @@ describe('PokerGame', () => {
           playerID: players[0].id,
           move: { moveType: 'CHECK' },
         });
+
+        cardsDrawn = game.state.moves.filter(m => m.moveType === 'DEAL');
 
         expect(cardsDrawn.filter(m => m.player === undefined).length).toBe(3);
 
@@ -1690,6 +1695,9 @@ describe('PokerGame', () => {
           playerID: players[0].id,
           move: { moveType: 'CHECK' },
         });
+
+        cardsDrawn = game.state.moves.filter(m => m.moveType === 'DEAL');
+
         expect(cardsDrawn.filter(m => m.player === undefined).length).toBe(4);
 
         game.applyMove({
@@ -1757,6 +1765,8 @@ describe('PokerGame', () => {
           move: { moveType: 'CHECK' },
         });
 
+        cardsDrawn = game.state.moves.filter(m => m.moveType === 'DEAL');
+
         expect(cardsDrawn.filter(m => m.player === undefined).length).toBe(3);
 
         game.applyMove({
@@ -1770,6 +1780,8 @@ describe('PokerGame', () => {
           playerID: players[0].id,
           move: { moveType: 'CHECK' },
         });
+
+        cardsDrawn = game.state.moves.filter(m => m.moveType === 'DEAL');
 
         expect(cardsDrawn.filter(m => m.player === undefined).length).toBe(3);
 
@@ -1794,6 +1806,9 @@ describe('PokerGame', () => {
           playerID: players[0].id,
           move: { moveType: 'CHECK' },
         });
+
+        cardsDrawn = game.state.moves.filter(m => m.moveType === 'DEAL');
+
         expect(cardsDrawn.filter(m => m.player === undefined).length).toBe(4);
 
         game.applyMove({
@@ -2013,7 +2028,7 @@ describe('PokerGame', () => {
         });
 
         expect(game.state.playerBalances.get(seats[1])).toBe(
-          DEFAULT_BUY_IN + DEFAULT_SMALL_BLIND + 500,
+          DEFAULT_BUY_IN + DEFAULT_BIG_BLIND + DEFAULT_SMALL_BLIND + 500,
         );
 
         const game2 = new PokerGame(new TestDeck(), game);
@@ -2026,45 +2041,47 @@ describe('PokerGame', () => {
         game2.startGame(players[1]);
         game2.startGame(players[2]);
 
-        expect(game2.state.playerBalances.get(seats[1])).toBe(DEFAULT_BUY_IN + 500);
+        expect(game2.state.playerBalances.get(seats[1])).toBe(
+          DEFAULT_BUY_IN + DEFAULT_BIG_BLIND + 500,
+        );
         expect(game2.state.playerBalances.get(seats[2])).toBe(
-          DEFAULT_BUY_IN - 500 - DEFAULT_BIG_BLIND,
+          DEFAULT_BUY_IN - 500 - DEFAULT_BIG_BLIND - DEFAULT_BIG_BLIND,
         );
 
-        game.applyMove({
-          gameID: game.id,
+        game2.applyMove({
+          gameID: game2.id,
           playerID: players[0].id,
           move: { moveType: 'RAISE', raiseAmount: 1600 },
         });
 
-        game.applyMove({
-          gameID: game.id,
+        game2.applyMove({
+          gameID: game2.id,
           playerID: players[1].id,
           move: { moveType: 'CALL' },
         });
 
-        game.applyMove({
-          gameID: game.id,
+        game2.applyMove({
+          gameID: game2.id,
           playerID: players[2].id,
           move: { moveType: 'CALL' },
         });
 
         expect(game2.state.playerBalances.get(seats[2])).toBe(0);
 
-        game.applyMove({
-          gameID: game.id,
+        game2.applyMove({
+          gameID: game2.id,
           playerID: players[0].id,
           move: { moveType: 'CALL' },
         });
 
-        game.applyMove({
-          gameID: game.id,
+        game2.applyMove({
+          gameID: game2.id,
           playerID: players[1].id,
           move: { moveType: 'RAISE', raiseAmount: 100 },
         });
 
-        game.applyMove({
-          gameID: game.id,
+        game2.applyMove({
+          gameID: game2.id,
           playerID: players[2].id,
           move: { moveType: 'CALL' },
         });
@@ -2153,8 +2170,8 @@ describe('PokerGame', () => {
           });
 
           expect(game.state.status).toBe('OVER');
-          expect(game.state.winner).toBe(players[1].id);
-          expect(game.state.playerBalances.get(seats[1])).toBe(
+          expect(game.state.winner).toBe(players[2].id);
+          expect(game.state.playerBalances.get(seats[2])).toBe(
             DEFAULT_BUY_IN + DEFAULT_SMALL_BLIND + DEFAULT_BIG_BLIND,
           );
         });
@@ -2282,9 +2299,7 @@ describe('PokerGame', () => {
 
           expect(game.state.status).toBe('OVER');
           expect(game.state.winner).toBe(players[1].id);
-          expect(game.state.playerBalances.get(seats[1])).toBe(
-            DEFAULT_BUY_IN + DEFAULT_SMALL_BLIND,
-          );
+          expect(game.state.playerBalances.get(seats[1])).toBe(DEFAULT_BUY_IN + DEFAULT_BIG_BLIND);
         }
         describe('hands should beat the hands below them', () => {
           it('one pair should beat high card', () => {
@@ -2564,7 +2579,7 @@ describe('PokerGame', () => {
             deck.addNextDraw({ face: 3, suite: 'SPADES' });
             deck.addNextDraw({ face: 3, suite: 'HEARTS' });
             deck.addNextDraw({ face: 2, suite: 'CLUBS' });
-            deck.addNextDraw({ face: 6, suite: 'CLUBS' });
+            deck.addNextDraw({ face: 12, suite: 'CLUBS' });
 
             testPlayerOneWinning();
           });
@@ -2846,16 +2861,16 @@ describe('PokerGame', () => {
             deck.addNextDraw({ face: 12, suite: 'CLUBS' });
             deck.addNextDraw({ face: 11, suite: 'CLUBS' });
             deck.addNextDraw({ face: 6, suite: 'CLUBS' });
-            deck.addNextDraw({ face: 7, suite: 'CLUBS' });
+            deck.addNextDraw({ face: 1, suite: 'CLUBS' });
 
             testPlayerOneWinning();
           });
           it('full house with higher triple should win', () => {
             deck.addNextDraw({ face: 3, suite: 'CLUBS' });
             deck.addNextDraw({ face: 4, suite: 'CLUBS' });
-            deck.addNextDraw({ face: 5, suite: 'CLUBS' });
+            deck.addNextDraw({ face: 12, suite: 'HEARTS' });
             deck.addNextDraw({ face: 3, suite: 'DIAMONDS' });
-            deck.addNextDraw({ face: 3, suite: 'HEARTS' });
+            deck.addNextDraw({ face: 6, suite: 'HEARTS' });
 
             deck.addNextDraw({ face: 12, suite: 'CLUBS' });
             deck.addNextDraw({ face: 12, suite: 'DIAMONDS' });

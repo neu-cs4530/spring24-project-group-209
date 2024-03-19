@@ -1,11 +1,15 @@
 import InvalidParametersError, {
+  BOARD_POSITION_NOT_VALID_MESSAGE,
   GAME_FULL_MESSAGE,
+  GAME_NOT_IN_PROGRESS_MESSAGE,
   GAME_NOT_STARTABLE_MESSAGE,
+  MOVE_NOT_YOUR_TURN_MESSAGE,
   PLAYER_ALREADY_IN_GAME_MESSAGE,
   PLAYER_NOT_IN_GAME_MESSAGE,
 } from '../../lib/InvalidParametersError';
 import Player from '../../lib/Player';
 import {
+  Card,
   DeckOfCards,
   GameMove,
   PlayerID,
@@ -31,6 +35,14 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
   protected _foldedPlayers: Map<SeatNumber, boolean> = new Map<SeatNumber, boolean>();
 
   private _pot: number;
+
+  private _firstPlayer: SeatNumber;
+
+  private _next: SeatNumber;
+
+  private _currentBets: Map<SeatNumber, number> = new Map<SeatNumber, number>();
+
+  private _round = 0;
 
   /**
    * Creates a new PokerGame.
@@ -64,6 +76,7 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
 
     for (let i = 0; i < 8; i++) {
       this._foldedPlayers.set(i as SeatNumber, false);
+      this._currentBets.set(i as SeatNumber, 0);
     }
 
     if (deck) {
@@ -85,6 +98,8 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
     }
 
     this._pot = 0;
+    this._next = 0;
+    this._firstPlayer = 0;
   }
 
   /**
@@ -117,11 +132,20 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
     return current;
   }
 
-  private _getPlayerSeat(player: Player): SeatNumber | undefined {
+  private _getPlayerSeat(playerID: string): SeatNumber | undefined {
     for (let i = 0; i < 8; i++) {
-      if (this.state.occupiedSeats.get(i as SeatNumber) === player.id) return i as SeatNumber;
+      if (this.state.occupiedSeats.get(i as SeatNumber) === playerID) return i as SeatNumber;
     }
     return undefined;
+  }
+
+  private _getMaxBet(): number {
+    let currentMax = 0;
+    for (let i = 0; i < 8; i++) {
+      const bet = this._currentBets.get(i as SeatNumber);
+      if (bet && bet > currentMax) currentMax = bet;
+    }
+    return currentMax;
   }
 
   /**
@@ -145,7 +169,7 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
    * @param player The player who is ready to start the game
    */
   public startGame(player: Player): void {
-    const seat = this._getPlayerSeat(player);
+    const seat = this._getPlayerSeat(player.id);
     if (seat === undefined) throw new InvalidParametersError(PLAYER_NOT_IN_GAME_MESSAGE);
     if (
       (this.state.status !== 'WAITING_TO_START' && this.state.status !== 'WAITING_FOR_PLAYERS') ||
@@ -173,6 +197,12 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
     );
 
     this._pot = DEFAULT_SMALL_BLIND + DEFAULT_BIG_BLIND;
+    this._next = this._getNextSeat(this._getNextSeat(this.state.smallBlind));
+    this._firstPlayer = this._next;
+    this._currentBets.set(this.state.smallBlind, DEFAULT_SMALL_BLIND);
+    this._currentBets.set(this._getNextSeat(this.state.smallBlind), DEFAULT_BIG_BLIND);
+
+    this._deck.shuffle();
 
     for (let i = 0; i < 8; i++) {
       const p = this.state.occupiedSeats.get(i as SeatNumber);
@@ -209,7 +239,302 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
    * @throws InvalidParametersError if the move is invalid per the rules of poker (BOARD_POSITION_NOT_VALID_MESSAGE)
    */
   public applyMove(move: GameMove<PokerMove>): void {
-    throw new Error('Method not implemented.');
+    if (this.state.status !== 'IN_PROGRESS')
+      throw new InvalidParametersError(GAME_NOT_IN_PROGRESS_MESSAGE);
+    const seat = this._getPlayerSeat(move.playerID);
+    if (seat === undefined) throw new InvalidParametersError(PLAYER_NOT_IN_GAME_MESSAGE);
+    if (seat !== this._next) throw new InvalidParametersError(MOVE_NOT_YOUR_TURN_MESSAGE);
+    move.move.player = seat;
+
+    switch (move.move.moveType) {
+      case 'CALL': {
+        const curBet = this._currentBets.get(seat);
+        if (curBet === undefined) throw new Error('Issue with recording bets');
+        if (this.state.playerBalances.get(seat) < this._getMaxBet() - curBet) {
+          this._pot += curBet;
+          this.state.playerBalances.set(seat, 0);
+          // All in
+        } else {
+          this.state.playerBalances.set(
+            seat,
+            this.state.playerBalances.get(seat) - (this._getMaxBet() - curBet),
+          );
+          this._pot += this._getMaxBet() - curBet;
+          this._currentBets.set(seat, this._getMaxBet());
+        }
+        break;
+      }
+      case 'CHECK': {
+        if (this._currentBets.get(seat) !== this._getMaxBet()) {
+          if (this.state.playerBalances.get(seat) === 0) {
+            // All in
+          } else {
+            throw new InvalidParametersError(BOARD_POSITION_NOT_VALID_MESSAGE);
+          }
+        }
+        break;
+      }
+      case 'FOLD': {
+        this._foldedPlayers.set(seat, true);
+        const remaining = this._oneRemainingPlayer();
+        if (remaining) {
+          this.state.status = 'OVER';
+          this.state.winner = this.state.occupiedSeats.get(remaining);
+          this.state.playerBalances.set(
+            remaining,
+            this.state.playerBalances.get(remaining) + this._pot,
+          );
+          return;
+        }
+        if (this._firstPlayer === seat) this._firstPlayer = this._getNextSeat(this._firstPlayer);
+        break;
+      }
+      case 'RAISE': {
+        const curBet = this._currentBets.get(seat);
+        if (curBet === undefined) throw new Error('Issue with recording bets');
+        if (
+          move.move.raiseAmount === undefined ||
+          this.state.playerBalances.get(seat) < this._getMaxBet() - curBet + move.move.raiseAmount
+        )
+          throw new InvalidParametersError(BOARD_POSITION_NOT_VALID_MESSAGE);
+        this.state.playerBalances.set(
+          seat,
+          this.state.playerBalances.get(seat) -
+            (this._getMaxBet() - curBet + move.move.raiseAmount),
+        );
+        this._pot += this._getMaxBet() - curBet + move.move.raiseAmount;
+        this._currentBets.set(seat, this._getMaxBet() + move.move.raiseAmount);
+        break;
+      }
+      default:
+        throw new InvalidParametersError(BOARD_POSITION_NOT_VALID_MESSAGE);
+    }
+
+    this._next = this._getNextSeat(this._next);
+
+    const newMoves = [...this.state.moves, move.move];
+    const newState: PokerGameState = {
+      ...this.state,
+      moves: newMoves,
+    };
+    this.state = newState;
+
+    if (this._next !== this._firstPlayer) return;
+
+    const movesThisRound: Array<PokerMove> = [];
+    let i = this.state.moves.length - 1;
+    while (i >= 0) {
+      if (this.state.moves[i].moveType === 'DEAL') break;
+      movesThisRound.push(this.state.moves[i]);
+      if (this.state.moves[i].player === this._firstPlayer) break;
+      i -= 1;
+    }
+
+    if (movesThisRound.filter(m => m.moveType !== 'RAISE').length === movesThisRound.length) {
+      if (this._round === 0) {
+        const deal = [
+          ...this.state.moves,
+          { moveType: 'DEAL' as PokerAction, card: this._deck.drawCard() },
+          { moveType: 'DEAL' as PokerAction, card: this._deck.drawCard() },
+          { moveType: 'DEAL' as PokerAction, card: this._deck.drawCard() },
+        ];
+        const dealState: PokerGameState = {
+          ...this.state,
+          moves: deal,
+        };
+        this.state = dealState;
+        this._round += 1;
+      } else if (this._round > 0 && this._round < 3) {
+        const deal = [
+          ...this.state.moves,
+          { moveType: 'DEAL' as PokerAction, card: this._deck.drawCard() },
+        ];
+        const dealState: PokerGameState = {
+          ...this.state,
+          moves: deal,
+        };
+        this.state = dealState;
+        this._round += 1;
+      } else {
+        const winners = this._determineWinner();
+        if (winners.length === 1) {
+          this.state.status = 'OVER';
+          this.state.winner = this.state.occupiedSeats.get(winners[0]);
+          this.state.playerBalances.set(
+            winners[0],
+            this.state.playerBalances.get(winners[0]) + this._pot,
+          );
+        } else {
+          this.state.status = 'OVER';
+          this.state.winner = undefined;
+          for (let win = 0; win < winners.length; win++) {
+            this.state.playerBalances.set(
+              winners[win],
+              this.state.playerBalances.get(winners[win]) + this._pot / winners.length,
+            );
+          }
+        }
+      }
+    }
+  }
+
+  private _getHandValue(seat: SeatNumber): [number, number] {
+    const handMoves = this.state.moves.filter(
+      m => m.moveType === 'DEAL' && (m.player === seat || m.player === undefined),
+    );
+
+    const hand: Array<Card> = [];
+    for (let i = 0; i < handMoves.length; i++) {
+      const { card } = handMoves[i];
+      if (card !== undefined) hand.push(card);
+    }
+
+    hand.sort((a, b) => {
+      if (a.face < b.face) return -1;
+      if (b.face < a.face) return 1;
+      return 0;
+    });
+
+    const isStraightFlush = (h: Array<Card>) => {
+      for (let i = 0; i < h.length; i++) {
+        if (
+          h.filter(c => c.face === h[i].face + 1 && c.suite === h[i].suite).length > 0 &&
+          h.filter(c => c.face === h[i].face + 2 && c.suite === h[i].suite).length > 0 &&
+          h.filter(c => c.face === h[i].face + 3 && c.suite === h[i].suite).length > 0 &&
+          h.filter(
+            c =>
+              (c.face === h[i].face + 4 || (c.face === 1 && h[i].face + 3 === 13)) &&
+              c.suite === h[i].suite,
+          ).length > 0
+        )
+          return h[i + 4].face as number;
+      }
+      return 0;
+    };
+
+    const isFourOfAKind = (h: Array<Card>) => {
+      for (let i = 0; i < h.length; i++) {
+        if (h.filter(c => c.face === h[i].face).length === 4) return h[i].face as number;
+      }
+      return 0;
+    };
+
+    const isFullHouse = (h: Array<Card>) => {
+      for (let i = 0; i < h.length; i++) {
+        if (h.filter(c => c.face === h[i].face).length === 3) {
+          for (let j = 0; j < h.length; j++) {
+            if (h[j].face !== h[i].face && h.filter(c => c.face === h[j].face).length === 2)
+              return h[i].face;
+          }
+        }
+      }
+      return 0;
+    };
+
+    const isFlush = (h: Array<Card>) => {
+      const diamonds = h.filter(c => c.suite === 'DIAMONDS');
+      const clubs = h.filter(c => c.suite === 'CLUBS');
+      const hearts = h.filter(c => c.suite === 'HEARTS');
+      const spades = h.filter(c => c.suite === 'SPADES');
+
+      if (diamonds.length > 4) return diamonds[diamonds.length - 1].face;
+      if (clubs.length > 4) return clubs[clubs.length - 1].face;
+      if (hearts.length > 4) return hearts[hearts.length - 1].face;
+      if (spades.length > 4) return spades[spades.length - 1].face;
+
+      return 0;
+    };
+
+    const isStraight = (h: Array<Card>) => {
+      for (let i = 0; i < h.length; i++) {
+        if (
+          h.filter(c => c.face === h[i].face + 1).length > 0 &&
+          h.filter(c => c.face === h[i].face + 2).length > 0 &&
+          h.filter(c => c.face === h[i].face + 3).length > 0 &&
+          h.filter(c => c.face === h[i].face + 4 || (c.face === 1 && h[i].face + 3 === 13)).length >
+            0
+        )
+          return h[i + 4].face as number;
+      }
+      return 0;
+    };
+
+    const isThreeOfAKind = (h: Array<Card>) => {
+      for (let i = 0; i < h.length; i++) {
+        if (h.filter(c => c.face === h[i].face).length === 3) return h[i].face as number;
+      }
+      return 0;
+    };
+
+    const isTwoPair = (h: Array<Card>) => {
+      for (let i = 0; i < h.length; i++) {
+        if (h.filter(c => c.face === h[i].face).length === 2) {
+          for (let j = 0; j < h.length; j++) {
+            if (h[j].face !== h[i].face && h.filter(c => c.face === h[j].face).length === 2)
+              if (h[i].face > h[j].face) return h[i].face;
+              else return h[j].face;
+          }
+        }
+      }
+      return 0;
+    };
+
+    const isPair = (h: Array<Card>) => {
+      for (let i = 0; i < h.length; i++) {
+        if (h.filter(c => c.face === h[i].face).length === 2) return h[i].face as number;
+      }
+      return 0;
+    };
+
+    if (isStraightFlush(hand)) {
+      console.log(hand);
+      console.log(isStraightFlush(hand));
+      return [8, isStraightFlush(hand)];
+    }
+    if (isFourOfAKind(hand)) {
+      return [7, isFourOfAKind(hand)];
+    }
+    if (isFullHouse(hand)) {
+      return [6, isFullHouse(hand)];
+    }
+    if (isFlush(hand)) {
+      return [5, isFlush(hand)];
+    }
+    if (isStraight(hand)) {
+      return [4, isStraight(hand)];
+    }
+    if (isThreeOfAKind(hand)) {
+      return [3, isThreeOfAKind(hand)];
+    }
+    if (isTwoPair(hand)) {
+      return [2, isTwoPair(hand)];
+    }
+    if (isPair(hand)) {
+      return [1, isPair(hand)];
+    }
+    return [0, hand[hand.length - 1].face];
+  }
+
+  private _determineWinner(): Array<SeatNumber> {
+    let seat = this._next;
+    let currentWinners = [seat];
+    let currentMax = this._getHandValue(seat);
+    while (this._getNextSeat(seat) !== this._next) {
+      seat = this._getNextSeat(seat);
+      const curValue = this._getHandValue(seat);
+      if (
+        curValue[0] > currentMax[0] ||
+        (curValue[0] === currentMax[0] &&
+          (curValue[1] > currentMax[1] || (curValue[1] === 1 && currentMax[1] !== 1)))
+      ) {
+        currentWinners = [seat];
+        currentMax = curValue;
+      } else if (curValue[0] === currentMax[0] && curValue[1] === currentMax[1]) {
+        currentWinners.push(seat);
+      }
+    }
+
+    return currentWinners;
   }
 
   private _oneRemainingPlayer(): SeatNumber | undefined {
@@ -240,7 +565,7 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
    * @param player the player to join the game
    */
   protected _join(player: Player): void {
-    if (this._getPlayerSeat(player) !== undefined) {
+    if (this._getPlayerSeat(player.id) !== undefined) {
       throw new InvalidParametersError(PLAYER_ALREADY_IN_GAME_MESSAGE);
     }
     const nextOpen = this._getNextOpenSeat();
@@ -284,7 +609,7 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
    * @throws InvalidParametersError if the player is not in the game (PLAYER_NOT_IN_GAME_MESSAGE)
    */
   protected _leave(player: Player): void {
-    const seat = this._getPlayerSeat(player);
+    const seat = this._getPlayerSeat(player.id);
     if (seat === undefined) throw new InvalidParametersError(PLAYER_NOT_IN_GAME_MESSAGE);
     switch (this.state.status) {
       case 'IN_PROGRESS': {
@@ -299,6 +624,8 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
         this.state.playerBalances.set(seat, undefined);
         this.state.readyPlayers.set(seat, undefined);
         this._foldedPlayers.set(seat, false);
+
+        if (this._firstPlayer === seat) this._firstPlayer = this._getNextSeat(this._firstPlayer);
 
         const remaining = this._oneRemainingPlayer();
         if (remaining) {
