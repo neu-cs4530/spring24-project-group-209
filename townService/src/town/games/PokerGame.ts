@@ -487,8 +487,6 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
     };
 
     if (isStraightFlush(hand)) {
-      console.log(hand);
-      console.log(isStraightFlush(hand));
       return [8, isStraightFlush(hand)];
     }
     if (isFourOfAKind(hand)) {
