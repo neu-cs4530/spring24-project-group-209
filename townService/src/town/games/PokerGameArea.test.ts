@@ -66,7 +66,7 @@ class TestingGame extends Game<PokerGameState, PokerMove> {
 
   protected _leave(player: Player): void {}
 }
-describe('ConnectFourGameArea', () => {
+describe('PokerGameArea', () => {
   let gameArea: PokerGameArea;
   let zero: Player;
   let one: Player;
@@ -260,7 +260,6 @@ describe('ConnectFourGameArea', () => {
           playerID: zero.id,
           move: {
             ...move,
-            gamePiece: 'Red',
           },
         });
         expect(interactableUpdateSpy).toHaveBeenCalledTimes(1);
@@ -279,7 +278,6 @@ describe('ConnectFourGameArea', () => {
           playerID: zero.id,
           move: {
             ...move,
-            gamePiece: 'Red',
           },
         });
         expect(interactableUpdateSpy).not.toHaveBeenCalled();
@@ -382,13 +380,11 @@ describe('ConnectFourGameArea', () => {
           expect(game.state.status).toEqual('OVER');
           expect(gameArea.history.length).toEqual(1);
           const winningUsername = winningPlayer.userName;
-          const losingUsername = leavingPlayer.userName;
 
           expect(gameArea.history[0]).toEqual({
             gameID: game.id,
             scores: {
               [winningUsername]: 1,
-              [losingUsername]: 0,
             },
           });
           expect(interactableUpdateSpy).toHaveBeenCalledTimes(1);
@@ -399,7 +395,7 @@ describe('ConnectFourGameArea', () => {
   test('[T3.5] When given an invalid command it should throw an error', () => {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore (Testing an invalid command, only possible at the boundary of the type system)
-    expect(() => gameArea.handleCommand({ type: 'InvalidCommand' }, red)).toThrowError(
+    expect(() => gameArea.handleCommand({ type: 'InvalidCommand' }, zero)).toThrowError(
       INVALID_COMMAND_MESSAGE,
     );
     expect(interactableUpdateSpy).not.toHaveBeenCalled();
