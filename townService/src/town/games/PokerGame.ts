@@ -121,6 +121,10 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
     return current;
   }
 
+  /**
+   * Gets the first available open seat for a player
+   * @returns SeatNumber corresponding to the next open seat, or undefined if all seats are full
+   */
   private _getNextOpenSeat(): SeatNumber | undefined {
     let current = 0 as SeatNumber;
 
@@ -132,6 +136,11 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
     return current;
   }
 
+  /**
+   * Given a player ID, returns the seat that that player is sitting at, or undefined if they are not in the game
+   * @param playerID The player ID to find the seat of
+   * @returns a SeatNumber representing the player seat, or undefined if the player is not in the game
+   */
   private _getPlayerSeat(playerID: string): SeatNumber | undefined {
     for (let i = 0; i < 8; i++) {
       if (this.state.occupiedSeats.get(i as SeatNumber) === playerID) return i as SeatNumber;
@@ -139,6 +148,10 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
     return undefined;
   }
 
+  /**
+   * Get's the current wager a player would need to match to call in the current round
+   * @returns A number representing the amount of the current bet
+   */
   private _getMaxBet(): number {
     let currentMax = 0;
     for (let i = 0; i < 8; i++) {
