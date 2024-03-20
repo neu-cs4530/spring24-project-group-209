@@ -2780,6 +2780,244 @@ describe('PokerGame', () => {
             testPlayerOneWinning();
           });
         });
+        it('should have all-ins from call win only up to the pot before the all-inned, plust any calls afterwards before the next raise', () => {
+          deck.addNextDraw({ face: 5, suite: 'HEARTS' });
+          deck.addNextDraw({ face: 6, suite: 'HEARTS' });
+          deck.addNextDraw({ face: 7, suite: 'HEARTS' });
+          deck.addNextDraw({ face: 2, suite: 'DIAMONDS' });
+          deck.addNextDraw({ face: 5, suite: 'CLUBS' });
+
+          deck.addNextDraw({ face: 3, suite: 'HEARTS' });
+          deck.addNextDraw({ face: 4, suite: 'HEARTS' });
+          deck.addNextDraw({ face: 5, suite: 'DIAMONDS' });
+          deck.addNextDraw({ face: 5, suite: 'SPADES' });
+          deck.addNextDraw({ face: 11, suite: 'DIAMONDS' });
+          deck.addNextDraw({ face: 12, suite: 'SPADES' });
+
+          game.join(players[2]);
+
+          game.startGame(players[0]);
+          game.startGame(players[1]);
+          game.startGame(players[2]);
+
+          game.state.playerBalances.set(seats[2], DEFAULT_SMALL_BLIND);
+
+          game.applyMove({
+            gameID: game.id,
+            playerID: players[2].id,
+            move: { moveType: 'CALL' },
+          });
+
+          game.applyMove({
+            gameID: game.id,
+            playerID: players[0].id,
+            move: { moveType: 'RAISE', raiseAmount: 200 },
+          });
+
+          game.applyMove({
+            gameID: game.id,
+            playerID: players[1].id,
+            move: { moveType: 'CALL' },
+          });
+
+          game.applyMove({
+            gameID: game.id,
+            playerID: players[2].id,
+            move: { moveType: 'CHECK' },
+          });
+
+          game.applyMove({
+            gameID: game.id,
+            playerID: players[0].id,
+            move: { moveType: 'CHECK' },
+          });
+
+          game.applyMove({
+            gameID: game.id,
+            playerID: players[1].id,
+            move: { moveType: 'CHECK' },
+          });
+
+          game.applyMove({
+            gameID: game.id,
+            playerID: players[2].id,
+            move: { moveType: 'CHECK' },
+          });
+
+          game.applyMove({
+            gameID: game.id,
+            playerID: players[0].id,
+            move: { moveType: 'CHECK' },
+          });
+
+          game.applyMove({
+            gameID: game.id,
+            playerID: players[1].id,
+            move: { moveType: 'CHECK' },
+          });
+
+          game.applyMove({
+            gameID: game.id,
+            playerID: players[2].id,
+            move: { moveType: 'CHECK' },
+          });
+
+          game.applyMove({
+            gameID: game.id,
+            playerID: players[0].id,
+            move: { moveType: 'CHECK' },
+          });
+
+          game.applyMove({
+            gameID: game.id,
+            playerID: players[1].id,
+            move: { moveType: 'CHECK' },
+          });
+
+          game.applyMove({
+            gameID: game.id,
+            playerID: players[2].id,
+            move: { moveType: 'CHECK' },
+          });
+
+          game.applyMove({
+            gameID: game.id,
+            playerID: players[0].id,
+            move: { moveType: 'CHECK' },
+          });
+
+          game.applyMove({
+            gameID: game.id,
+            playerID: players[1].id,
+            move: { moveType: 'CHECK' },
+          });
+
+          expect(game.state.status).toBe('OVER');
+          expect(game.state.playerBalances.get(seats[0])).toBe(DEFAULT_BUY_IN - DEFAULT_BIG_BLIND);
+          expect(game.state.playerBalances.get(seats[1])).toBe(DEFAULT_BUY_IN - DEFAULT_BIG_BLIND);
+          expect(game.state.playerBalances.get(seats[2])).toBe(DEFAULT_BIG_BLIND * 2);
+        });
+        it('should allow players to all-in by raising their remaining balance', () => {
+          deck.addNextDraw({ face: 5, suite: 'HEARTS' });
+          deck.addNextDraw({ face: 6, suite: 'HEARTS' });
+          deck.addNextDraw({ face: 7, suite: 'HEARTS' });
+          deck.addNextDraw({ face: 2, suite: 'DIAMONDS' });
+          deck.addNextDraw({ face: 5, suite: 'CLUBS' });
+
+          deck.addNextDraw({ face: 3, suite: 'HEARTS' });
+          deck.addNextDraw({ face: 4, suite: 'HEARTS' });
+          deck.addNextDraw({ face: 5, suite: 'DIAMONDS' });
+          deck.addNextDraw({ face: 5, suite: 'SPADES' });
+          deck.addNextDraw({ face: 11, suite: 'DIAMONDS' });
+          deck.addNextDraw({ face: 12, suite: 'SPADES' });
+
+          game.join(players[2]);
+
+          game.startGame(players[0]);
+          game.startGame(players[1]);
+          game.startGame(players[2]);
+
+          game.state.playerBalances.set(seats[2], DEFAULT_BIG_BLIND * 3);
+
+          game.applyMove({
+            gameID: game.id,
+            playerID: players[2].id,
+            move: { moveType: 'RAISE', raiseAmount: DEFAULT_BIG_BLIND * 2 },
+          });
+
+          game.applyMove({
+            gameID: game.id,
+            playerID: players[0].id,
+            move: { moveType: 'CALL' },
+          });
+
+          game.applyMove({
+            gameID: game.id,
+            playerID: players[1].id,
+            move: { moveType: 'RAISE', raiseAmount: 200 },
+          });
+
+          game.applyMove({
+            gameID: game.id,
+            playerID: players[2].id,
+            move: { moveType: 'CALL' },
+          });
+
+          game.applyMove({
+            gameID: game.id,
+            playerID: players[0].id,
+            move: { moveType: 'CALL' },
+          });
+
+          game.applyMove({
+            gameID: game.id,
+            playerID: players[1].id,
+            move: { moveType: 'CHECK' },
+          });
+
+          game.applyMove({
+            gameID: game.id,
+            playerID: players[2].id,
+            move: { moveType: 'CHECK' },
+          });
+
+          game.applyMove({
+            gameID: game.id,
+            playerID: players[0].id,
+            move: { moveType: 'CHECK' },
+          });
+
+          game.applyMove({
+            gameID: game.id,
+            playerID: players[1].id,
+            move: { moveType: 'CHECK' },
+          });
+
+          game.applyMove({
+            gameID: game.id,
+            playerID: players[2].id,
+            move: { moveType: 'CHECK' },
+          });
+
+          game.applyMove({
+            gameID: game.id,
+            playerID: players[0].id,
+            move: { moveType: 'CHECK' },
+          });
+
+          game.applyMove({
+            gameID: game.id,
+            playerID: players[1].id,
+            move: { moveType: 'CHECK' },
+          });
+
+          game.applyMove({
+            gameID: game.id,
+            playerID: players[2].id,
+            move: { moveType: 'CHECK' },
+          });
+
+          game.applyMove({
+            gameID: game.id,
+            playerID: players[0].id,
+            move: { moveType: 'CHECK' },
+          });
+
+          game.applyMove({
+            gameID: game.id,
+            playerID: players[1].id,
+            move: { moveType: 'CHECK' },
+          });
+
+          expect(game.state.status).toBe('OVER');
+          expect(game.state.playerBalances.get(seats[0])).toBe(
+            DEFAULT_BUY_IN - DEFAULT_BIG_BLIND - DEFAULT_SMALL_BLIND,
+          );
+          expect(game.state.playerBalances.get(seats[1])).toBe(
+            DEFAULT_BUY_IN - DEFAULT_BIG_BLIND - DEFAULT_SMALL_BLIND,
+          );
+          expect(game.state.playerBalances.get(seats[2])).toBe(DEFAULT_BIG_BLIND * 6);
+        });
         describe('in the case of ties', () => {
           it('high card of the higher rank should win', () => {
             deck.addNextDraw({ face: 3, suite: 'CLUBS' });

@@ -42,6 +42,10 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
 
   private _currentBets: Map<SeatNumber, number> = new Map<SeatNumber, number>();
 
+  private _maxBets: Map<SeatNumber, number> = new Map<SeatNumber, number>();
+
+  private _maxBetsCapped: Map<SeatNumber, boolean> = new Map<SeatNumber, boolean>();
+
   private _round = 0;
 
   /**
@@ -263,10 +267,16 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
       case 'CALL': {
         const curBet = this._currentBets.get(seat);
         if (curBet === undefined) throw new Error('Issue with recording bets');
-        if (this.state.playerBalances.get(seat) < this._getMaxBet() - curBet) {
+        if (
+          this.state.playerBalances.get(seat) < this._getMaxBet() - curBet &&
+          !this._maxBetsCapped.get(seat)
+        ) {
           this._pot += curBet;
           this.state.playerBalances.set(seat, 0);
-          // All in
+          this._maxBets.set(seat, this._pot);
+          this._maxBetsCapped.set(seat, false);
+        } else if (this.state.playerBalances.get(seat) === 0) {
+          break;
         } else {
           this.state.playerBalances.set(
             seat,
@@ -274,6 +284,11 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
           );
           this._pot += this._getMaxBet() - curBet;
           this._currentBets.set(seat, this._getMaxBet());
+          for (let i = 0; i < 8; i++) {
+            const maxBet = this._maxBets.get(i as SeatNumber);
+            if (maxBet && !this._maxBetsCapped.get(i as SeatNumber))
+              this._maxBets.set(i as SeatNumber, maxBet + curBet);
+          }
         }
         break;
       }
@@ -291,12 +306,7 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
         this._foldedPlayers.set(seat, true);
         const remaining = this._oneRemainingPlayer();
         if (remaining) {
-          this.state.status = 'OVER';
-          this.state.winner = this.state.occupiedSeats.get(remaining);
-          this.state.playerBalances.set(
-            remaining,
-            this.state.playerBalances.get(remaining) + this._pot,
-          );
+          this._payOut([remaining]);
           return;
         }
         if (this._firstPlayer === seat) this._firstPlayer = this._getNextSeat(this._firstPlayer);
@@ -317,6 +327,19 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
         );
         this._pot += this._getMaxBet() - curBet + move.move.raiseAmount;
         this._currentBets.set(seat, this._getMaxBet() + move.move.raiseAmount);
+
+        for (let i = 0; i < 8; i++) {
+          const maxBet = this._maxBets.get(i as SeatNumber);
+          if (maxBet && !this._maxBetsCapped.get(i as SeatNumber)) {
+            this._maxBets.set(i as SeatNumber, maxBet + curBet);
+            this._maxBetsCapped.set(i as SeatNumber, true);
+          }
+        }
+
+        if (this.state.playerBalances.get(seat) === 0) {
+          this._maxBets.set(seat, this._pot);
+          this._maxBetsCapped.set(seat, false);
+        }
         break;
       }
       default:
@@ -370,27 +393,65 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
         this._round += 1;
       } else {
         const winners = this._determineWinner();
-        if (winners.length === 1) {
-          this.state.status = 'OVER';
-          this.state.winner = this.state.occupiedSeats.get(winners[0]);
-          this.state.playerBalances.set(
-            winners[0],
-            this.state.playerBalances.get(winners[0]) + this._pot,
-          );
-        } else {
-          this.state.status = 'OVER';
-          this.state.winner = undefined;
-          for (let win = 0; win < winners.length; win++) {
-            this.state.playerBalances.set(
-              winners[win],
-              this.state.playerBalances.get(winners[win]) + this._pot / winners.length,
-            );
-          }
-        }
+        this._payOut(winners);
       }
     }
   }
 
+  /**
+   * Given a set of winning players, pays them out based on dividing the pot and handling all-in maximum wins.
+   * @param winners The player(s) who won the hand
+   */
+  private _payOut(winners: Array<SeatNumber>): void {
+    if (winners.length === 1) {
+      this.state.status = 'OVER';
+      this.state.winner = this.state.occupiedSeats.get(winners[0]);
+      const maxWin = this._maxBets.get(winners[0]);
+      if (maxWin) {
+        this.state.playerBalances.set(
+          winners[0],
+          this.state.playerBalances.get(winners[0]) + maxWin,
+        );
+        this._pot -= maxWin;
+        let playersToRefund: Array<SeatNumber> = [];
+        for (let i = 0; i < 8; i++) {
+          const pbet = this._currentBets.get(i as SeatNumber);
+          if (pbet) playersToRefund.push(i as SeatNumber);
+        }
+
+        playersToRefund = playersToRefund.filter(p => p !== winners[0]);
+        for (let i = 0; i < playersToRefund.length; i++) {
+          this.state.playerBalances.set(
+            playersToRefund[i],
+            this.state.playerBalances.get(playersToRefund[i]) +
+              Math.floor(this._pot / playersToRefund.length),
+          );
+        }
+      } else {
+        this.state.playerBalances.set(
+          winners[0],
+          this.state.playerBalances.get(winners[0]) + this._pot,
+        );
+      }
+    } else {
+      this.state.status = 'OVER';
+      this.state.winner = undefined;
+      for (let win = 0; win < winners.length; win++) {
+        this.state.playerBalances.set(
+          winners[win],
+          this.state.playerBalances.get(winners[win]) + this._pot / winners.length,
+        );
+      }
+    }
+  }
+
+  /**
+   * Given a player, gets the value of their poker hand and returns it as a pair of numbers,
+   * where the first number represents the value of the hand (with straight flush being 8, and high card being 0),
+   * while the second value is the rank of the highest card used to make that hand for brekaing ties.
+   * @param seat The player to get the value of their hand
+   * @returns Two numbers representing the value of their hand
+   */
   private _getHandValue(seat: SeatNumber): [number, number] {
     const handMoves = this.state.moves.filter(
       m => m.moveType === 'DEAL' && (m.player === seat || m.player === undefined),
