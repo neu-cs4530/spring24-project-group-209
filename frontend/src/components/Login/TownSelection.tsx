@@ -24,6 +24,8 @@ import { Town } from '../../generated/client';
 import useLoginController from '../../hooks/useLoginController';
 import TownController from '../../classes/TownController';
 import useVideoContext from '../VideoCall/VideoFrontend/hooks/useVideoContext/useVideoContext';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+declare var require: any
 
 export default function TownSelection(): JSX.Element {
   const [userName, setUserName] = useState<string>('');
@@ -72,6 +74,7 @@ export default function TownSelection(): JSX.Element {
           });
           return;
         }
+        handleJoin(userName, pass);
         const isHighLatencyTownService =
           process.env.NEXT_PUBLIC_TOWNS_SERVICE_URL?.includes('onrender.com');
         connectWatchdog = setTimeout(() => {
@@ -95,6 +98,8 @@ export default function TownSelection(): JSX.Element {
           }
         }, 1000);
         setIsJoining(true);
+
+
         const newController = new TownController({
           userName,
           townID: coveyRoomID,
