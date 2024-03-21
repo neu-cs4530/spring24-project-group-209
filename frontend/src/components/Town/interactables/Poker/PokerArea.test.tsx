@@ -18,3 +18,23 @@ import {
 import PhaserGameArea from '../GameArea';
 import PokerArea from './PokerArea';
 import * as PokerBoard from './PokerBoard';
+
+const mockToast = jest.fn();
+jest.mock('@chakra-ui/react', () => {
+  const ui = jest.requireActual('@chakra-ui/react');
+  const mockUseToast = () => mockToast;
+  return {
+    ...ui,
+    useToast: mockUseToast,
+  };
+});
+const mockGameArea = mock<PhaserGameArea>();
+mockGameArea.getData.mockReturnValue('Poker');
+jest.spyOn(TownControllerHooks, 'useInteractable').mockReturnValue(mockGameArea);
+const useInteractableAreaControllerSpy = jest.spyOn(
+  TownControllerHooks,
+  'useInteractableAreaController',
+);
+
+const boardComponentSpy = jest.spyOn(PokerBoard, 'default');
+boardComponentSpy.mockReturnValue(<div data-testid='board' />);
