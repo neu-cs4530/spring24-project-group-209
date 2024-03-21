@@ -109,7 +109,7 @@ export interface TicTacToeMove {
   col: TicTacToeGridPosition;
 }
 
-export type PokerAction = 'RAISE' | 'CALL' | 'FOLD';
+export type PokerAction = 'RAISE' | 'CALL' | 'CHECK' | 'FOLD' | 'DEAL';
 
 /**
  * Type for the amount raised in a poker move, or undefined if the
@@ -136,11 +136,22 @@ export interface Card {
 }
 
 /**
- * Type for a move in Poker
+ * Type for a move in Poker - this can be an action taken by a player, like a raise or a call, or an action taken by
+ * the dealer, like a card being dealt.
  */
 export interface PokerMove {
   moveType: PokerAction;
-  raiseAmount: RaiseAmount;
+  raiseAmount?: RaiseAmount;
+  card?: Card;
+  player?: SeatNumber;
+
+  // The following need to be added for compatibility since other gamemoves require gamePiece, col, and row, even though these seem uncessecary
+  // for poker - future work might involve refactoring design to include card game function
+
+  gamePiece?: undefined;
+
+  col?: undefined;
+  row?: undefined;
 }
 
 /**
@@ -160,7 +171,7 @@ export interface DeckOfCards {
  */
 export interface PokerGameState extends WinnableGameState {
   // The moves in this game
-  moves: ReadOnlyArray<PokerMove>;
+  moves: ReadonlyArray<PokerMove>;
   // A map that represents the player at each seat in the table, if there is a player in that seat.
   occupiedSeats: Map<SeatNumber, PlayerID | undefined>;
   // A map representing which players in the game are ready to start.
@@ -278,7 +289,7 @@ interface InteractableCommandBase {
   type: string;
 }
 
-export type InteractableCommand =  ViewingAreaUpdateCommand | JoinGameCommand | GameMoveCommand<TicTacToeMove> | GameMoveCommand<ConnectFourMove> | StartGameCommand | LeaveGameCommand;
+export type InteractableCommand =  ViewingAreaUpdateCommand | JoinGameCommand | GameMoveCommand<TicTacToeMove> | GameMoveCommand<ConnectFourMove> | GameMoveCommand<PokerMove> | StartGameCommand | LeaveGameCommand;
 export interface ViewingAreaUpdateCommand  {
   type: 'ViewingAreaUpdate';
   update: ViewingArea;
