@@ -1,1 +1,3 @@
-{}
+[
+    {"username": "exampleUsername", "credential" : "exampleCredential"}
+]
