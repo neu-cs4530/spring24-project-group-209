@@ -105,6 +105,9 @@ export default class PokerAreaController extends GameAreaController<
     return undefined;
   }
 
+  private updateTurn(): void {
+    //Not implemented
+  }
   /**
    * Returns true if the game is empty - no occupants in the area
    *
@@ -173,8 +176,7 @@ export default class PokerAreaController extends GameAreaController<
         this.emit('boardChanged', this._board);
       }
     }
-    const isOurTurn = this.isOurTurn;
-    if (wasOurTurn !== isOurTurn) this.emit('turnChanged', isOurTurn);
+    this.updateTurn();
   }
 
   /**
