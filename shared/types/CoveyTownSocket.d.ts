@@ -171,6 +171,56 @@ export interface PokerGameState extends WinnableGameState {
   smallBlind: SeatNumber;
 }
 
+export type BlackjackAction = 'BET' | 'HIT' | 'STAND' | 'DEAL' | 'DOUBLE';
+
+/**
+ * Type for the seat position at a blackjack table,
+ * used to limit the max number of players.
+ */
+export type SeatNumber = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
+
+/**
+ * Type for the amount bet in a blackjack hand, or undefined if the
+ * action was not a bet
+ */
+export type BetAmount = Integer | undefined;
+
+/**
+ * Type for a move in Blackjack
+ */
+export interface BlackjackMove {
+  moveType: BlackjackAction;
+  card?: Card;
+  player?: SeatNumber;
+
+  // The following need to be added for compatibility since other gamemoves require gamePiece, col, and row, even though these seem uncessecary
+  // for poker - future work might involve refactoring design to include card game function
+
+  gamePiece?: undefined;
+
+  col?: undefined;
+  row?: undefined;
+}
+
+/**
+ * Type for the state of a blackjack game
+ * The state of the game is represented as a list of moves, the playerIDs of the players in each seat,
+ * the starting balances of the players in those seats, and the seat which will be the next small blind.
+ * Players will be assigned to the first free seat when joining
+ */
+export interface BlackjackGameState extends WinnableGameState {
+  dealerMoves: ReadOnlyArray<BlackjackMove>;
+  // The moves in this game
+  moves: ReadOnlyArray<BlackjackMove>;
+  // A map that represents the player at each seat in the table, if there is a player in that seat.
+  occupiedSeats: Map<SeatNumber, PlayerID | undefined>;
+  // A map representing which players in the game are ready to start.
+  readyPlayers: Map<SeatNumber, boolean | undefined>;
+  // A map representing the balance of players in each seat.
+  playerBalances: Map<SeatNumber, number | undefined>;
+}
+
+
 /**
  * Type for the state of a TicTacToe game
  * The state of the game is represented as a list of moves, and the playerIDs of the players (x and o)
@@ -278,7 +328,7 @@ interface InteractableCommandBase {
   type: string;
 }
 
-export type InteractableCommand =  ViewingAreaUpdateCommand | JoinGameCommand | GameMoveCommand<TicTacToeMove> | GameMoveCommand<ConnectFourMove> | StartGameCommand | LeaveGameCommand;
+export type InteractableCommand =  ViewingAreaUpdateCommand | JoinGameCommand | GameMoveCommand<TicTacToeMove> | GameMoveCommand<ConnectFourMove> | GameMoveCommand<BlackjackMove> | StartGameCommand | LeaveGameCommand;
 export interface ViewingAreaUpdateCommand  {
   type: 'ViewingAreaUpdate';
   update: ViewingArea;
