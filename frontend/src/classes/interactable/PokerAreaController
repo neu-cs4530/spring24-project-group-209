@@ -14,7 +14,7 @@ import GameAreaController, {
   PLAYER_NOT_IN_GAME_ERROR,
 } from './GameAreaController';
 
-export type PokerCell = PokerMove | undefined;
+export type PokerCell = PokerMove | integer | undefined;
 export type ConnectFourEvents = GameEventTypes & {
   boardChanged: (board: PokerCell[][]) => void;
   turnChanged: (isOurTurn: boolean) => void;
@@ -140,14 +140,32 @@ export default class PokerAreaController extends GameAreaController<
       const newBoard = createEmptyBoard();
       newGame.state.moves.forEach(move => {
         if(move.moveType == 'RAISE'){
-            newBoard[1][3] += move.raiseAmount;
+            if (newBoard[1][3] == undefined) {
+                newBoard[1][3] = move.raiseAmount;
+            }
+            else {
+                newBoard[1][3] += move.raiseAmount;
+            }
         } else if(move.moveType == 'FOLD'){
             newBoard[3][move.player] = undefined;
             newBoard[2][move.player] = undefined;
         } else if(move.moveType == 'CALL'){
             newBoard[1][3] += move.raiseAmount;
         } else if(move.moveType == 'DEAL'){
-            newBoard[3][move.player] = move.card;
+            // 0 1 2 3 4 5 6 7
+            if (move.player == undefined) {
+                for (let i = 2; i < 7; i++) {
+                    if (newBoard[0][i] == undefined) {
+                        newBoard[0][i] = move.card;
+                        break;
+                    }
+                }
+            }
+            else if (newBoard[3][move.player] == undefined) {
+                newBoard[3][move.player] = move.card;
+            } else {
+                newBoard[2][move.player] = move.card;
+            }
         }
       });
       if (!_.isEqual(newBoard, this._board)) {
