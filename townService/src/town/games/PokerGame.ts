@@ -50,6 +50,8 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
 
   /**
    * Creates a new PokerGame.
+   * @param deck If provided, the new game will be created with the specified deck object as
+   * the deck it uses, otherwise, it will instantiate a new BasicDeck object and use that instead.
    * @param priorGame If provided, the new game will be created such that if any player from
    * the previous poker game joins the new game they will be seated at the same seat as before,
    * their balance from the previous game will carry over,
@@ -694,12 +696,7 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
 
         const remaining = this._oneRemainingPlayer();
         if (remaining) {
-          this.state.winner = this.state.occupiedSeats.get(remaining);
-          this.state.status = 'OVER';
-          this.state.playerBalances.set(
-            remaining,
-            this.state.playerBalances.get(remaining) + this._pot,
-          );
+          this._payOut([remaining]);
         }
         return;
       }
