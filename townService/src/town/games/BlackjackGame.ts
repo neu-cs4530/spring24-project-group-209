@@ -1,4 +1,4 @@
-import InvalidParametersError, { GAME_FULL_MESSAGE, GAME_NOT_IN_PROGRESS_MESSAGE, GAME_NOT_STARTABLE_MESSAGE, PLAYER_ALREADY_IN_GAME_MESSAGE, PLAYER_NOT_IN_GAME_MESSAGE } from '../../lib/InvalidParametersError';
+import InvalidParametersError, { BOARD_POSITION_NOT_VALID_MESSAGE, GAME_FULL_MESSAGE, GAME_NOT_IN_PROGRESS_MESSAGE, GAME_NOT_STARTABLE_MESSAGE, MOVE_NOT_YOUR_TURN_MESSAGE, PLAYER_ALREADY_IN_GAME_MESSAGE, PLAYER_NOT_IN_GAME_MESSAGE } from '../../lib/InvalidParametersError';
 import Player from '../../lib/Player';
 import {
     BlackjackAction,
@@ -23,9 +23,10 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
     protected _bustedPlayers: Map<SeatNumber, boolean> = new Map<SeatNumber, boolean>();
 
     private _next: SeatNumber;
-
     private _betAmt: number;
     private _firstPlayer: number;
+    private _currentBets: Map<SeatNumber, number> = new Map<SeatNumber, number>();
+    private _standPlayers: Map<SeatNumber, boolean> = new Map<SeatNumber, boolean>();
   /**
    * Creates a new BlackjackGame.
    * @param deck Provides the deck object to be used for this poker game
@@ -33,7 +34,7 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
    * the previous blackjack game joins the new game they will be seated at the same seat as before,
    * & their balance from the previous game will carry over.
    */
-  public constructor(deck: DeckOfCards, priorGame?: BlackjackGame) {
+  public constructor(deck?: DeckOfCards, priorGame?: BlackjackGame) {
     const initialOccupiedSeats = new Map<SeatNumber, PlayerID | undefined>();
     const initialReadyPlayers = new Map<SeatNumber, boolean | undefined>();
     const initialPlayerBalances = new Map<SeatNumber, number | undefined>();
@@ -55,6 +56,7 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
 
     for (let i = 0; i < 8; i++) {
         this._bustedPlayers.set(i as SeatNumber, false);
+        this._standPlayers.set(i as SeatNumber, false);
     }
   
     if (deck) {
@@ -68,13 +70,13 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
         for (let i = 0; i < 8; i++) {
             const p = priorGame.state.occupiedSeats.get(i as SeatNumber);
             if (p) {
-                this._oldBalances.set(p, priorGame.state.playerBalances.get(i as SeatNumber));
+                this._oldBalances.set(p, priorGame.state.playerBalances.get(i as SeatNumber) as number);
             }
         }
     }
     this._next = 0;
     this._firstPlayer = 0;
-    this._betAmt = 100;
+    this._betAmt = 100; // default bet amount for now
   }
 
     /**
@@ -82,15 +84,14 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
     */
     private _getNextSeat(from: SeatNumber): SeatNumber {
         let current: SeatNumber;
-        if (from === 7) current = 0;
+        if (from === 7) return 8 as SeatNumber;
         else current = (from + 1) as SeatNumber;
     
         while (
           this.state.occupiedSeats.get(current) === undefined ||
           this._bustedPlayers.get(current)
         ) {
-          if (current === 7) current = 0;
-          else current += 1;
+            current += 1;
         }
     
         return current;
@@ -130,13 +131,12 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
    *
    * @param player The player who is ready to start the game
    */
-  
-  public startGame(player: Player): void {
 
+  public startGame(player: Player): void {
     if (this.state.status !== 'WAITING_TO_START') {
         throw new InvalidParametersError(GAME_NOT_STARTABLE_MESSAGE);
     }
-    const seat = this._getPlayerSeat(player);
+    const seat = this._getPlayerSeat(player.id);
     if (seat === undefined) throw new InvalidParametersError(PLAYER_NOT_IN_GAME_MESSAGE);
     if (
       (this.state.status !== 'WAITING_TO_START' && this.state.status !== 'WAITING_FOR_PLAYERS')// ||
@@ -175,7 +175,8 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
         ...this.state,
         dealerMoves: dealerMoves,
       };
-      this.state.dealerMoves = newState;
+    this.state = newState;
+
 
   }
 
@@ -204,133 +205,135 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
     if (seat === undefined) throw new InvalidParametersError(PLAYER_NOT_IN_GAME_MESSAGE);
     if (seat !== this._next) throw new InvalidParametersError(MOVE_NOT_YOUR_TURN_MESSAGE);
     move.move.player = seat;
+    let bal = this.state.playerBalances.get(seat);
     switch (move.move.moveType) {
       case 'BET': {
-        const curBet = this._currentBets.get(seat);
-        if (curBet === undefined) throw new Error('Issue with recording bets');
-        if (this.state.playerBalances.get(seat) < this._getMaxBet() - curBet) {
-          this._pot += curBet;
-          this.state.playerBalances.set(seat, 0);
-          // All in
-        } else {
+        if (bal && bal < this._betAmt) {
+          break;
+        } else if (bal) {
           this.state.playerBalances.set(
             seat,
-            this.state.playerBalances.get(seat) - (this._getMaxBet() - curBet),
+            bal - (this._betAmt),
           );
-          this._pot += this._getMaxBet() - curBet;
-          this._currentBets.set(seat, this._getMaxBet());
+          this._currentBets.set(seat, this._betAmt);
         }
         break;
       }
-      case 'CHECK': {
-        if (this._currentBets.get(seat) !== this._getMaxBet()) {
-          if (this.state.playerBalances.get(seat) === 0) {
-            // All in
-          } else {
-            throw new InvalidParametersError(BOARD_POSITION_NOT_VALID_MESSAGE);
-          }
+      case 'STAND': {
+        this._standPlayers.set(seat, true);
+        break;
+      }
+      case 'HIT': {
+        const newCard = this._deck.drawCard();
+        const newMoves = [
+            ...this.state.moves,
+            { moveType: 'DEAL' as BlackjackAction, card: newCard, player: seat },
+        ];
+        const newState: BlackjackGameState = {
+            ...this.state,
+            moves: newMoves,
+        };
+        this.state = newState;
+        break;
+      }
+      case 'DOUBLE': {
+        if (bal && bal < this._betAmt) {
+            break;
+        } else if (bal) {   
+            this.state.playerBalances.set(
+                seat,
+                bal - (this._betAmt),
+            );
+            this._currentBets.set(seat, this._betAmt * 2);
         }
+        const newCard = this._deck.drawCard();
+        const newMoves = [
+            ...this.state.moves,
+            { moveType: 'DEAL' as BlackjackAction, card: newCard, player: seat },
+        ];
+        const newState: BlackjackGameState = {
+            ...this.state,
+            moves: newMoves,
+        };
+        this.state = newState;
+        this._standPlayers.set(seat, true);
         break;
-      }
-      case 'FOLD': {
-        this._foldedPlayers.set(seat, true);
-        const remaining = this._oneRemainingPlayer();
-        if (remaining) {
-          this.state.status = 'OVER';
-          this.state.winner = this.state.occupiedSeats.get(remaining);
-          this.state.playerBalances.set(
-            remaining,
-            this.state.playerBalances.get(remaining) + this._pot,
-          );
-          return;
-        }
-        if (this._firstPlayer === seat) this._firstPlayer = this._getNextSeat(this._firstPlayer);
-        break;
-      }
-      case 'RAISE': {
-        const curBet = this._currentBets.get(seat);
-        if (curBet === undefined) throw new Error('Issue with recording bets');
-        if (
-          move.move.raiseAmount === undefined ||
-          this.state.playerBalances.get(seat) < this._getMaxBet() - curBet + move.move.raiseAmount
-        )
-          throw new InvalidParametersError(BOARD_POSITION_NOT_VALID_MESSAGE);
-        this.state.playerBalances.set(
-          seat,
-          this.state.playerBalances.get(seat) -
-            (this._getMaxBet() - curBet + move.move.raiseAmount),
-        );
-        this._pot += this._getMaxBet() - curBet + move.move.raiseAmount;
-        this._currentBets.set(seat, this._getMaxBet() + move.move.raiseAmount);
-        break;
-      }
-      default:
+    }
+    default:
         throw new InvalidParametersError(BOARD_POSITION_NOT_VALID_MESSAGE);
     }
+
     this._next = this._getNextSeat(this._next);
+
     const newMoves = [...this.state.moves, move.move];
-    const newState: PokerGameState = {
+    const newState: BlackjackGameState = {
       ...this.state,
       moves: newMoves,
     };
     this.state = newState;
-    if (this._next !== this._firstPlayer) return;
-    const movesThisRound: Array<PokerMove> = [];
-    let i = this.state.moves.length - 1;
-    while (i >= 0) {
-      if (this.state.moves[i].moveType === 'DEAL') break;
-      movesThisRound.push(this.state.moves[i]);
-      if (this.state.moves[i].player === this._firstPlayer) break;
-      i -= 1;
-    }
-    if (movesThisRound.filter(m => m.moveType !== 'RAISE').length === movesThisRound.length) {
-      if (this._round === 0) {
-        const deal = [
-          ...this.state.moves,
-          { moveType: 'DEAL' as PokerAction, card: this._deck.drawCard() },
-          { moveType: 'DEAL' as PokerAction, card: this._deck.drawCard() },
-          { moveType: 'DEAL' as PokerAction, card: this._deck.drawCard() },
-        ];
-        const dealState: PokerGameState = {
-          ...this.state,
-          moves: deal,
-        };
-        this.state = dealState;
-        this._round += 1;
-      } else if (this._round > 0 && this._round < 3) {
-        const deal = [
-          ...this.state.moves,
-          { moveType: 'DEAL' as PokerAction, card: this._deck.drawCard() },
-        ];
-        const dealState: PokerGameState = {
-          ...this.state,
-          moves: deal,
-        };
-        this.state = dealState;
-        this._round += 1;
-      } else {
-        const winners = this._determineWinner();
-        if (winners.length === 1) {
-          this.state.status = 'OVER';
-          this.state.winner = this.state.occupiedSeats.get(winners[0]);
-          this.state.playerBalances.set(
-            winners[0],
-            this.state.playerBalances.get(winners[0]) + this._pot,
-          );
-        } else {
-          this.state.status = 'OVER';
-          this.state.winner = undefined;
-          for (let win = 0; win < winners.length; win++) {
-            this.state.playerBalances.set(
-              winners[win],
-              this.state.playerBalances.get(winners[win]) + this._pot / winners.length,
-            );
-          }
-        }
-      }
-    }
-  }
 
+    if (this._next === undefined) {
+        this._endGame();
+    }
+    
+  }
+    private _endGame() {
+        let dealerTotal = this._checkValue(8 as SeatNumber);
+        while (dealerTotal < 17) {
+            const newCard = this._deck.drawCard();
+            const newMoves = [
+                ...this.state.dealerMoves,
+                { moveType: 'DEAL' as BlackjackAction, card: newCard, player: 8 as SeatNumber },
+            ];
+            const newState: BlackjackGameState = {
+                ...this.state,
+                dealerMoves: newMoves,
+            };
+            this.state = newState;
+            dealerTotal = this._checkValue(8 as SeatNumber);
+        }
+        for (let i = 0; i < 8; i++) {
+            if (this.state.occupiedSeats.get(i as SeatNumber)) {
+                let prev = this.state.playerBalances.get(i as SeatNumber) as number;
+                const playerTotal = this._checkValue(i as SeatNumber);
+                if (playerTotal > 21) {
+                    this.state.playerBalances.set(i as SeatNumber, prev - this._betAmt);
+                } else if (dealerTotal > 21) {
+                    this.state.playerBalances.set(i as SeatNumber, prev - this._betAmt);
+                } else if (playerTotal > dealerTotal) {
+                    this.state.playerBalances.set(i as SeatNumber, prev + this._betAmt * 2);
+                } else if (playerTotal < dealerTotal) {
+                    this.state.playerBalances.set(i as SeatNumber, prev - this._betAmt);
+                }
+            }
+        }
+        this.state.status = 'OVER';
+        
+    }
+
+  private _checkValue(seat: SeatNumber): number {
+    let total = 0;
+    let aces = 0;
+    for (const move of this.state.moves) {
+        if (move.player === seat && move.moveType === 'DEAL') {
+            if (move.card.rank === 'ACE') {
+            aces += 1;
+            } else if (move.card.rank === 'JACK' || move.card.rank === 'QUEEN' || move.card.rank === 'KING') {
+            total += 10;
+            } else {
+            total += parseInt(move.card.rank, 10);
+            }
+        }
+    }
+    for (let i = 0; i < aces; i++) {
+        if (total + 11 > 21) {
+            total += 1;
+        } else {
+            total += 11;
+        }
+    }
+    return total;
+    }
 
   /**
    * Joins a player to the game.
@@ -346,7 +349,8 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
    * @param player the player to join the game
    */
   protected _join(player: Player): void {
-    if (this._getPlayerSeat(player) !== undefined) {
+    const p = player;
+    if (this._getPlayerSeat(p.id) !== undefined) {
         throw new InvalidParametersError(PLAYER_ALREADY_IN_GAME_MESSAGE);
     }
       const nextOpen = this._getNextOpenSeat();
@@ -411,9 +415,18 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
     if (!isInGame) {
         throw new InvalidParametersError(PLAYER_NOT_IN_GAME_MESSAGE);
     }
+    const newMoves = [...this.state.moves, { moveType: 'FOLD' as BlackjackAction, player: playerIdSeat}];
+        const newState: BlackjackGameState = {
+          ...this.state,
+          moves: newMoves,
+        };
+        this.state = newState;
+    
     this.state.occupiedSeats.set(playerIdSeat, undefined);
     this.state.readyPlayers.set(playerIdSeat, undefined);
     this.state.playerBalances.set(playerIdSeat, 0);
+    this.state.status = 'WAITING_FOR_PLAYERS';
+    
   }
 }
 
