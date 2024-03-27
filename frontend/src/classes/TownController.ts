@@ -43,6 +43,7 @@ import InteractableAreaController, {
 import TicTacToeAreaController from './interactable/TicTacToeAreaController';
 import ViewingAreaController from './interactable/ViewingAreaController';
 import PlayerController from './PlayerController';
+import ShopAreaController from './interactable/ShopAreaController';
 
 const CALCULATE_NEARBY_PLAYERS_DELAY_MS = 300;
 const SOCKET_COMMAND_TIMEOUT_MS = 5000;
@@ -655,6 +656,23 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
       eachExistingArea => eachExistingArea.id === viewingArea.name,
     );
     if (existingController instanceof ViewingAreaController) {
+      return existingController;
+    } else {
+      throw new Error(`No such viewing area controller ${existingController}`);
+    }
+  }
+
+  /**
+   * Retrieve the viewing area controller that corresponds to a viewingAreaModel, creating one if necessary
+   *
+   * @param shopArea
+   * @returns
+   */
+  public getShopAreaController(shopArea: ShopArea): ShopAreaController {
+    const existingController = this._interactableControllers.find(
+      eachExistingArea => eachExistingArea.id === shopArea.name,
+    );
+    if (existingController instanceof ShopAreaController) {
       return existingController;
     } else {
       throw new Error(`No such viewing area controller ${existingController}`);

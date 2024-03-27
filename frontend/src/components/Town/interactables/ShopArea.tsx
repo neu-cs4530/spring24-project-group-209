@@ -19,7 +19,11 @@ import {
 import React, { useCallback, useEffect, useState } from 'react';
 import { useInteractable, useInteractableAreaController } from '../../../classes/TownController';
 import { InteractableID } from '../../../types/CoveyTownSocket';
+import ShopAreaInteractable from './ShopArea';
+import useTownController from '../../../hooks/useTownController';
 
-function GameArea({ interactableID }: { interactableID: InteractableID }): JSX.Element {
+function ShopArea({ interactableID }: { interactableID: InteractableID }): JSX.Element {
   return <></>;
 }
+
+

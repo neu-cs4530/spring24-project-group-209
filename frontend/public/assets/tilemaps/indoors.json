@@ -623,55 +623,11 @@
                  "y":1068.23340899987
                 }, 
                 {
-                 "height":126.666666666667,
-                 "id":54,
-                 "name":"BlackJack1",
-                 "rotation":0,
-                 "type":"GameArea",
-                 "visible":true,
-                 "width":145.333333333333,
-                 "x":2234.66666666667,
-                 "y":152
-                }, 
-                {
-                 "height":118.666666666667,
-                 "id":55,
-                 "name":"Poker1",
-                 "rotation":0,
-                 "type":"GameArea",
-                 "visible":true,
-                 "width":153.333333333333,
-                 "x":2005.33333333333,
-                 "y":152
-                }, 
-                {
-                 "height":146.666666666667,
-                 "id":56,
-                 "name":"Poker2",
-                 "rotation":0,
-                 "type":"GameArea",
-                 "visible":true,
-                 "width":162.666666666667,
-                 "x":1937.33333333333,
-                 "y":274.666666666667
-                }, 
-                {
-                 "height":121.333333333333,
-                 "id":57,
-                 "name":"BlackJack2",
-                 "rotation":0,
-                 "type":"GameArea",
-                 "visible":true,
-                 "width":172,
-                 "x":2278.66666666667,
-                 "y":296
-                }, 
-                {
                  "height":168,
                  "id":59,
                  "name":"Shop",
                  "rotation":0,
-                 "type":"GameArea",
+                 "type":"ShopArea",
                  "visible":true,
                  "width":221.333333333333,
                  "x":2089.33333333333,
