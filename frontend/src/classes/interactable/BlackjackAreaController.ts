@@ -5,6 +5,8 @@ import {
   GameStatus,
   BlackjackGameState,
   BlackjackMove,
+  SeatNumber,
+  Card,
 } from '../../types/CoveyTownSocket';
 import PlayerController from '../PlayerController';
 import GameAreaController, {
@@ -14,19 +16,15 @@ import GameAreaController, {
   PLAYER_NOT_IN_GAME_ERROR,
 } from './GameAreaController';
 
-export type BlackjackCell = BlackjackMove | integer | undefined;
+export type BlackjackCell = Card;
 export type BlackjackEvents = GameEventTypes & {
   boardChanged: (board: BlackjackCell[][]) => void;
   turnChanged: (isOurTurn: boolean) => void;
 };
-export const BLACKJACK_ROWS = 4;
-export const BLACKJACK_COLS = 8;
+export const BLACKJACK_ROWS = 9;
 
 function createEmptyBoard(): BlackjackCell[][] {
   const board = new Array(BLACKJACK_ROWS);
-  for (let i = 0; i < BLACKJACK_ROWS; i++) {
-    board[i] = new Array(BLACKJACK_COLS).fill(undefined);
-  }
   return board;
 }
 
@@ -101,12 +99,28 @@ export default class BlackjackAreaController extends GameAreaController<
    * Follows the same logic as the backend, respecting the firstPlayer field of the gameState
    */
   get whoseTurn(): PlayerController | undefined {
-    //Not implemented
-    return undefined;
-  }
-
-  private _updateTurn(): void {
-    //Not implemented
+    if (
+      this._model.game?.state.occupiedSeats.size === 0 ||
+      this._model.game?.state.status !== 'IN_PROGRESS'
+    ) {
+      return undefined;
+    }
+    const firstPlayer = this._model.game?.state.occupiedSeats.keys().next().value;
+    if (firstPlayer) {
+      let activeSeat = (this.moveCount % 7) + firstPlayer;
+      let player = this._model.game?.state.occupiedSeats.get(activeSeat as SeatNumber);
+      while (
+        this._model.game?.state.bustedPlayers.includes(player) ||
+        this._model.game?.state.standPlayers.includes(player)
+      ) {
+        player = this._model.game?.state.occupiedSeats.get(activeSeat as SeatNumber);
+        activeSeat = activeSeat + 1;
+      }
+      if (player) {
+        return this.occupants.find(eachOccupant => eachOccupant.id === player);
+      }
+      return undefined;
+    }
   }
 
   /**
@@ -115,6 +129,15 @@ export default class BlackjackAreaController extends GameAreaController<
    */
   isEmpty(): boolean {
     return this.occupants.length === 0;
+  }
+
+  playerSeat(player: PlayerController): SeatNumber | undefined {
+    for (let i = 0; i < 7; i++) {
+      if (this._model.game?.state.occupiedSeats.get(i as SeatNumber) === player.id) {
+        return i as SeatNumber;
+      }
+    }
+    return undefined;
   }
 
   /**
@@ -142,22 +165,18 @@ export default class BlackjackAreaController extends GameAreaController<
     const newGame = newModel.game;
     if (newGame) {
       const newBoard = createEmptyBoard();
-      newGame.state.moves.forEach(move => {
-        if (move.moveType == 'BET') {
-          
-        } else if (move.moveType == 'HIT') {
-        } else if (move.moveType == 'STAND') {
-        } else if (move.moveType == 'DOUBLE') {
-        } else if (move.moveType == 'DEAL') {
-        } else {
-          throw new Error(`Unknown move type: ${move.moveType}`);
-        });
+      newGame.state.moves.forEach((move: { moveType: string; player: SeatNumber; card: Card }) => {
+        if (move.moveType == 'HIT' || move.moveType == 'DOUBLE' || move.moveType == 'DEAL') {
+          newBoard[move.player].push(move.card);
+        }
+      });
       if (!_.isEqual(newBoard, this._board)) {
         this._board = newBoard;
         this.emit('boardChanged', this._board);
       }
     }
-    this._updateTurn();
+    const isOurTurn = this.isOurTurn;
+    if (wasOurTurn !== isOurTurn) this.emit('turnChanged', isOurTurn);
   }
 
   /**
@@ -184,6 +203,15 @@ export default class BlackjackAreaController extends GameAreaController<
    * @param col Column to place the game piece in
    */
   public async makeMove(move: BlackjackMove): Promise<void> {
-    //not implemented
+    const instanceID = this._instanceID;
+    if (!instanceID || this._model.game?.state.status !== 'IN_PROGRESS') {
+      throw new Error(NO_GAME_IN_PROGRESS_ERROR);
+    }
+
+    await this._townController.sendInteractableCommand(this.id, {
+      gameID: instanceID,
+      type: 'GameMove',
+      move,
+    });
   }
 }

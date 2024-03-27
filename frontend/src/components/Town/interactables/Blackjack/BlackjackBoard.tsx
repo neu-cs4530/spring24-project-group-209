@@ -1,7 +1,8 @@
 import BlackjackAreaController, {
   BlackjackCell,
 } from '../../../../classes/interactable/BlackjackAreaController';
-import { Button, chakra, Container, useToast } from '@chakra-ui/react';
+import { Box, Button, chakra, Container, useToast } from '@chakra-ui/react';
+import Image from 'next/image';
 import React, { useEffect, useState } from 'react';
 import { SeatNumber } from '../../../../types/CoveyTownSocket';
 
@@ -17,7 +18,7 @@ const StyledBlackjackBoard = chakra(Container, {
     flexWrap: 'wrap',
   },
 });
-const StyledBlackjackSquare = chakra(Button, {
+const StyledBlackjackSquare = chakra(Box, {
   baseStyle: {
     justifyContent: 'center',
     alignItems: 'center',
@@ -54,14 +55,11 @@ const StyledBlackjackSquare = chakra(Button, {
  */
 export default function BlackjackBoard({ gameAreaController }: BlackjackGameProps): JSX.Element {
   const [board, setBoard] = useState<BlackjackCell[][]>(gameAreaController.board);
-  const [isOurTurn, setIsOurTurn] = useState(gameAreaController.isOurTurn);
   const toast = useToast();
   useEffect(() => {
-    gameAreaController.addListener('turnChanged', setIsOurTurn);
     gameAreaController.addListener('boardChanged', setBoard);
     return () => {
       gameAreaController.removeListener('boardChanged', setBoard);
-      gameAreaController.removeListener('turnChanged', setIsOurTurn);
     };
   }, [gameAreaController]);
   return (
@@ -71,22 +69,10 @@ export default function BlackjackBoard({ gameAreaController }: BlackjackGameProp
           return (
             <StyledBlackjackSquare
               key={`${rowIndex}.${colIndex}`}
-              onClick={async () => {
-                try {
-                  await gameAreaController.makeMove(colIndex);
-                } catch (e) {
-                  toast({
-                    title: 'Error making move',
-                    description: (e as Error).toString(),
-                    status: 'error',
-                  });
-                }
-              }}
-              disabled={!isOurTurn}
-              backgroundColor={cell}
-              aria-label={`Cell ${rowIndex},${colIndex} (${
-                cell || 'Empty'
-              })`}></StyledBlackjackSquare>
+              backgroundColor={'green'}
+              aria-label={`Cell ${rowIndex},${colIndex} (${cell || 'Empty'})`}>
+              {cell ? <Image src={cardMap.get(cell)} alt={`Card ${cell}`} /> : undefined}
+            </StyledBlackjackSquare>
           );
         });
       })}

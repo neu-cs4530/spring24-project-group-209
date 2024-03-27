@@ -173,11 +173,6 @@ export interface PokerGameState extends WinnableGameState {
 
 export type BlackjackAction = 'BET' | 'HIT' | 'STAND' | 'DEAL' | 'DOUBLE';
 
-/**
- * Type for the seat position at a blackjack table,
- * used to limit the max number of players.
- */
-export type SeatNumber = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
 /**
  * Type for the amount bet in a blackjack hand, or undefined if the

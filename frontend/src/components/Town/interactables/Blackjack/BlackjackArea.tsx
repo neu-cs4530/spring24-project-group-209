@@ -95,7 +95,11 @@ export default function BlackjackArea({
         onClick={async () => {
           setJoiningGame(true);
           try {
-            await gameAreaController.makeMove('hit');
+            await gameAreaController.makeMove({
+              moveType: 'HIT',
+              card: undefined,
+              player: gameAreaController.playerSeat(townController.ourPlayer),
+            });
           } catch (err) {
             toast({
               title: 'Error hitting',
@@ -113,7 +117,11 @@ export default function BlackjackArea({
         onClick={async () => {
           setJoiningGame(true);
           try {
-            await gameAreaController.makeMove('stand');
+            await gameAreaController.makeMove({
+              moveType: 'STAND',
+              card: undefined,
+              player: gameAreaController.playerSeat(townController.ourPlayer),
+            });
           } catch (err) {
             toast({
               title: 'Error standing',
@@ -131,7 +139,11 @@ export default function BlackjackArea({
         onClick={async () => {
           setJoiningGame(true);
           try {
-            await gameAreaController.makeMove('double');
+            await gameAreaController.makeMove({
+              moveType: 'DOUBLE',
+              card: undefined,
+              player: gameAreaController.playerSeat(townController.ourPlayer),
+            });
           } catch (err) {
             toast({
               title: 'Error doubling',
