@@ -53,7 +53,7 @@ export default function BlackjackArea({
   const gameAreaController = useInteractableAreaController<BlackjackAreaController>(interactableID);
   const townController = useTownController();
 
-  const [seats, setSeats] = useState<Map<SeatNumber, PlayerController>>(gameAreaController.seats);
+  const [seats, setSeats] = useState<Map<SeatNumber, PlayerController>>(gameAreaController.occupiedSeats);
   const [joiningGame, setJoiningGame] = useState(false);
 
   const [gameStatus, setGameStatus] = useState<GameStatus>(gameAreaController.status);
@@ -61,13 +61,13 @@ export default function BlackjackArea({
   const toast = useToast();
   useEffect(() => {
     const updateGameState = () => {
-      setSeats(gameAreaController.seats);
+      setSeats(gameAreaController.occupiedSeats);
       setGameStatus(gameAreaController.status || 'WAITING_TO_START');
       setMoveCount(gameAreaController.moveCount || 0);
     };
     const onGameEnd = () => {
-      const winners = gameAreaController.winners;
-      if (winners.contains(townController.ourPlayer)) {
+      const winner = gameAreaController.winner;
+      if (winner === townController.ourPlayer) {
         toast({
           title: 'Game over',
           description: 'You won!',
@@ -232,11 +232,11 @@ export default function BlackjackArea({
     <>
       {gameStatusText}
       <List aria-label='list of players in the game'>
-        {seats.forEach((player, seatNumber) => {
+        {Array.from(seats.entries()).map(([seatNumber, player]) => (
           <ListItem>
             Seat {seatNumber} : {player?.userName || '(No player yet!)'}
-          </ListItem>;
-        })}
+          </ListItem>
+        ))}
       </List>
       <BlackjackBoard gameAreaController={gameAreaController} />
     </>

@@ -66,6 +66,17 @@ export default class BlackjackAreaController extends GameAreaController<
     return this._model.game?.state.moves.length || 0;
   }
 
+  get occupiedSeats(): Map<SeatNumber, PlayerController> {
+    const occupiedSeats = new Map<SeatNumber, PlayerController>();
+    this.occupants.forEach(player => {
+      const seat = this.playerSeat(player);
+      if (seat !== undefined) {
+        occupiedSeats.set(seat, player);
+      }
+    });
+    return occupiedSeats;
+  }
+
   /**
    * Returns true if it is our turn to make a move, false otherwise
    */
@@ -110,8 +121,8 @@ export default class BlackjackAreaController extends GameAreaController<
       let activeSeat = (this.moveCount % 7) + firstPlayer;
       let player = this._model.game?.state.occupiedSeats.get(activeSeat as SeatNumber);
       while (
-        this._model.game?.state.bustedPlayers.includes(player) ||
-        this._model.game?.state.standPlayers.includes(player)
+        Array.from(this._model.game?.state.bustedPlayers.values()).includes(player) ||
+        Array.from(this._model.game?.state.standPlayers.values()).includes(player)
       ) {
         player = this._model.game?.state.occupiedSeats.get(activeSeat as SeatNumber);
         activeSeat = activeSeat + 1;
@@ -131,10 +142,12 @@ export default class BlackjackAreaController extends GameAreaController<
     return this.occupants.length === 0;
   }
 
-  playerSeat(player: PlayerController): SeatNumber | undefined {
-    for (let i = 0; i < 7; i++) {
-      if (this._model.game?.state.occupiedSeats.get(i as SeatNumber) === player.id) {
-        return i as SeatNumber;
+  playerSeat(player: PlayerController | undefined): SeatNumber | undefined {
+    if (player) {
+      for (let i = 0; i < 7; i++) {
+        if (this._model.game?.state.occupiedSeats.get(i as SeatNumber) === player.id) {
+          return i as SeatNumber;
+        }
       }
     }
     return undefined;
