@@ -17,7 +17,7 @@ export type TownJoinResponse = {
   interactables: TypedInteractable[];
 }
 
-export type InteractableType = 'ConversationArea' | 'ViewingArea' | 'TicTacToeArea' | 'ConnectFourArea' | 'PokerArea';
+export type InteractableType = 'ConversationArea' | 'ViewingArea' | 'TicTacToeArea' | 'ConnectFourArea' | 'PokerArea' | 'ShopArea';
 export interface Interactable {
   type: InteractableType;
   id: InteractableID;
@@ -73,6 +73,12 @@ export interface ViewingArea extends Interactable {
   isPlaying: boolean;
   elapsedTimeSec: number;
 }
+
+export interface ShopArea extends Interactable {
+  items: ShopItem[];
+}
+
+export type ShopItem = 'SKIN1' | 'SKIN2' | 'SKIN3' | 'SKIN4';
 
 export type GameStatus = 'IN_PROGRESS' | 'WAITING_TO_START' | 'OVER' | 'WAITING_FOR_PLAYERS';
 /**
@@ -289,10 +295,14 @@ interface InteractableCommandBase {
   type: string;
 }
 
-export type InteractableCommand =  ViewingAreaUpdateCommand | JoinGameCommand | GameMoveCommand<TicTacToeMove> | GameMoveCommand<ConnectFourMove> | GameMoveCommand<PokerMove> | StartGameCommand | LeaveGameCommand;
+export type InteractableCommand =  ViewingAreaUpdateCommand | ShopAreaUpdateCommand | JoinGameCommand | GameMoveCommand<TicTacToeMove> | GameMoveCommand<ConnectFourMove> | GameMoveCommand<PokerMove> | StartGameCommand | LeaveGameCommand;
 export interface ViewingAreaUpdateCommand  {
   type: 'ViewingAreaUpdate';
   update: ViewingArea;
+}
+export interface ShopAreaUpdateCommand {
+  type: 'ShopAreaUpdate';
+  update: ShopArea;
 }
 export interface JoinGameCommand {
   type: 'JoinGame';
