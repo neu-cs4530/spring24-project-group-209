@@ -663,7 +663,7 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
   }
 
   /**
-   * Retrieve the viewing area controller that corresponds to a viewingAreaModel, creating one if necessary
+   * Retrieve the shop area controller that corresponds to a shopAreaModel, creating one if necessary
    *
    * @param shopArea
    * @returns

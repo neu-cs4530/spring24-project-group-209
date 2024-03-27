@@ -19,17 +19,19 @@ export default class ShopAreaController extends InteractableAreaController<
   ShopAreaEvents,
   ShopAreaModel
 > {
-  private _items: ShopItem[] = ['SKIN1', 'SKIN2', 'SKIN3', 'SKIN4'];
-
   private _model: ShopAreaModel;
 
-  constructor(id: string, shopArea: ShopAreaModel) {
-    super(id);
+  constructor(shopArea: ShopAreaModel) {
+    super(shopArea.id);
     this._model = shopArea;
   }
 
   public get friendlyName(): string {
     return this.id;
+  }
+
+  public get shopItems(): ShopItem[] {
+    return this._model.items;
   }
 
   public isActive(): boolean {
@@ -41,12 +43,7 @@ export default class ShopAreaController extends InteractableAreaController<
   }
 
   toInteractableAreaModel(): ShopAreaModel {
-    return {
-      id: this.id,
-      occupants: this.occupants.map(player => player.id),
-      type: 'ShopArea',
-      items: this._items,
-    };
+    return this._model;
   }
 
   protected _updateFrom(): void {}

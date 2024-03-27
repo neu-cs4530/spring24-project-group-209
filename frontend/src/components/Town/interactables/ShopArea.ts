@@ -14,6 +14,7 @@ export default class ShopArea extends Interactable {
       this.name,
       { color: '#FFFFFF', backgroundColor: '#000000' },
     );
+    this.townController.getShopAreaController(this);
   }
 
   overlapExit(): void {
