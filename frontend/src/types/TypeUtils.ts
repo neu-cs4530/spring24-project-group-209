@@ -14,6 +14,10 @@ export function isConversationArea(interactable: Interactable): interactable is 
   return interactable.type === 'ConversationArea';
 }
 
+export function isShopArea(interactable: Interactable): interactable is ShopArea {
+  return interactable.type === 'ShopArea';
+}
+
 /**
  * Test to see if an interactable is a viewing area
  */

@@ -1,3 +1,4 @@
+/* eslint-disable import/extensions */
 import React from 'react';
 import Phaser from 'phaser';
 import { useEffect } from 'react';
@@ -6,10 +7,12 @@ import SocialSidebar from '../SocialSidebar/SocialSidebar';
 import NewConversationModal from './interactables/NewCoversationModal';
 import TownGameScene from './TownGameScene';
 import GameAreaWrapper from './interactables/GamesArea';
+import ShopAreaWrapper from './interactables/ShopsArea';
 import useChatContext from '../VideoCall/VideoFrontend/hooks/useChatContext/useChatContext';
 import ChatWindow from '../VideoCall/VideoFrontend/components/ChatWindow/ChatWindow';
 import clsx from 'clsx';
 import { createStyles, makeStyles, Theme } from '@material-ui/core';
+import ShopArea from './interactables/ShopArea';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -85,6 +88,7 @@ export default function TownMap(): JSX.Element {
     <div id='app-container'>
       <NewConversationModal />
       <GameAreaWrapper />
+      <ShopAreaWrapper />
       <aside className={clsx(classes.chatWindowContainer, { [classes.hide]: !isChatWindowOpen })}>
         <ChatWindow />
       </aside>

@@ -32,6 +32,7 @@ import {
   isConversationArea,
   isTicTacToeArea,
   isViewingArea,
+  isShopArea,
 } from '../types/TypeUtils';
 import ConnectFourAreaController from './interactable/ConnectFourAreaController';
 import ConversationAreaController from './interactable/ConversationAreaController';
@@ -333,6 +334,13 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
     return ret as ViewingAreaController[];
   }
 
+  public get shopAreas() {
+    const ret = this._interactableControllers.filter(
+      eachInteractable => eachInteractable instanceof ShopAreaController,
+    );
+    return ret as ShopAreaController[];
+  }
+
   public get gameAreas() {
     const ret = this._interactableControllers.filter(
       eachInteractable => eachInteractable instanceof GameAreaController,
@@ -583,6 +591,10 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
     await this._townsService.createViewingArea(this.townID, this.sessionToken, newArea);
   }
 
+  async createShopArea(newArea: Omit<ShopAreaModel, 'type'>) {
+    await this._townsService.createShopArea(this.townID, this.sessionToken, newArea);
+  }
+
   /**
    * Disconnect from the town, notifying the townService that we are leaving and returning
    * to the login page
@@ -624,6 +636,8 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
             );
           } else if (isViewingArea(eachInteractable)) {
             this._interactableControllers.push(new ViewingAreaController(eachInteractable));
+          } else if (isShopArea(eachInteractable)) {
+            this._interactableControllers.push(new ShopAreaController(eachInteractable));
           } else if (isTicTacToeArea(eachInteractable)) {
             this._interactableControllers.push(
               new TicTacToeAreaController(eachInteractable.id, eachInteractable, this),
@@ -675,7 +689,7 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
     if (existingController instanceof ShopAreaController) {
       return existingController;
     } else {
-      throw new Error(`No such viewing area controller ${existingController}`);
+      throw new Error(`No such shop area controller ${existingController}`);
     }
   }
 
