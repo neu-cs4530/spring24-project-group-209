@@ -722,6 +722,15 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
   }
 
   /**
+   * Emit a viewing area update to the townService
+   * @param shopArea The Shop Area Controller that is updated and should be emitted
+   *    with the event
+   */
+  public emitShopAreaUpdate(shopArea: ShopAreaController) {
+    this._socket.emit('interactableUpdate', shopArea.toInteractableAreaModel());
+  }
+
+  /**
    * Determine which players are "nearby" -- that they should be included in our video call
    */
   public nearbyPlayers(): PlayerController[] {
@@ -825,6 +834,12 @@ export function useActiveConversationAreas(): ConversationAreaController[] {
     };
   }, [townController, setConversationAreas]);
   return conversationAreas;
+}
+
+export function useShopAreaController(shopAreaID: string): ShopAreaController {
+  const townController = useTownController();
+  const shopAreaController = townController.getShopAreaController({ name: shopAreaID });
+  return shopAreaController;
 }
 
 /**

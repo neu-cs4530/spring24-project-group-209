@@ -7,10 +7,22 @@ import {
   TownEmitter,
   ShopArea as ShopAreaModel,
   ShopAreaUpdateCommand,
+  ShopItem,
 } from '../types/CoveyTownSocket';
 import InteractableArea from './InteractableArea';
 
 export default class ShopArea extends InteractableArea {
+  private _items: ShopItem[];
+
+  get items(): ShopItem[] {
+    return this._items;
+  }
+
+  constructor(id: string, rect: BoundingBox, townEmitter: TownEmitter) {
+    super(id, rect, townEmitter);
+    this._items = ['SKIN1', 'SKIN2', 'SKIN3', 'SKIN4'];
+  }
+
   /**
    * Convert this ViewingArea instance to a simple ViewingAreaModel suitable for
    * transporting over a socket to a client.
@@ -19,7 +31,7 @@ export default class ShopArea extends InteractableArea {
     return {
       id: this.id,
       occupants: this.occupantsByID,
-      items: ['SKIN1', 'SKIN2', 'SKIN3', 'SKIN4'],
+      items: this.items,
       type: 'ShopArea',
     };
   }
@@ -50,5 +62,7 @@ export default class ShopArea extends InteractableArea {
     throw new InvalidParametersError('Unknown command type');
   }
 
-  public updateModel(update: ShopAreaModel): void {}
+  public updateModel(update: ShopAreaModel): void {
+    this._items = update.items;
+  }
 }
