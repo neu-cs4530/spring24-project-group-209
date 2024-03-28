@@ -17,132 +17,143 @@ export default class CardToImage {
    * the constructor.
    */
   public getCardUrl(card: Card): string {
-    const path = '../../../../public/assets/cards/' + this._deck + '/';
+    const path = `../../../../public/assets/cards/${this._deck}/`;
 
     switch (card.suite) {
       case 'CLUBS': {
         switch (card.face) {
           case 1:
-            return path + 'aceOfClubs.png';
+            return `${path}aceOfClubs.png`;
           case 2:
-            return path + 'twoOfClubs.png';
+            return `${path}twoOfClubs.png`;
           case 3:
-            return path + 'threeOfClubs.png';
+            return `${path}threeOfClubs.png`;
           case 4:
-            return path + 'fourOfClubs.png';
+            return `${path}fourOfClubs.png`;
           case 5:
-            return path + 'fiveOfClubs.png';
+            return `${path}fiveOfClubs.png`;
           case 6:
-            return path + 'sixOfClubs.png';
+            return `${path}sixOfClubs.png`;
           case 7:
-            return path + 'sevenOfClubs.png';
+            return `${path}sevenOfClubs.png`;
           case 8:
-            return path + 'eightOfClubs.png';
+            return `${path}eightOfClubs.png`;
           case 9:
-            return path + 'nineOfClubs.png';
+            return `${path}nineOfClubs.png`;
           case 10:
-            return path + 'tenOfClubs.png';
+            return `${path}tenOfClubs.png`;
           case 11:
-            return path + 'jackOfClubs.png';
+            return `${path}jackOfClubs.png`;
           case 12:
-            return path + 'queenOfClubs.png';
+            return `${path}queenOfClubs.png`;
           case 13:
-            return path + 'kingOfClubs.png';
+            return `${path}kingOfClubs.png`;
+          default:
+            throw new Error('Invalid Card');
         }
         break;
       }
       case 'HEARTS': {
         switch (card.face) {
           case 1:
-            return path + 'aceOfHearts.png';
+            return `${path}aceOfHearts.png`;
           case 2:
-            return path + 'twoOfHearts.png';
+            return `${path}twoOfHearts.png`;
           case 3:
-            return path + 'threeOfHearts.png';
+            return `${path}threeOfHearts.png`;
           case 4:
-            return path + 'fourOfHearts.png';
+            return `${path}fourOfHearts.png`;
           case 5:
-            return path + 'fiveOfHearts.png';
+            return `${path}fiveOfHearts.png`;
           case 6:
-            return path + 'sixOfHearts.png';
+            return `${path}sixOfHearts.png`;
           case 7:
-            return path + 'sevenOfHearts.png';
+            return `${path}sevenOfHearts.png`;
           case 8:
-            return path + 'eightOfHearts.png';
+            return `${path}eightOfHearts.png`;
           case 9:
-            return path + 'nineOfHearts.png';
+            return `${path}nineOfHearts.png`;
           case 10:
-            return path + 'tenOfHearts.png';
+            return `${path}tenOfHearts.png`;
           case 11:
-            return path + 'jackOfHearts.png';
+            return `${path}jackOfHearts.png`;
           case 12:
-            return path + 'queenOfHearts.png';
+            return `${path}queenOfHearts.png`;
           case 13:
-            return path + 'kingOfHearts.png';
+            return `${path}kingOfHearts.png`;
+          default:
+            throw new Error('Invalid Card');
         }
         break;
       }
       case 'DIAMONDS': {
         switch (card.face) {
           case 1:
-            return path + 'aceOfDiamonds.png';
+            return `${path}aceOfDiamonds.png`;
           case 2:
-            return path + 'twoOfDiamonds.png';
+            return `${path}twoOfDiamonds.png`;
           case 3:
-            return path + 'threeOfDiamonds.png';
+            return `${path}threeOfDiamonds.png`;
           case 4:
-            return path + 'fourOfDiamonds.png';
+            return `${path}fourOfDiamonds.png`;
           case 5:
-            return path + 'fiveOfDiamonds.png';
+            return `${path}fiveOfDiamonds.png`;
           case 6:
-            return path + 'sixOfDiamonds.png';
+            return `${path}sixOfDiamonds.png`;
           case 7:
-            return path + 'sevenOfDiamonds.png';
+            return `${path}sevenOfDiamonds.png`;
           case 8:
-            return path + 'eightOfDiamonds.png';
+            return `${path}eightOfDiamonds.png`;
           case 9:
-            return path + 'nineOfDiamonds.png';
+            return `${path}nineOfDiamonds.png`;
           case 10:
-            return path + 'tenOfDiamonds.png';
+            return `${path}tenOfDiamonds.png`;
           case 11:
-            return path + 'jackOfDiamonds.png';
+            return `${path}jackOfDiamonds.png`;
           case 12:
-            return path + 'queenOfDiamonds.png';
+            return `${path}queenOfDiamonds.png`;
           case 13:
-            return path + 'kingOfDiamonds.png';
+            return `${path}kingOfDiamonds.png`;
+          default:
+            throw new Error('Invalid Card');
         }
         break;
       }
       case 'SPADES': {
         switch (card.face) {
           case 1:
-            return path + 'aceOfSpades.png';
+            return `${path}aceOfSpades.png`;
           case 2:
-            return path + 'twoOfSpades.png';
+            return `${path}twoOfSpades.png`;
           case 3:
-            return path + 'threeOfSpades.png';
+            return `${path}threeOfSpades.png`;
           case 4:
-            return path + 'fourOfSpades.png';
+            return `${path}fourOfSpades.png`;
           case 5:
-            return path + 'fiveOfSpades.png';
+            return `${path}fiveOfSpades.png`;
           case 6:
-            return path + 'sixOfSpades.png';
+            return `${path}sixOfSpades.png`;
           case 7:
-            return path + 'sevenOfSpades.png';
+            return `${path}sevenOfSpades.png`;
           case 8:
-            return path + 'eightOfSpades.png';
+            return `${path}eightOfSpades.png`;
           case 9:
-            return path + 'nineOfSpades.png';
+            return `${path}nineOfSpades.png`;
           case 10:
-            return path + 'tenOfSpades.png';
+            return `${path}tenOfSpades.png`;
           case 11:
-            return path + 'jackOfSpades.png';
+            return `${path}jackOfSpades.png`;
           case 12:
-            return path + 'queenOfSpades.png';
+            return `${path}queenOfSpades.png`;
           case 13:
-            return path + 'kingOfSpades.png';
+            return `${path}kingOfSpades.png`;
+          default:
+            throw new Error('Invalid Card');
         }
+        break;
       }
+      default:
+        throw new Error('Invalid Card');
     }
   }
 }
