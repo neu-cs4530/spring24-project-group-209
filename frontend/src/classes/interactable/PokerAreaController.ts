@@ -2,8 +2,8 @@ import _ from 'lodash';
 import {
   GameArea,
   GameStatus,
-  BlackjackGameState,
-  BlackjackMove,
+  PokerGameState,
+  PokerMove,
   SeatNumber,
   Card,
 } from '../../types/CoveyTownSocket';
@@ -13,36 +13,32 @@ import GameAreaController, {
   NO_GAME_IN_PROGRESS_ERROR,
   NO_GAME_STARTABLE,
 } from './GameAreaController';
-
-export type BlackjackCell = Card;
-export type BlackjackEvents = GameEventTypes & {
-  boardChanged: (board: BlackjackCell[][]) => void;
+export type PokerCell = { card: Card; player: SeatNumber };
+export type PokerEvents = GameEventTypes & {
+  boardChanged: (board: PokerCell[][]) => void;
   turnChanged: (isOurTurn: boolean) => void;
 };
-export const BLACKJACK_ROWS = 9;
+export const POKER_ROWS = 9;
 
-function createEmptyBoard(): BlackjackCell[][] {
-  const board = new Array(BLACKJACK_ROWS);
+function createEmptyBoard(): PokerCell[][] {
+  const board = new Array(POKER_ROWS);
   return board;
 }
 
 /**
- * This class is responsible for managing the state of the Blackjack game, and for sending commands to the server
+ * This class is responsible for managing the state of the Poker game, and for sending commands to the server
  */
-export default class BlackjackAreaController extends GameAreaController<
-  BlackjackGameState,
-  BlackjackEvents
-> {
-  protected _board: BlackjackCell[][] = createEmptyBoard();
+export default class PokerAreaController extends GameAreaController<PokerGameState, PokerEvents> {
+  protected _board: PokerCell[][] = createEmptyBoard();
 
   /**
    * Returns the current state of the board.
    *
-   * The board is a 4x8 array of BlackjackCell.
+   * The board is a 4x8 array of PokerCell.
    *
    * The 2-dimensional array is indexed by row and then column, so board[0][0] is the top-left cell,
    */
-  get board(): BlackjackCell[][] {
+  get board(): PokerCell[][] {
     return this._board;
   }
 
@@ -118,10 +114,7 @@ export default class BlackjackAreaController extends GameAreaController<
     if (firstPlayer) {
       let activeSeat = (this.moveCount % 7) + firstPlayer;
       let player = this._model.game?.state.occupiedSeats.get(activeSeat as SeatNumber);
-      while (
-        Array.from(this._model.game?.state.bustedPlayers.values()).includes(player) ||
-        Array.from(this._model.game?.state.standPlayers.values()).includes(player)
-      ) {
+      while (Array.from(this._model.game?.state._foldedPlayers.values()).includes(player)) {
         player = this._model.game?.state.occupiedSeats.get(activeSeat as SeatNumber);
         activeSeat = activeSeat + 1;
       }
@@ -159,7 +152,7 @@ export default class BlackjackAreaController extends GameAreaController<
   }
 
   /**
-   * Updates the internal state of this BlackjackAreaController based on the new model.
+   * Updates the internal state of this PokerAreaController based on the new model.
    *
    * Calls super._updateFrom, which updates the occupants of this game area and other
    * common properties (including this._model)
@@ -170,15 +163,15 @@ export default class BlackjackAreaController extends GameAreaController<
    * If the turn has changed, emits a turnChanged event with the new turn (true if our turn, false otherwise)
    * If the turn has not changed, does not emit a turnChanged event.
    */
-  protected _updateFrom(newModel: GameArea<BlackjackGameState>): void {
+  protected _updateFrom(newModel: GameArea<PokerGameState>): void {
     const wasOurTurn = this.isOurTurn;
     super._updateFrom(newModel);
     const newGame = newModel.game;
     if (newGame) {
       const newBoard = createEmptyBoard();
       newGame.state.moves.forEach((move: { moveType: string; player: SeatNumber; card: Card }) => {
-        if (move.moveType == 'HIT' || move.moveType == 'DOUBLE' || move.moveType == 'DEAL') {
-          newBoard[move.player].push(move.card);
+        if (move.moveType == 'DEAL') {
+          newBoard[move.player].push({ card: move.card, player: move.player });
         }
       });
       if (!_.isEqual(newBoard, this._board)) {
@@ -209,11 +202,11 @@ export default class BlackjackAreaController extends GameAreaController<
   }
 
   /**
-   * Sends a request to the server to place the current move in the Blackjack game.
+   * Sends a request to the server to place the current move in the Poker game.
    *
    * @param col Column to place the game piece in
    */
-  public async makeMove(move: BlackjackMove): Promise<void> {
+  public async makeMove(move: PokerMove): Promise<void> {
     const instanceID = this._instanceID;
     if (!instanceID || this._model.game?.state.status !== 'IN_PROGRESS') {
       throw new Error(NO_GAME_IN_PROGRESS_ERROR);

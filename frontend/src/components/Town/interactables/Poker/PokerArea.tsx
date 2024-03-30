@@ -1,19 +1,29 @@
-import { Button, List, ListItem, useToast } from '@chakra-ui/react';
+import {
+  Button,
+  List,
+  ListItem,
+  NumberDecrementStepper,
+  NumberIncrementStepper,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
+  useToast,
+} from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
-import BlackjackAreaController from '../../../../classes/interactable/BlackjackAreaController';
+import PokerAreaController from '../../../../classes/interactable/PokerAreaController';
 import PlayerController from '../../../../classes/PlayerController';
 import { useInteractableAreaController } from '../../../../classes/TownController';
 import useTownController from '../../../../hooks/useTownController';
 import { GameStatus, InteractableID, SeatNumber } from '../../../../types/CoveyTownSocket';
-import BlackjackBoard from './BlackjackBoard';
+import PokerBoard from './PokerBoard';
 
 /**
- * The BlackjackArea component renders the Blackjack game area.
+ * The PokerArea component renders the Poker game area.
  * It renders the current state of the area, optionally allowing the player to join the game.
  *
  * It uses Chakra-UI components (does not use other GUI widgets)
  *
- * It uses the BlackjackAreaController to get the current state of the game.
+ * It uses the PokerAreaController to get the current state of the game.
  * It listens for the 'gameUpdated' and 'gameEnd' events on the controller, and re-renders accordingly.
  * It subscribes to these events when the component mounts, and unsubscribes when the component unmounts. It also unsubscribes when the gameAreaController changes.
  *
@@ -36,7 +46,7 @@ import BlackjackBoard from './BlackjackBoard';
  *    - Before calling startGame method, the button is disabled and has the property isLoading set to true, and is re-enabled when the method call completes
  *    - If the method call fails, a toast is displayed with the error message as the description of the toast (and status 'error')
  *    - Once the game starts, the button dissapears
- * - The BlackjackBoard component, which is passed the current gameAreaController as a prop (@see BlackjackBoard.tsx)
+ * - The PokerBoard component, which is passed the current gameAreaController as a prop (@see PokerBoard.tsx)
  *
  * - When the game ends, a toast is displayed with the result of the game:
  *    - Tie: description 'Game ended in a tie'
@@ -44,12 +54,12 @@ import BlackjackBoard from './BlackjackBoard';
  *    - Our player lost: description 'You lost :('
  *
  */
-export default function BlackjackArea({
+export default function PokerArea({
   interactableID,
 }: {
   interactableID: InteractableID;
 }): JSX.Element {
-  const gameAreaController = useInteractableAreaController<BlackjackAreaController>(interactableID);
+  const gameAreaController = useInteractableAreaController<PokerAreaController>(interactableID);
   const townController = useTownController();
 
   const [seats, setSeats] = useState<Map<SeatNumber, PlayerController>>(
@@ -59,6 +69,8 @@ export default function BlackjackArea({
 
   const [gameStatus, setGameStatus] = useState<GameStatus>(gameAreaController.status);
   const [moveCount, setMoveCount] = useState<number>(gameAreaController.moveCount);
+  const [raiseValue, setRaiseValue] = useState<number>(0);
+  const [activePlayers, setActivePlayers] = useState<number>(gameAreaController.occupiedSeats.size);
   const toast = useToast();
   useEffect(() => {
     const updateGameState = () => {
@@ -90,91 +102,100 @@ export default function BlackjackArea({
     };
   }, [townController, gameAreaController, toast]);
   let gameStatusText = <></>;
-  if (gameStatus === 'IN_PROGRESS' && gameAreaController.whoseTurn === townController.ourPlayer) {
-    const hitButton = (
+  if (gameAreaController.whoseTurn === townController.ourPlayer) {
+    const raiseInput = (
+      <NumberInput
+        defaultValue={5}
+        min={1}
+        onChange={valueString => setRaiseValue(parseInt(valueString))}>
+        <NumberInputField />
+        <NumberInputStepper>
+          <NumberIncrementStepper />
+          <NumberDecrementStepper />
+        </NumberInputStepper>
+      </NumberInput>
+    );
+    const raiseButton = (
       <Button
         onClick={async () => {
           setJoiningGame(true);
           try {
             await gameAreaController.makeMove({
-              moveType: 'HIT',
-              card: undefined,
-              player: gameAreaController.playerSeat(townController.ourPlayer),
+              moveType: 'RAISE',
+              raiseAmount: raiseValue,
             });
           } catch (err) {
             toast({
-              title: 'Error hitting',
+              title: 'Error raising, insufficient funds!',
               description: (err as Error).toString(),
               status: 'error',
             });
           }
           setJoiningGame(false);
         }}>
-        Hit
+        Raise
       </Button>
     );
-    const standButton = (
+    const callButton = (
       <Button
         onClick={async () => {
           setJoiningGame(true);
           try {
             await gameAreaController.makeMove({
-              moveType: 'STAND',
-              card: undefined,
-              player: gameAreaController.playerSeat(townController.ourPlayer),
+              moveType: 'CALL',
+              raiseAmount: undefined,
             });
           } catch (err) {
             toast({
-              title: 'Error standing',
+              title: 'Error calling',
               description: (err as Error).toString(),
               status: 'error',
             });
           }
           setJoiningGame(false);
         }}>
-        Stand
+        Call
       </Button>
     );
-    const doubleButton = (
+    const foldButton = (
       <Button
         onClick={async () => {
           setJoiningGame(true);
           try {
             await gameAreaController.makeMove({
-              moveType: 'DOUBLE',
-              card: undefined,
-              player: gameAreaController.playerSeat(townController.ourPlayer),
+              moveType: 'FOLD',
+              raiseAmount: undefined,
             });
+            setActivePlayers(activePlayers - 1);
           } catch (err) {
             toast({
-              title: 'Error doubling',
+              title: 'Error folding',
               description: (err as Error).toString(),
               status: 'error',
             });
           }
           setJoiningGame(false);
         }}>
-        Double
+        Fold
       </Button>
     );
     gameStatusText = (
       <>
-        Game in progress, {moveCount} moves in, currently your turn.
-        {hitButton} {standButton} {doubleButton}
+        Game in progress, {moveCount} moves in, currently your turn. Players left: {activePlayers}{' '}
+        Pot: {gameAreaController.pot} {raiseButton}
+        {raiseInput} {callButton} {foldButton}
       </>
     );
-  } else if (
-    gameStatus === 'IN_PROGRESS' &&
-    gameAreaController.whoseTurn !== townController.ourPlayer
-  ) {
-    const hitButton = <Button disabled={true}>Hit</Button>;
-    const standButton = <Button disabled={true}>Stand</Button>;
-    const doubleButton = <Button disabled={true}>Double</Button>;
+  } else if (gameAreaController.whoseTurn !== townController.ourPlayer) {
+    const raiseButton = <Button disabled={true}>Raise</Button>;
+    const callButton = <Button disabled={true}>Call</Button>;
+    const foldButton = <Button disabled={true}>Fold</Button>;
     gameStatusText = (
       <>
         Game in progress, {moveCount} moves in, currently{' '}
-        {gameAreaController.whoseTurn?.userName + "'s"} turn .{hitButton} {standButton}
-        {doubleButton}
+        {gameAreaController.whoseTurn?.userName + "'s"} turn . Players left: {activePlayers} Pot:{' '}
+        {gameAreaController.pot} {raiseButton} {callButton}
+        {foldButton}
       </>
     );
   } else if (gameStatus == 'WAITING_TO_START') {
@@ -239,7 +260,7 @@ export default function BlackjackArea({
           </ListItem>
         ))}
       </List>
-      <BlackjackBoard gameAreaController={gameAreaController} />
+      <PokerBoard gameAreaController={gameAreaController} />
     </>
   );
 }

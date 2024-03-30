@@ -109,7 +109,9 @@ export interface TicTacToeMove {
   col: TicTacToeGridPosition;
 }
 
-export type PokerAction = 'RAISE' | 'CALL' | 'FOLD';
+// export type PokerAction = 'RAISE' | 'CALL' | 'FOLD' ;
+export type CardAction = 'RAISE' | 'CALL' | 'FOLD' | 'BET' | 'HIT' | 'STAND' | 'DEAL' | 'DOUBLE';
+
 
 /**
  * Type for the amount raised in a poker move, or undefined if the
@@ -139,8 +141,9 @@ export interface Card {
  * Type for a move in Poker
  */
 export interface PokerMove {
-  moveType: PokerAction;
+  moveType: CardAction;
   raiseAmount: RaiseAmount;
+  
 }
 
 /**
@@ -171,8 +174,6 @@ export interface PokerGameState extends WinnableGameState {
   smallBlind: SeatNumber;
 }
 
-export type BlackjackAction = 'BET' | 'HIT' | 'STAND' | 'DEAL' | 'DOUBLE';
-
 
 /**
  * Type for the amount bet in a blackjack hand, or undefined if the
@@ -184,7 +185,7 @@ export type BetAmount = Integer | undefined;
  * Type for a move in Blackjack
  */
 export interface BlackjackMove {
-  moveType: BlackjackAction;
+  moveType: CardAction;
   card?: Card;
   player?: SeatNumber;
 
