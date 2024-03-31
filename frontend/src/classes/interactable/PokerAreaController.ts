@@ -53,6 +53,10 @@ export default class PokerAreaController extends GameAreaController<PokerGameSta
     return undefined;
   }
 
+  get pot(): number {
+    return this._model.game?.state.pot || 0;
+  }
+
   /**
    * Returns the number of moves that have been made in the game
    */
@@ -114,7 +118,7 @@ export default class PokerAreaController extends GameAreaController<PokerGameSta
     if (firstPlayer) {
       let activeSeat = (this.moveCount % 7) + firstPlayer;
       let player = this._model.game?.state.occupiedSeats.get(activeSeat as SeatNumber);
-      while (Array.from(this._model.game?.state._foldedPlayers.values()).includes(player)) {
+      while (this._model.game?.state._foldedPlayers.get(activeSeat as SeatNumber)) {
         player = this._model.game?.state.occupiedSeats.get(activeSeat as SeatNumber);
         activeSeat = activeSeat + 1;
       }
@@ -169,9 +173,13 @@ export default class PokerAreaController extends GameAreaController<PokerGameSta
     const newGame = newModel.game;
     if (newGame) {
       const newBoard = createEmptyBoard();
-      newGame.state.moves.forEach((move: { moveType: string; player: SeatNumber; card: Card }) => {
+      newGame.state.moves.forEach(move => {
         if (move.moveType == 'DEAL') {
-          newBoard[move.player].push({ card: move.card, player: move.player });
+          if (move.player && move.card) {
+            newBoard[move.player].push({ card: move.card, player: move.player });
+          } else {
+            throw new Error('No player in move');
+          }
         }
       });
       if (!_.isEqual(newBoard, this._board)) {

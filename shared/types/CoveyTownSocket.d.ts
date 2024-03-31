@@ -80,7 +80,7 @@ export type GameStatus = 'IN_PROGRESS' | 'WAITING_TO_START' | 'OVER' | 'WAITING_
  */
 export interface GameState {
   status: GameStatus;
-} 
+}
 
 /**
  * Type for the state of a game that can be won
@@ -109,9 +109,7 @@ export interface TicTacToeMove {
   col: TicTacToeGridPosition;
 }
 
-// export type PokerAction = 'RAISE' | 'CALL' | 'FOLD' ;
-export type CardAction = 'RAISE' | 'CALL' | 'FOLD' | 'BET' | 'HIT' | 'STAND' | 'DEAL' | 'DOUBLE';
-
+export type PokerAction = 'RAISE' | 'CALL' | 'CHECK' | 'FOLD' | 'DEAL';
 
 /**
  * Type for the amount raised in a poker move, or undefined if the
@@ -138,12 +136,22 @@ export interface Card {
 }
 
 /**
- * Type for a move in Poker
+ * Type for a move in Poker - this can be an action taken by a player, like a raise or a call, or an action taken by
+ * the dealer, like a card being dealt.
  */
 export interface PokerMove {
-  moveType: CardAction;
-  raiseAmount: RaiseAmount;
-  
+  moveType: PokerAction;
+  raiseAmount?: RaiseAmount;
+  card?: Card;
+  player?: SeatNumber;
+
+  // The following need to be added for compatibility since other gamemoves require gamePiece, col, and row, even though these seem uncessecary
+  // for poker - future work might involve refactoring design to include card game function
+
+  gamePiece?: undefined;
+
+  col?: undefined;
+  row?: undefined;
 }
 
 /**
@@ -163,17 +171,22 @@ export interface DeckOfCards {
  */
 export interface PokerGameState extends WinnableGameState {
   // The moves in this game
-  moves: ReadOnlyArray<PokerMove>;
+  moves: ReadonlyArray<PokerMove>;
   // A map that represents the player at each seat in the table, if there is a player in that seat.
   occupiedSeats: Map<SeatNumber, PlayerID | undefined>;
   // A map representing which players in the game are ready to start.
   readyPlayers: Map<SeatNumber, boolean | undefined>;
+  // A map representing which players in the game have folded
+  _foldedPlayers: Map<SeatNumber, boolean>
   // A map representing the balance of players in each seat.
   playerBalances: Map<SeatNumber, Integer | undefined>;
   // The player who will be the small blind
   smallBlind: SeatNumber;
+  // The player who will be the big blind
+  pot: number;
 }
 
+export type BlackjackAction = 'BET' | 'HIT' | 'STAND' | 'DEAL' | 'DOUBLE';
 
 /**
  * Type for the amount bet in a blackjack hand, or undefined if the
@@ -185,7 +198,7 @@ export type BetAmount = Integer | undefined;
  * Type for a move in Blackjack
  */
 export interface BlackjackMove {
-  moveType: CardAction;
+  moveType: BlackjackAction;
   card?: Card;
   player?: SeatNumber;
 
@@ -218,9 +231,8 @@ export interface BlackjackGameState extends WinnableGameState {
   bustedPlayers: Map<SeatNumber, PlayerID | undefined>;
   // A map of players standing
   standPlayers: Map<SeatNumber, PlayerID | undefined>;
+
 }
-
-
 /**
  * Type for the state of a TicTacToe game
  * The state of the game is represented as a list of moves, and the playerIDs of the players (x and o)
@@ -328,8 +340,8 @@ interface InteractableCommandBase {
   type: string;
 }
 
-export type InteractableCommand =  ViewingAreaUpdateCommand | JoinGameCommand | GameMoveCommand<TicTacToeMove> | GameMoveCommand<ConnectFourMove> | GameMoveCommand<BlackjackMove> | StartGameCommand | LeaveGameCommand;
-export interface ViewingAreaUpdateCommand  {
+export type InteractableCommand = ViewingAreaUpdateCommand | JoinGameCommand | GameMoveCommand<BlackjackMove> | GameMoveCommand<TicTacToeMove> | GameMoveCommand<ConnectFourMove> | GameMoveCommand<PokerMove> | StartGameCommand | LeaveGameCommand;
+export interface ViewingAreaUpdateCommand {
   type: 'ViewingAreaUpdate';
   update: ViewingArea;
 }
@@ -349,8 +361,8 @@ export interface GameMoveCommand<MoveType> {
   gameID: GameInstanceID;
   move: MoveType;
 }
-export type InteractableCommandReturnType<CommandType extends InteractableCommand> = 
-  CommandType extends JoinGameCommand ? { gameID: string}:
+export type InteractableCommandReturnType<CommandType extends InteractableCommand> =
+  CommandType extends JoinGameCommand ? { gameID: string } :
   CommandType extends ViewingAreaUpdateCommand ? undefined :
   CommandType extends GameMoveCommand<TicTacToeMove> ? undefined :
   CommandType extends LeaveGameCommand ? undefined :
