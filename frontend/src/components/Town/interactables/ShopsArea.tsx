@@ -7,17 +7,12 @@ import {
   ModalHeader,
   ModalOverlay,
 } from '@chakra-ui/react';
-import React, { useCallback, useEffect, useState } from 'react';
-import TownController, {
-  useInteractable,
-  useInteractableAreaController,
-} from '../../../classes/TownController';
-import { InteractableID } from '../../../types/CoveyTownSocket';
+import React, { useCallback } from 'react';
+import { useInteractable } from '../../../classes/TownController';
 import ShopAreaInteractable from './ShopArea';
 import useTownController from '../../../hooks/useTownController';
-import ShopAreaController from '../../../classes/interactable/ShopAreaController';
 
-function ShopArea({ controller }: { controller: ShopAreaController }): JSX.Element {
+function ShopArea(): JSX.Element {
   const shopArea = useInteractable('shopArea');
   const townController = useTownController();
   const closeModal = useCallback(() => {
@@ -48,7 +43,7 @@ export default function ShopAreaWrapper(): JSX.Element {
           <ModalHeader>{shopArea.name}</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <ShopArea controller={townController.getShopAreaController(shopArea)} />
+            <ShopArea />
           </ModalBody>
         </ModalContent>
       </Modal>
