@@ -24,7 +24,7 @@ export default class ShopArea extends InteractableArea {
   }
 
   /**
-   * Convert this ViewingArea instance to a simple ViewingAreaModel suitable for
+   * Convert this ShopArea instance to a simple ShopAreaModel suitable for
    * transporting over a socket to a client.
    */
   public toModel(): ShopAreaModel {
@@ -37,7 +37,7 @@ export default class ShopArea extends InteractableArea {
   }
 
   /**
-   * Creates a new ShopArea object that will represent a Viewing Area object in the town map.
+   * Creates a new ShopArea object that will represent a Shop Area object in the town map.
    * @param mapObject An ITiledMapObject that represents a rectangle in which this viewing area exists
    * @param townEmitter An emitter that can be used by this viewing area to broadcast updates to players in the town
    * @returns
