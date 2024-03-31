@@ -1,14 +1,5 @@
 import {
-  Accordion,
-  AccordionButton,
-  AccordionIcon,
-  AccordionItem,
-  AccordionPanel,
-  Box,
-  Flex,
-  Heading,
-  List,
-  ListItem,
+  Button,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -27,7 +18,18 @@ import useTownController from '../../../hooks/useTownController';
 import ShopAreaController from '../../../classes/interactable/ShopAreaController';
 
 function ShopArea({ controller }: { controller: ShopAreaController }): JSX.Element {
-  return <></>;
+  const shopArea = useInteractable('shopArea');
+  const townController = useTownController();
+  const closeModal = useCallback(() => {
+    if (shopArea) {
+      townController.interactEnd(shopArea);
+    }
+  }, [townController, shopArea]);
+  return (
+    <Modal>
+      <Button onClick={closeModal}>Cancel</Button>
+    </Modal>
+  );
 }
 
 export default function ShopAreaWrapper(): JSX.Element {
@@ -38,7 +40,7 @@ export default function ShopAreaWrapper(): JSX.Element {
       townController.interactEnd(shopArea);
     }
   }, [townController, shopArea]);
-  if (shopArea && shopArea.getData('type') === 'ShopArea') {
+  if (shopArea) {
     return (
       <Modal isOpen={true} onClose={closeModal} closeOnOverlayClick={false} size='xl'>
         <ModalOverlay />
@@ -46,7 +48,7 @@ export default function ShopAreaWrapper(): JSX.Element {
           <ModalHeader>{shopArea.name}</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <ShopArea controller={townController.getShopController(shopArea)} />
+            <ShopArea controller={townController.getShopAreaController(shopArea)} />
           </ModalBody>
         </ModalContent>
       </Modal>

@@ -9,6 +9,7 @@ import TypedEmitter from 'typed-emitter';
 import Interactable from '../components/Town/Interactable';
 import ConversationArea from '../components/Town/interactables/ConversationArea';
 import GameArea from '../components/Town/interactables/GameArea';
+import ShopArea from '../components/Town/interactables/ShopArea';
 import ViewingArea from '../components/Town/interactables/ViewingArea';
 import { LoginController } from '../contexts/LoginControllerContext';
 import { TownsService, TownsServiceClient } from '../generated/client';
@@ -24,6 +25,7 @@ import {
   InteractableID,
   PlayerID,
   PlayerLocation,
+  ShopArea as ShopAreaModel,
   TownSettingsUpdate,
   ViewingArea as ViewingAreaModel,
 } from '../types/CoveyTownSocket';
@@ -848,12 +850,6 @@ export function useActiveConversationAreas(): ConversationAreaController[] {
     };
   }, [townController, setConversationAreas]);
   return conversationAreas;
-}
-
-export function useShopAreaController(shopAreaID: string): ShopAreaController {
-  const townController = useTownController();
-  const shopAreaController = townController.getShopAreaController({ name: shopAreaID });
-  return shopAreaController;
 }
 
 /**
