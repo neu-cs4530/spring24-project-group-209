@@ -33,6 +33,8 @@ import {
   isTicTacToeArea,
   isViewingArea,
   isShopArea,
+  isPokerArea,
+  isBlackJackArea,
 } from '../types/TypeUtils';
 import ConnectFourAreaController from './interactable/ConnectFourAreaController';
 import ConversationAreaController from './interactable/ConversationAreaController';
@@ -641,6 +643,14 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
           } else if (isConnectFourArea(eachInteractable)) {
             this._interactableControllers.push(
               new ConnectFourAreaController(eachInteractable.id, eachInteractable, this),
+            );
+          } else if (isPokerArea(eachInteractable)) {
+            this._interactableControllers.push(
+              new PokerAreaController(eachInteractable.id, eachInteractable, this),
+            );
+          } else if (isBlackJackArea(eachInteractable)) {
+            this._interactableControllers.push(
+              new BlackJackAreaController(eachInteractable.id, eachInteractable, this),
             );
           }
         });
