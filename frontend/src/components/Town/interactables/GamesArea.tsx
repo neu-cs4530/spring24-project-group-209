@@ -27,8 +27,8 @@ import ConnectFourArea from './ConnectFour/ConnectFourArea';
 import GameAreaInteractable from './GameArea';
 import Leaderboard from './Leaderboard';
 import TicTacToeArea from './TicTacToe/TicTacToeArea';
-import BlackJackArea from './BlackJackArea/BlackJackArea';
-import PokerArea from './PokerArea/PokerArea';
+import BlackJackArea from './Blackjack/BlackjackArea';
+import PokerArea from './Poker/PokerArea';
 
 export const INVALID_GAME_AREA_TYPE_MESSAGE = 'Invalid game area type';
 

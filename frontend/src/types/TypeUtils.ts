@@ -7,6 +7,7 @@ import {
   ShopArea,
   ConnectFourGameState,
   PokerGameState,
+  BlackjackGameState,
 } from './CoveyTownSocket';
 
 /**
@@ -38,11 +39,10 @@ export function isConnectFourArea(
   return interactable.type === 'ConnectFourArea';
 }
 
-//SWITCH TO BLACKJACKGAME STATE ONCE MERGED
 export function isBlackJackArea(
   interactable: Interactable,
-): interactable is GameArea<PokerGameState> {
-  return interactable.type === 'BlackJackArea';
+): interactable is GameArea<BlackjackGameState> {
+  return interactable.type === 'BlackjackArea';
 }
 
 export function isPokerArea(interactable: Interactable): interactable is GameArea<PokerGameState> {

@@ -47,6 +47,8 @@ import TicTacToeAreaController from './interactable/TicTacToeAreaController';
 import ViewingAreaController from './interactable/ViewingAreaController';
 import PlayerController from './PlayerController';
 import ShopAreaController from './interactable/ShopAreaController';
+import PokerAreaController from './interactable/PokerAreaController';
+import BlackjackAreaController from './interactable/BlackjackAreaController';
 
 const CALCULATE_NEARBY_PLAYERS_DELAY_MS = 300;
 const SOCKET_COMMAND_TIMEOUT_MS = 5000;
@@ -650,7 +652,7 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
             );
           } else if (isBlackJackArea(eachInteractable)) {
             this._interactableControllers.push(
-              new BlackJackAreaController(eachInteractable.id, eachInteractable, this),
+              new BlackjackAreaController(eachInteractable.id, eachInteractable, this),
             );
           }
         });
