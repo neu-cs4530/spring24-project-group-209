@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import { ShopArea as ShopAreaModel, ShopItem } from '../../types/CoveyTownSocket';
 import PlayerController from '../PlayerController';
 import InteractableAreaController, {

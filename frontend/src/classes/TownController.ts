@@ -592,10 +592,6 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
     await this._townsService.createViewingArea(this.townID, this.sessionToken, newArea);
   }
 
-  async createShopArea(newArea: Omit<ShopAreaModel, 'type'>) {
-    await this._townsService.createShopArea(this.townID, this.sessionToken, newArea);
-  }
-
   /**
    * Disconnect from the town, notifying the townService that we are leaving and returning
    * to the login page

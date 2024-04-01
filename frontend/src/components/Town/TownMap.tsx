@@ -12,7 +12,6 @@ import useChatContext from '../VideoCall/VideoFrontend/hooks/useChatContext/useC
 import ChatWindow from '../VideoCall/VideoFrontend/components/ChatWindow/ChatWindow';
 import clsx from 'clsx';
 import { createStyles, makeStyles, Theme } from '@material-ui/core';
-import ShopArea from './interactables/ShopArea';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
