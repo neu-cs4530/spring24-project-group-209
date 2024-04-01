@@ -17,7 +17,7 @@ export type TownJoinResponse = {
   interactables: TypedInteractable[];
 }
 
-export type InteractableType = 'ConversationArea' | 'ViewingArea' | 'TicTacToeArea' | 'ConnectFourArea' | 'PokerArea';
+export type InteractableType = 'ConversationArea' | 'ViewingArea' | 'TicTacToeArea' | 'ConnectFourArea' | 'PokerArea' | 'BlackjackArea';
 export interface Interactable {
   type: InteractableType;
   id: InteractableID;
@@ -109,7 +109,53 @@ export interface TicTacToeMove {
   col: TicTacToeGridPosition;
 }
 
+export type CardAction = 'RAISE' | 'CALL' | 'FOLD' | 'BET' | 'HIT' | 'STAND' | 'DEAL' | 'DOUBLE';
 export type PokerAction = 'RAISE' | 'CALL' | 'CHECK' | 'FOLD' | 'DEAL';
+
+/**
+ * Type for the amount bet in a blackjack hand, or undefined if the
+ * action was not a bet
+ */
+export type BetAmount = Integer | undefined;
+
+/**
+ * Type for a move in Blackjack
+ */
+export interface BlackjackMove {
+  moveType: CardAction;
+  card?: Card;
+  player?: SeatNumber;
+
+  // The following need to be added for compatibility since other gamemoves require gamePiece, col, and row, even though these seem uncessecary
+  // for poker - future work might involve refactoring design to include card game function
+
+  gamePiece?: undefined;
+
+  col?: undefined;
+  row?: undefined;
+}
+
+/**
+ * Type for the state of a blackjack game
+ * The state of the game is represented as a list of moves, the playerIDs of the players in each seat,
+ * the starting balances of the players in those seats, and the seat which will be the next small blind.
+ * Players will be assigned to the first free seat when joining
+ */
+export interface BlackjackGameState extends WinnableGameState {
+  dealerMoves: ReadOnlyArray<BlackjackMove>;
+  // The moves in this game
+  moves: ReadOnlyArray<BlackjackMove>;
+  // A map that represents the player at each seat in the table, if there is a player in that seat.
+  occupiedSeats: Map<SeatNumber, PlayerID | undefined>;
+  // A map representing which players in the game are ready to start.
+  readyPlayers: Map<SeatNumber, boolean | undefined>;
+  // A map representing the balance of players in each seat.
+  playerBalances: Map<SeatNumber, number | undefined>;
+  // A map of busted players
+  bustedPlayers: Map<SeatNumber, PlayerID | undefined>;
+  // A map of players standing
+  standPlayers: Map<SeatNumber, PlayerID | undefined>;
+}
 
 /**
  * Type for the amount raised in a poker move, or undefined if the
@@ -137,7 +183,12 @@ export interface Card {
 
 /**
  * Type for a move in Poker - this can be an action taken by a player, like a raise or a call, or an action taken by
- * the dealer, like a card being dealt.
+ * the dealer, like a card being dealt. Actions will follow the following formats - 
+ * A raise action will have the type raise, the player who took the action, and a positive number amount for the raiseAmount.
+ * A call action will only have the name of the player taking the action
+ * A check action will only have the name of the player taking the action.
+ * A deal action will have the card dealt - if it is to a player's hand player will have the SeatNumber of that player, otherwise it will be undefined
+ * to signify a deal to the table.
  */
 export interface PokerMove {
   moveType: PokerAction;
@@ -155,7 +206,7 @@ export interface PokerMove {
 }
 
 /**
- * Interface for the methods needed in an implementation of a deck of cards
+ * Interface for the methods needed in an implementation of a deck of cards.
  */
 export interface DeckOfCards {
   drawCard(): Card;
@@ -176,10 +227,14 @@ export interface PokerGameState extends WinnableGameState {
   occupiedSeats: Map<SeatNumber, PlayerID | undefined>;
   // A map representing which players in the game are ready to start.
   readyPlayers: Map<SeatNumber, boolean | undefined>;
+  // A map representing which players in the game have folded
+  foldedPlayers: Map<SeatNumber, boolean>;
   // A map representing the balance of players in each seat.
   playerBalances: Map<SeatNumber, Integer | undefined>;
   // The player who will be the small blind
   smallBlind: SeatNumber;
+  // The player who will be the big blind
+  pot: number;
 }
 
 /**
@@ -289,7 +344,7 @@ interface InteractableCommandBase {
   type: string;
 }
 
-export type InteractableCommand =  ViewingAreaUpdateCommand | JoinGameCommand | GameMoveCommand<TicTacToeMove> | GameMoveCommand<ConnectFourMove> | GameMoveCommand<PokerMove> | StartGameCommand | LeaveGameCommand;
+export type InteractableCommand =  ViewingAreaUpdateCommand | JoinGameCommand | GameMoveCommand<TicTacToeMove> | GameMoveCommand<ConnectFourMove> | GameMoveCommand<PokerMove> | GameMoveCommand<BlackjackMove> | StartGameCommand | LeaveGameCommand;
 export interface ViewingAreaUpdateCommand  {
   type: 'ViewingAreaUpdate';
   update: ViewingArea;

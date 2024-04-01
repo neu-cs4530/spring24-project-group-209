@@ -34,8 +34,6 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
 
   protected _foldedPlayers: Map<SeatNumber, boolean> = new Map<SeatNumber, boolean>();
 
-  private _pot: number;
-
   private _firstPlayer: SeatNumber;
 
   private _next: SeatNumber;
@@ -61,6 +59,8 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
     const initialOccupiedSeats = new Map<SeatNumber, PlayerID | undefined>();
     const initialReadyPlayers = new Map<SeatNumber, boolean | undefined>();
     const initialPlayerBalances = new Map<SeatNumber, number | undefined>();
+    const initialFoldedPlayers = new Map<SeatNumber, boolean>();
+
     for (let i = 0; i < 8; i++) {
       initialOccupiedSeats.set(i as SeatNumber, undefined);
       initialReadyPlayers.set(i as SeatNumber, undefined);
@@ -77,7 +77,11 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
       occupiedSeats: initialOccupiedSeats,
       readyPlayers: initialReadyPlayers,
       playerBalances: initialPlayerBalances,
+      foldedPlayers: initialFoldedPlayers,
+      pot: 0,
     });
+
+    this._foldedPlayers = initialFoldedPlayers;
 
     for (let i = 0; i < 8; i++) {
       this._foldedPlayers.set(i as SeatNumber, false);
@@ -102,7 +106,7 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
       }
     }
 
-    this._pot = 0;
+    this.state.pot = 0;
     this._next = 0;
     this._firstPlayer = 0;
   }
@@ -211,7 +215,7 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
       this.state.playerBalances.get(this._getNextSeat(this.state.smallBlind)) - DEFAULT_BIG_BLIND,
     );
 
-    this._pot = DEFAULT_SMALL_BLIND + DEFAULT_BIG_BLIND;
+    this.state.pot = DEFAULT_SMALL_BLIND + DEFAULT_BIG_BLIND;
     this._next = this._getNextSeat(this._getNextSeat(this.state.smallBlind));
     this._firstPlayer = this._next;
     this._currentBets.set(this.state.smallBlind, DEFAULT_SMALL_BLIND);
@@ -269,9 +273,9 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
           this.state.playerBalances.get(seat) < this._getMaxBet() - curBet &&
           !this._maxBetsCapped.get(seat)
         ) {
-          this._pot += curBet;
+          this.state.pot += curBet;
           this.state.playerBalances.set(seat, 0);
-          this._maxBets.set(seat, this._pot);
+          this._maxBets.set(seat, this.state.pot);
           this._maxBetsCapped.set(seat, false);
         } else if (this.state.playerBalances.get(seat) === 0) {
           break;
@@ -280,7 +284,7 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
             seat,
             this.state.playerBalances.get(seat) - (this._getMaxBet() - curBet),
           );
-          this._pot += this._getMaxBet() - curBet;
+          this.state.pot += this._getMaxBet() - curBet;
           this._currentBets.set(seat, this._getMaxBet());
           for (let i = 0; i < 8; i++) {
             const maxBet = this._maxBets.get(i as SeatNumber);
@@ -323,7 +327,7 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
           this.state.playerBalances.get(seat) -
             (this._getMaxBet() - curBet + move.move.raiseAmount),
         );
-        this._pot += this._getMaxBet() - curBet + move.move.raiseAmount;
+        this.state.pot += this._getMaxBet() - curBet + move.move.raiseAmount;
         this._currentBets.set(seat, this._getMaxBet() + move.move.raiseAmount);
 
         for (let i = 0; i < 8; i++) {
@@ -335,7 +339,7 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
         }
 
         if (this.state.playerBalances.get(seat) === 0) {
-          this._maxBets.set(seat, this._pot);
+          this._maxBets.set(seat, this.state.pot);
           this._maxBetsCapped.set(seat, false);
         }
         break;
@@ -410,7 +414,7 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
           winners[0],
           this.state.playerBalances.get(winners[0]) + maxWin,
         );
-        this._pot -= maxWin;
+        this.state.pot -= maxWin;
         let playersToRefund: Array<SeatNumber> = [];
         for (let i = 0; i < 8; i++) {
           const pbet = this._currentBets.get(i as SeatNumber);
@@ -422,13 +426,13 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
           this.state.playerBalances.set(
             playersToRefund[i],
             this.state.playerBalances.get(playersToRefund[i]) +
-              Math.floor(this._pot / playersToRefund.length),
+              Math.floor(this.state.pot / playersToRefund.length),
           );
         }
       } else {
         this.state.playerBalances.set(
           winners[0],
-          this.state.playerBalances.get(winners[0]) + this._pot,
+          this.state.playerBalances.get(winners[0]) + this.state.pot,
         );
       }
     } else {
@@ -437,7 +441,7 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
       for (let win = 0; win < winners.length; win++) {
         this.state.playerBalances.set(
           winners[win],
-          this.state.playerBalances.get(winners[win]) + this._pot / winners.length,
+          this.state.playerBalances.get(winners[win]) + this.state.pot / winners.length,
         );
       }
     }
