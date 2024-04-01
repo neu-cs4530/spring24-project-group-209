@@ -24,7 +24,6 @@ import {
   InteractableID,
   PlayerID,
   PlayerLocation,
-  ShopArea as ShopAreaModel,
   TownSettingsUpdate,
   ViewingArea as ViewingAreaModel,
 } from '../types/CoveyTownSocket';
