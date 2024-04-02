@@ -1,10 +1,18 @@
-import InvalidParametersError, { BOARD_POSITION_NOT_VALID_MESSAGE, GAME_FULL_MESSAGE, GAME_NOT_IN_PROGRESS_MESSAGE, GAME_NOT_STARTABLE_MESSAGE, MOVE_NOT_YOUR_TURN_MESSAGE, PLAYER_ALREADY_IN_GAME_MESSAGE, PLAYER_NOT_IN_GAME_MESSAGE } from '../../lib/InvalidParametersError';
+import InvalidParametersError, {
+  BOARD_POSITION_NOT_VALID_MESSAGE,
+  GAME_FULL_MESSAGE,
+  GAME_NOT_IN_PROGRESS_MESSAGE,
+  GAME_NOT_STARTABLE_MESSAGE,
+  MOVE_NOT_YOUR_TURN_MESSAGE,
+  PLAYER_ALREADY_IN_GAME_MESSAGE,
+  PLAYER_NOT_IN_GAME_MESSAGE,
+} from '../../lib/InvalidParametersError';
 import Player from '../../lib/Player';
 import {
-    BlackjackAction,
-    BlackjackGameState,
-    BlackjackMove,
-    DeckOfCards,
+  BlackjackAction,
+  BlackjackGameState,
+  BlackjackMove,
+  DeckOfCards,
   GameMove,
   PlayerID,
   SeatNumber,
@@ -16,17 +24,22 @@ import Game from './Game';
  * A Blackjack is a game which implements the rules of Blackjack.
  */
 export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMove> {
-    protected _deck: DeckOfCards;
+  protected _deck: DeckOfCards;
 
-    protected _oldBalances?: Map<PlayerID, number>;
+  protected _oldBalances?: Map<PlayerID, number>;
 
-    protected _bustedPlayers: Map<SeatNumber, boolean> = new Map<SeatNumber, boolean>();
+  protected _bustedPlayers: Map<SeatNumber, boolean> = new Map<SeatNumber, boolean>();
 
-    private _next: SeatNumber;
-    private _betAmt: number;
-    private _firstPlayer: number;
-    private _currentBets: Map<SeatNumber, number> = new Map<SeatNumber, number>();
-    private _standPlayers: Map<SeatNumber, boolean> = new Map<SeatNumber, boolean>();
+  private _next: SeatNumber;
+
+  private _betAmt: number;
+
+  private _firstPlayer: number;
+
+  private _currentBets: Map<SeatNumber, number> = new Map<SeatNumber, number>();
+
+  private _standPlayers: Map<SeatNumber, boolean> = new Map<SeatNumber, boolean>();
+
   /**
    * Creates a new BlackjackGame.
    * @param deck Provides the deck object to be used for this poker game
@@ -47,7 +60,7 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
 
     super({
       moves: [],
-      dealerMoves:[],
+      dealerMoves: [],
       status: 'WAITING_FOR_PLAYERS',
       occupiedSeats: initialOccupiedSeats,
       readyPlayers: initialReadyPlayers,
@@ -55,69 +68,68 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
     }); // This is not necessarily accurate, written to get rid of syntax errors in shell file
 
     for (let i = 0; i < 8; i++) {
-        this._bustedPlayers.set(i as SeatNumber, false);
-        this._standPlayers.set(i as SeatNumber, false);
+      this._bustedPlayers.set(i as SeatNumber, false);
+      this._standPlayers.set(i as SeatNumber, false);
     }
-  
+
     if (deck) {
-        this._deck = deck;
+      this._deck = deck;
     } else {
-        this._deck = new BasicDeck();
+      this._deck = new BasicDeck();
     }
 
     if (priorGame) {
-        this._oldBalances = new Map<PlayerID, number>();
-        for (let i = 0; i < 8; i++) {
-            const p = priorGame.state.occupiedSeats.get(i as SeatNumber);
-            if (p) {
-                this._oldBalances.set(p, priorGame.state.playerBalances.get(i as SeatNumber) as number);
-            }
+      this._oldBalances = new Map<PlayerID, number>();
+      for (let i = 0; i < 8; i++) {
+        const p = priorGame.state.occupiedSeats.get(i as SeatNumber);
+        if (p) {
+          this._oldBalances.set(p, priorGame.state.playerBalances.get(i as SeatNumber) as number);
         }
+      }
     }
     this._next = 0;
     this._firstPlayer = 0;
     this._betAmt = 100; // default bet amount for now
   }
 
-    /**
-    * Gets the next occupied seat in the turn order
-    */
-    private _getNextSeat(from: SeatNumber): SeatNumber {
-        let current: SeatNumber;
-        if (from === 7) return 8 as SeatNumber;
-        else current = (from + 1) as SeatNumber;
-    
-        while (
-          this.state.occupiedSeats.get(current) === undefined ||
-          this._bustedPlayers.get(current)
-        ) {
-            current += 1;
-        }
-    
-        return current;
+  /**
+   * Gets the next occupied seat in the turn order
+   */
+  private _getNextSeat(from: SeatNumber): SeatNumber {
+    let current: SeatNumber;
+    if (from === 7) return 8 as SeatNumber;
+    current = (from + 1) as SeatNumber;
+
+    while (
+      this.state.occupiedSeats.get(current) === undefined ||
+      this._bustedPlayers.get(current)
+    ) {
+      current += 1;
     }
 
-    private _getNextOpenSeat(): SeatNumber | undefined {
-        let current = 0 as SeatNumber;
-        while (this.state.occupiedSeats.get(current) !== undefined) {
-          if (current === 7) return undefined;
-          current += 1;
-        }
-        return current;
+    return current;
+  }
+
+  private _getNextOpenSeat(): SeatNumber | undefined {
+    let current = 0 as SeatNumber;
+    while (this.state.occupiedSeats.get(current) !== undefined) {
+      if (current === 7) return undefined;
+      current += 1;
     }
+    return current;
+  }
 
   /**
    * Given a player ID, returns the seat that that player is sitting at, or undefined if they are not in the game
    * @param playerID The player ID to find the seat of
    * @returns a SeatNumber representing the player seat, or undefined if the player is not in the game
    */
-   private _getPlayerSeat(playerID: string): SeatNumber | undefined {
+  private _getPlayerSeat(playerID: string): SeatNumber | undefined {
     for (let i = 0; i < 8; i++) {
       if (this.state.occupiedSeats.get(i as SeatNumber) === playerID) return i as SeatNumber;
     }
     return undefined;
   }
-
 
   /**
    * Indicates a player is ready to start the game.
@@ -133,51 +145,54 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
    */
 
   public startGame(player: Player): void {
-    if (this.state.status !== 'WAITING_TO_START') {
-        throw new InvalidParametersError(GAME_NOT_STARTABLE_MESSAGE);
+    if (this.state.status !== 'WAITING_TO_START' && this.state.status !== 'WAITING_FOR_PLAYERS') {
+      throw new InvalidParametersError(GAME_NOT_STARTABLE_MESSAGE);
     }
     const seat = this._getPlayerSeat(player.id);
     if (seat === undefined) throw new InvalidParametersError(PLAYER_NOT_IN_GAME_MESSAGE);
-    if (
-      (this.state.status !== 'WAITING_TO_START' && this.state.status !== 'WAITING_FOR_PLAYERS')// ||
-      //(this.state.status === 'WAITING_FOR_PLAYERS')
-    ) throw new InvalidParametersError(GAME_NOT_STARTABLE_MESSAGE);
-    
+
     this.state.readyPlayers.set(seat, true);
 
     for (let i = 0; i < this.state.occupiedSeats.size; i++) {
-        if (this.state.readyPlayers.get(i as SeatNumber) === false) return;
+      if (this.state.readyPlayers.get(i as SeatNumber) === false) return;
     }
 
     this.state.status = 'IN_PROGRESS';
-    
+
     for (let i = 0; i < 8; i++) {
-        const p = this.state.occupiedSeats.get(i as SeatNumber);
-        if (p) {
-          const newMoves = [
-            ...this.state.moves,
-            { moveType: 'DEAL' as BlackjackAction, card: this._deck.drawCard(), player: i as SeatNumber },
-            { moveType: 'DEAL' as BlackjackAction, card: this._deck.drawCard(), player: i as SeatNumber },
-          ];
-          const newState: BlackjackGameState = {
-            ...this.state,
-            moves: newMoves,
-          };
-          this.state = newState;
-        }
+      const p = this.state.occupiedSeats.get(i as SeatNumber);
+      if (p) {
+        const newMoves = [
+          ...this.state.moves,
+          {
+            moveType: 'DEAL' as BlackjackAction,
+            card: this._deck.drawCard(),
+            player: i as SeatNumber,
+          },
+          {
+            moveType: 'DEAL' as BlackjackAction,
+            card: this._deck.drawCard(),
+            player: i as SeatNumber,
+          },
+        ];
+        const newState: BlackjackGameState = {
+          ...this.state,
+          moves: newMoves,
+        };
+        this.state = newState;
+      }
     }
-    const dealerMoves = [  // dealer's first card
-        ...this.state.dealerMoves,
-        { moveType: 'DEAL' as BlackjackAction, card: this._deck.drawCard(), player: 8 as SeatNumber },
+    const dealerMoves = [
+      // dealer's first card
+      ...this.state.dealerMoves,
+      { moveType: 'DEAL' as BlackjackAction, card: this._deck.drawCard(), player: 8 as SeatNumber },
     ];
 
     const newState: BlackjackGameState = {
-        ...this.state,
-        dealerMoves: dealerMoves,
-      };
+      ...this.state,
+      dealerMoves,
+    };
     this.state = newState;
-
-
   }
 
   /**
@@ -197,7 +212,6 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
    * @throws InvalidParametersError if the move is invalid per the rules of blackjack (BOARD_POSITION_NOT_VALID_MESSAGE)
    */
 
-  
   public applyMove(move: GameMove<BlackjackMove>): void {
     if (this.state.status !== 'IN_PROGRESS')
       throw new InvalidParametersError(GAME_NOT_IN_PROGRESS_MESSAGE);
@@ -205,16 +219,13 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
     if (seat === undefined) throw new InvalidParametersError(PLAYER_NOT_IN_GAME_MESSAGE);
     if (seat !== this._next) throw new InvalidParametersError(MOVE_NOT_YOUR_TURN_MESSAGE);
     move.move.player = seat;
-    let bal = this.state.playerBalances.get(seat);
+    const bal = this.state.playerBalances.get(seat);
     switch (move.move.moveType) {
       case 'BET': {
         if (bal && bal < this._betAmt) {
           break;
         } else if (bal) {
-          this.state.playerBalances.set(
-            seat,
-            bal - (this._betAmt),
-          );
+          this.state.playerBalances.set(seat, bal - this._betAmt);
           this._currentBets.set(seat, this._betAmt);
         }
         break;
@@ -226,40 +237,37 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
       case 'HIT': {
         const newCard = this._deck.drawCard();
         const newMoves = [
-            ...this.state.moves,
-            { moveType: 'DEAL' as BlackjackAction, card: newCard, player: seat },
+          ...this.state.moves,
+          { moveType: 'DEAL' as BlackjackAction, card: newCard, player: seat },
         ];
         const newState: BlackjackGameState = {
-            ...this.state,
-            moves: newMoves,
+          ...this.state,
+          moves: newMoves,
         };
         this.state = newState;
         break;
       }
       case 'DOUBLE': {
         if (bal && bal < this._betAmt) {
-            break;
-        } else if (bal) {   
-            this.state.playerBalances.set(
-                seat,
-                bal - (this._betAmt),
-            );
-            this._currentBets.set(seat, this._betAmt * 2);
+          break;
+        } else if (bal) {
+          this.state.playerBalances.set(seat, bal - this._betAmt);
+          this._currentBets.set(seat, this._betAmt * 2);
         }
         const newCard = this._deck.drawCard();
         const newMoves = [
-            ...this.state.moves,
-            { moveType: 'DEAL' as BlackjackAction, card: newCard, player: seat },
+          ...this.state.moves,
+          { moveType: 'DEAL' as BlackjackAction, card: newCard, player: seat },
         ];
         const newState: BlackjackGameState = {
-            ...this.state,
-            moves: newMoves,
+          ...this.state,
+          moves: newMoves,
         };
         this.state = newState;
         this._standPlayers.set(seat, true);
         break;
-    }
-    default:
+      }
+      default:
         throw new InvalidParametersError(BOARD_POSITION_NOT_VALID_MESSAGE);
     }
 
@@ -273,67 +281,70 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
     this.state = newState;
 
     if (this._next === undefined) {
-        this._endGame();
+      this._endGame();
     }
-    
   }
-    private _endGame() {
-        let dealerTotal = this._checkValue(8 as SeatNumber);
-        while (dealerTotal < 17) {
-            const newCard = this._deck.drawCard();
-            const newMoves = [
-                ...this.state.dealerMoves,
-                { moveType: 'DEAL' as BlackjackAction, card: newCard, player: 8 as SeatNumber },
-            ];
-            const newState: BlackjackGameState = {
-                ...this.state,
-                dealerMoves: newMoves,
-            };
-            this.state = newState;
-            dealerTotal = this._checkValue(8 as SeatNumber);
-        }
-        for (let i = 0; i < 8; i++) {
-            if (this.state.occupiedSeats.get(i as SeatNumber)) {
-                let prev = this.state.playerBalances.get(i as SeatNumber) as number;
-                const playerTotal = this._checkValue(i as SeatNumber);
-                if (playerTotal > 21) {
-                    this.state.playerBalances.set(i as SeatNumber, prev - this._betAmt);
-                } else if (dealerTotal > 21) {
-                    this.state.playerBalances.set(i as SeatNumber, prev - this._betAmt);
-                } else if (playerTotal > dealerTotal) {
-                    this.state.playerBalances.set(i as SeatNumber, prev + this._betAmt * 2);
-                } else if (playerTotal < dealerTotal) {
-                    this.state.playerBalances.set(i as SeatNumber, prev - this._betAmt);
-                }
-            }
-        }
-        this.state.status = 'OVER';
-        
+
+  private _endGame() {
+    let dealerTotal = this._checkValue(8 as SeatNumber);
+    while (dealerTotal < 17) {
+      const newCard = this._deck.drawCard();
+      const newMoves = [
+        ...this.state.dealerMoves,
+        { moveType: 'DEAL' as BlackjackAction, card: newCard, player: 8 as SeatNumber },
+      ];
+      const newState: BlackjackGameState = {
+        ...this.state,
+        dealerMoves: newMoves,
+      };
+      this.state = newState;
+      dealerTotal = this._checkValue(8 as SeatNumber);
     }
+    for (let i = 0; i < 8; i++) {
+      if (this.state.occupiedSeats.get(i as SeatNumber)) {
+        const prev = this.state.playerBalances.get(i as SeatNumber) as number;
+        const playerTotal = this._checkValue(i as SeatNumber);
+        if (playerTotal > 21) {
+          this.state.playerBalances.set(i as SeatNumber, prev - this._betAmt);
+        } else if (dealerTotal > 21) {
+          this.state.playerBalances.set(i as SeatNumber, prev - this._betAmt);
+        } else if (playerTotal > dealerTotal) {
+          this.state.playerBalances.set(i as SeatNumber, prev + this._betAmt * 2);
+        } else if (playerTotal < dealerTotal) {
+          this.state.playerBalances.set(i as SeatNumber, prev - this._betAmt);
+        }
+      }
+    }
+    this.state.status = 'OVER';
+  }
 
   private _checkValue(seat: SeatNumber): number {
     let total = 0;
     let aces = 0;
     for (const move of this.state.moves) {
-        if (move.player === seat && move.moveType === 'DEAL') {
-            if (move.card.rank === 'ACE') {
-            aces += 1;
-            } else if (move.card.rank === 'JACK' || move.card.rank === 'QUEEN' || move.card.rank === 'KING') {
-            total += 10;
-            } else {
-            total += parseInt(move.card.rank, 10);
-            }
+      if (move.player === seat && move.moveType === 'DEAL') {
+        if (move.card.rank === 'ACE') {
+          aces += 1;
+        } else if (
+          move.card.rank === 'JACK' ||
+          move.card.rank === 'QUEEN' ||
+          move.card.rank === 'KING'
+        ) {
+          total += 10;
+        } else {
+          total += parseInt(move.card.rank, 10);
         }
+      }
     }
     for (let i = 0; i < aces; i++) {
-        if (total + 11 > 21) {
-            total += 1;
-        } else {
-            total += 11;
-        }
+      if (total + 11 > 21) {
+        total += 1;
+      } else {
+        total += 11;
+      }
     }
     return total;
-    }
+  }
 
   /**
    * Joins a player to the game.
@@ -345,18 +356,18 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
    * @throws InvalidParametersError if the player is already in the game (PLAYER_ALREADY_IN_GAME_MESSAGE)
    * @throws InvalidParametersError if the game is full (GAME_FULL_MESSAGE)
    * @throws InvalidParametersError if the game is already in progress even with empty seats
-   * 
+   *
    * @param player the player to join the game
    */
   protected _join(player: Player): void {
     const p = player;
     if (this._getPlayerSeat(p.id) !== undefined) {
-        throw new InvalidParametersError(PLAYER_ALREADY_IN_GAME_MESSAGE);
+      throw new InvalidParametersError(PLAYER_ALREADY_IN_GAME_MESSAGE);
     }
-      const nextOpen = this._getNextOpenSeat();
-      if (nextOpen === undefined) throw new InvalidParametersError(GAME_FULL_MESSAGE);
-      if (this.state.status !== 'WAITING_FOR_PLAYERS')
-        throw new InvalidParametersError(GAME_FULL_MESSAGE);
+    const nextOpen = this._getNextOpenSeat();
+    if (nextOpen === undefined) throw new InvalidParametersError(GAME_FULL_MESSAGE);
+    if (this.state.status !== 'WAITING_FOR_PLAYERS')
+      throw new InvalidParametersError(GAME_FULL_MESSAGE);
     this.state.occupiedSeats.set(nextOpen, player.id);
 
     this.state.occupiedSeats.set(nextOpen, player.id);
@@ -365,10 +376,8 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
 
     if (this._oldBalances && this._oldBalances.get(player.id))
       this.state.playerBalances.set(nextOpen, this._oldBalances.get(player.id));
-    else this.state.playerBalances.set(nextOpen, 1000/**default for now*/);
+    else this.state.playerBalances.set(nextOpen, 1000 /** default for now */);
     if (this._getNextOpenSeat() === undefined) this.state.status = 'WAITING_TO_START';
-
-    
   }
 
   /**
@@ -388,45 +397,58 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
   protected _leave(player: Player): void {
     let isInGame = false;
     let playerIdSeat: SeatNumber = 0;
-    if (this.state.occupiedSeats.get(0) == player.id) {
+    if (this.state.occupiedSeats.get(0) === player.id) {
       isInGame = true;
-    } else if (this.state.occupiedSeats.get(1) == player.id) {
+    } else if (this.state.occupiedSeats.get(1) === player.id) {
       isInGame = true;
       playerIdSeat = 1;
-    } else if (this.state.occupiedSeats.get(2) == player.id) {
+    } else if (this.state.occupiedSeats.get(2) === player.id) {
       isInGame = true;
       playerIdSeat = 2;
-    } else if (this.state.occupiedSeats.get(3) == player.id) {
+    } else if (this.state.occupiedSeats.get(3) === player.id) {
       isInGame = true;
       playerIdSeat = 3;
-    } else if (this.state.occupiedSeats.get(4) == player.id) {
+    } else if (this.state.occupiedSeats.get(4) === player.id) {
       isInGame = true;
       playerIdSeat = 4;
-    } else if (this.state.occupiedSeats.get(5) == player.id) {
+    } else if (this.state.occupiedSeats.get(5) === player.id) {
       isInGame = true;
       playerIdSeat = 5;
-    } else if (this.state.occupiedSeats.get(6) == player.id) {
+    } else if (this.state.occupiedSeats.get(6) === player.id) {
       isInGame = true;
       playerIdSeat = 6;
-    } else if (this.state.occupiedSeats.get(7) == player.id) {
+    } else if (this.state.occupiedSeats.get(7) === player.id) {
       isInGame = true;
       playerIdSeat = 7;
     }
     if (!isInGame) {
-        throw new InvalidParametersError(PLAYER_NOT_IN_GAME_MESSAGE);
+      throw new InvalidParametersError(PLAYER_NOT_IN_GAME_MESSAGE);
     }
-    const newMoves = [...this.state.moves, { moveType: 'FOLD' as BlackjackAction, player: playerIdSeat}];
-        const newState: BlackjackGameState = {
-          ...this.state,
-          moves: newMoves,
-        };
-        this.state = newState;
-    
+    const newMoves = [
+      ...this.state.moves,
+      { moveType: 'STAND' as BlackjackAction, player: playerIdSeat },
+    ];
+    const newState: BlackjackGameState = {
+      ...this.state,
+      moves: newMoves,
+    };
+    this.state = newState;
+
     this.state.occupiedSeats.set(playerIdSeat, undefined);
     this.state.readyPlayers.set(playerIdSeat, undefined);
     this.state.playerBalances.set(playerIdSeat, 0);
-    this.state.status = 'WAITING_FOR_PLAYERS';
-    
+    let anyoneLeft = false;
+    for (let i = 0; i < 8; i++) {
+      if (this.state.occupiedSeats.get(i as SeatNumber) !== undefined) {
+        anyoneLeft = true;
+      }
+    }
+    if (!anyoneLeft) {
+      this.state.status = 'OVER';
+    } else if (this.state.status === 'IN_PROGRESS') {
+      this._standPlayers.set(playerIdSeat, true);
+    } else if (this.state.status === 'WAITING_TO_START') {
+      this.state.status = 'WAITING_FOR_PLAYERS';
+    }
   }
 }
-
