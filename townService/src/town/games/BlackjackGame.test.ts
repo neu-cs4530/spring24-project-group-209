@@ -790,7 +790,7 @@ describe('BlackjackGame', () => {
           expect(cardsDealt.filter((m: BlackjackMove) => m.player === seats[6]).length).toBe(2);
           expect(cardsDealt.filter((m: BlackjackMove) => m.player === seats[7]).length).toBe(2);
         });
-        /** it('should deal cards in the order of seat index', () => {
+        it('should deal cards in the order of seat index', () => {
           game.join(players[2]);
           game.join(players[3]);
           game.join(players[4]);
@@ -824,80 +824,96 @@ describe('BlackjackGame', () => {
           game.startGame(players[6]);
           game.startGame(players[7]);
 
-          const cardsDealt = game.state.moves.filter(m => m.moveType === 'DEAL');
+          const cardsDealt = game.state.moves.filter((m: BlackjackMove) => m.moveType === 'DEAL');
 
-          const zeroCards = cardsDealt.filter(m => m.player === seats[0]);
+          const zeroCards = cardsDealt.filter((m: BlackjackMove) => m.player === seats[0]);
           expect(zeroCards.length).toBe(2);
-          expect(zeroCards.filter(m => m.card?.face === 1 && m.card.suite === 'CLUBS').length).toBe(
-            1,
-          );
           expect(
-            zeroCards.filter(m => m.card?.face === 1 && m.card.suite === 'SPADES').length,
+            zeroCards.filter((m: BlackjackMove) => m.card?.face === 1 && m.card.suite === 'CLUBS')
+              .length,
+          ).toBe(1);
+          expect(
+            zeroCards.filter((m: BlackjackMove) => m.card?.face === 1 && m.card.suite === 'SPADES')
+              .length,
           ).toBe(1);
 
-          const oneCards = cardsDealt.filter(m => m.player === seats[1]);
+          const oneCards = cardsDealt.filter((m: BlackjackMove) => m.player === seats[1]);
           expect(oneCards.length).toBe(2);
-          expect(oneCards.filter(m => m.card?.face === 2 && m.card.suite === 'CLUBS').length).toBe(
-            1,
-          );
-          expect(oneCards.filter(m => m.card?.face === 2 && m.card.suite === 'SPADES').length).toBe(
-            1,
-          );
+          expect(
+            oneCards.filter((m: BlackjackMove) => m.card?.face === 2 && m.card.suite === 'CLUBS')
+              .length,
+          ).toBe(1);
+          expect(
+            oneCards.filter((m: BlackjackMove) => m.card?.face === 2 && m.card.suite === 'SPADES')
+              .length,
+          ).toBe(1);
 
-          const threeCards = cardsDealt.filter(m => m.player === seats[2]);
+          const threeCards = cardsDealt.filter((m: BlackjackMove) => m.player === seats[2]);
           expect(threeCards.length).toBe(2);
           expect(
-            threeCards.filter(m => m.card?.face === 3 && m.card.suite === 'CLUBS').length,
+            threeCards.filter((m: BlackjackMove) => m.card?.face === 3 && m.card.suite === 'CLUBS')
+              .length,
           ).toBe(1);
           expect(
-            threeCards.filter(m => m.card?.face === 3 && m.card.suite === 'SPADES').length,
+            threeCards.filter((m: BlackjackMove) => m.card?.face === 3 && m.card.suite === 'SPADES')
+              .length,
           ).toBe(1);
 
-          const fourCards = cardsDealt.filter(m => m.player === seats[3]);
+          const fourCards = cardsDealt.filter((m: BlackjackMove) => m.player === seats[3]);
           expect(fourCards.length).toBe(2);
-          expect(fourCards.filter(m => m.card?.face === 4 && m.card.suite === 'CLUBS').length).toBe(
-            1,
-          );
           expect(
-            fourCards.filter(m => m.card?.face === 4 && m.card.suite === 'SPADES').length,
+            fourCards.filter((m: BlackjackMove) => m.card?.face === 4 && m.card.suite === 'CLUBS')
+              .length,
+          ).toBe(1);
+          expect(
+            fourCards.filter((m: BlackjackMove) => m.card?.face === 4 && m.card.suite === 'SPADES')
+              .length,
           ).toBe(1);
 
-          const fiveCards = cardsDealt.filter(m => m.player === seats[4]);
+          const fiveCards = cardsDealt.filter((m: BlackjackMove) => m.player === seats[4]);
           expect(fiveCards.length).toBe(2);
-          expect(fiveCards.filter(m => m.card?.face === 5 && m.card.suite === 'CLUBS').length).toBe(
-            1,
-          );
           expect(
-            fiveCards.filter(m => m.card?.face === 5 && m.card.suite === 'SPADES').length,
+            fiveCards.filter((m: BlackjackMove) => m.card?.face === 5 && m.card.suite === 'CLUBS')
+              .length,
+          ).toBe(1);
+          expect(
+            fiveCards.filter((m: BlackjackMove) => m.card?.face === 5 && m.card.suite === 'SPADES')
+              .length,
           ).toBe(1);
 
-          const sixCards = cardsDealt.filter(m => m.player === seats[5]);
+          const sixCards = cardsDealt.filter((m: BlackjackMove) => m.player === seats[5]);
           expect(sixCards.length).toBe(2);
-          expect(sixCards.filter(m => m.card?.face === 6 && m.card.suite === 'CLUBS').length).toBe(
-            1,
-          );
-          expect(sixCards.filter(m => m.card?.face === 6 && m.card.suite === 'SPADES').length).toBe(
-            1,
-          );
+          expect(
+            sixCards.filter((m: BlackjackMove) => m.card?.face === 6 && m.card.suite === 'CLUBS')
+              .length,
+          ).toBe(1);
+          expect(
+            sixCards.filter((m: BlackjackMove) => m.card?.face === 6 && m.card.suite === 'SPADES')
+              .length,
+          ).toBe(1);
 
-          const sevenCards = cardsDealt.filter(m => m.player === seats[6]);
+          const sevenCards = cardsDealt.filter((m: BlackjackMove) => m.player === seats[6]);
           expect(sevenCards.length).toBe(2);
           expect(
-            sevenCards.filter(m => m.card?.face === 7 && m.card.suite === 'CLUBS').length,
+            sevenCards.filter((m: BlackjackMove) => m.card?.face === 7 && m.card.suite === 'CLUBS')
+              .length,
           ).toBe(1);
           expect(
-            sevenCards.filter(m => m.card?.face === 7 && m.card.suite === 'SPADES').length,
+            sevenCards.filter((m: BlackjackMove) => m.card?.face === 7 && m.card.suite === 'SPADES')
+              .length,
           ).toBe(1);
 
-          const eightCards = cardsDealt.filter(m => m.player === seats[7]);
+          const eightCards = cardsDealt.filter((m: BlackjackMove) => m.player === seats[7]);
           expect(eightCards.length).toBe(2);
           expect(
-            eightCards.filter(m => m.card?.face === 8 && m.card.suite === 'CLUBS').length,
+            eightCards.filter((m: BlackjackMove) => m.card?.face === 8 && m.card.suite === 'CLUBS')
+              .length,
           ).toBe(1);
           expect(
-            eightCards.filter(m => m.card?.face === 8 && m.card.suite === 'SPADES').length,
+            eightCards.filter((m: BlackjackMove) => m.card?.face === 8 && m.card.suite === 'SPADES')
+              .length,
           ).toBe(1);
-        }); */
+        });
       });
     });
   });
@@ -1069,7 +1085,7 @@ describe('BlackjackGame', () => {
         game.applyMove({
           gameID: game.id,
           playerID: players[0].id,
-          move: { moveType: 'BET' },
+          move: { moveType: 'HIT' },
         }),
       ).toThrowError(GAME_NOT_IN_PROGRESS_MESSAGE);
     });
@@ -1081,7 +1097,7 @@ describe('BlackjackGame', () => {
         game.applyMove({
           gameID: game.id,
           playerID: players[2].id,
-          move: { moveType: 'BET' },
+          move: { moveType: 'HIT' },
         }),
       ).toThrowError(PLAYER_NOT_IN_GAME_MESSAGE);
     });
@@ -1096,25 +1112,76 @@ describe('BlackjackGame', () => {
         game.applyMove({
           gameID: game.id,
           playerID: players[1].id,
-          move: { moveType: 'BET' },
+          move: { moveType: 'HIT' },
         }),
       ).toThrowError(MOVE_NOT_YOUR_TURN_MESSAGE);
     });
-    /** it('should throw an error if a player attempts to raise more than they have', () => {
+    it('should throw an error if a player attempts to double when they dont have the funds', () => {
       game.join(players[2]);
 
       game.startGame(players[0]);
       game.startGame(players[1]);
       game.startGame(players[2]);
-
+      game.state.playerBalances.set(seats[0], 1);
       expect(() =>
         game.applyMove({
           gameID: game.id,
-          playerID: players[2].id,
-          move: { moveType: 'RAISE', raiseAmount: 2010 },
+          playerID: players[0].id,
+          move: { moveType: 'DOUBLE' },
         }),
-      ).toThrowError(BOARD_POSITION_NOT_VALID_MESSAGE);
-    }); */
+      ).toThrowError('Not enough money to double down');
+    });
+    it('should deal cards in the order of seat index', () => {
+      game.join(players[2]);
+      game.join(players[3]);
+      game.join(players[4]);
+      game.join(players[5]);
+      game.join(players[6]);
+      game.join(players[7]);
+
+      deck.addNextDraw({ face: 10, suite: 'HEARTS' });
+      deck.addNextDraw({ face: 10, suite: 'HEARTS' });
+      deck.addNextDraw({ face: 10, suite: 'CLUBS' });
+      deck.addNextDraw({ face: 10, suite: 'SPADES' });
+      deck.addNextDraw({ face: 8, suite: 'CLUBS' });
+      deck.addNextDraw({ face: 8, suite: 'SPADES' });
+      deck.addNextDraw({ face: 7, suite: 'CLUBS' });
+      deck.addNextDraw({ face: 7, suite: 'SPADES' });
+      deck.addNextDraw({ face: 6, suite: 'CLUBS' });
+      deck.addNextDraw({ face: 6, suite: 'SPADES' });
+      deck.addNextDraw({ face: 5, suite: 'CLUBS' });
+      deck.addNextDraw({ face: 5, suite: 'SPADES' });
+      deck.addNextDraw({ face: 4, suite: 'CLUBS' });
+      deck.addNextDraw({ face: 4, suite: 'SPADES' });
+      deck.addNextDraw({ face: 3, suite: 'CLUBS' });
+      deck.addNextDraw({ face: 3, suite: 'SPADES' });
+      deck.addNextDraw({ face: 2, suite: 'CLUBS' });
+      deck.addNextDraw({ face: 2, suite: 'SPADES' });
+      deck.addNextDraw({ face: 1, suite: 'CLUBS' });
+      deck.addNextDraw({ face: 1, suite: 'SPADES' });
+      game.startGame(players[0]);
+      game.startGame(players[1]);
+      game.startGame(players[2]);
+      game.startGame(players[3]);
+      game.startGame(players[4]);
+      game.startGame(players[5]);
+      game.startGame(players[6]);
+      game.startGame(players[7]);
+      expect(game.state.playerBalances.get(seats[0])).toBe(1000);
+      const dealerCardsBefore = game.state.dealerMoves;
+      expect(dealerCardsBefore.length).toBe(1);
+      for (let i = 0; i < 8; i++) {
+        game.applyMove({
+          gameID: game.id,
+          playerID: players[i].id,
+          move: { moveType: 'STAND' },
+        });
+      }
+      const dealerCards = game.state.dealerMoves;
+      expect(game.state.status).toBe('OVER');
+      expect(dealerCards.length).toBe(2);
+      expect(game.state.playerBalances.get(seats[0])).toBe(1000 - 100);
+    });
     describe('if a valid move is made which does not end the game', () => {
       /** it('should allow a player to fold without modifying their balance', () => {
         game.join(players[2]);
