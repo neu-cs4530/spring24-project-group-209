@@ -102,7 +102,7 @@ export default function PokerArea({
     };
   }, [townController, gameAreaController, toast]);
   let gameStatusText = <></>;
-  if (gameAreaController.whoseTurn === townController.ourPlayer) {
+  if (gameAreaController.whoseTurn === townController.ourPlayer && gameStatus == 'IN_PROGRESS') {
     const raiseInput = (
       <NumberInput
         defaultValue={5}
@@ -186,7 +186,10 @@ export default function PokerArea({
         {raiseInput} {callButton} {foldButton}
       </>
     );
-  } else if (gameAreaController.whoseTurn !== townController.ourPlayer) {
+  } else if (
+    gameAreaController.whoseTurn !== townController.ourPlayer &&
+    gameStatus == 'IN_PROGRESS'
+  ) {
     const raiseButton = <Button disabled={true}>Raise</Button>;
     const callButton = <Button disabled={true}>Call</Button>;
     const foldButton = <Button disabled={true}>Fold</Button>;

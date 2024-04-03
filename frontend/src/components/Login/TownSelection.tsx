@@ -301,6 +301,7 @@ export default function TownSelection(): JSX.Element {
                 autoFocus
                 name='password'
                 placeholder='Your password'
+                type='password' // Add this line to hide the characters entered
                 value={pass}
                 onChange={event => setPass(event.target.value)}
               />
