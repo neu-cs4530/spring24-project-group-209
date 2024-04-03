@@ -186,7 +186,8 @@ export default function TownSelection(): JSX.Element {
       });
       return;
     }
-    if (!firebaseUtils.handleLogin(userName, pass)) {
+    const successfulLogin = await firebaseUtils.handleLogin(userName, pass);
+    if (!successfulLogin) {
       toast({
         title: 'Unable to join town',
         description: 'Incorrect password or username already in use. Please try again.',

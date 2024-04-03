@@ -61,7 +61,7 @@ export const updateLoginTime = async (userName: string) => {
   const docSnap = await getDoc(docRef);
   if (docSnap.exists()) {
     if (docSnap.data().lastLogin.valueOf() / 1000 < Date.now() / 1000 - 86400) {
-      updateDoc(docRef, { currency: increment(2000), lastLogin: Date.now() });
+      updateDoc(docRef, { currency: increment(200), lastLogin: Date.now() });
     }
   } else {
     throw new Error('User data not found');
@@ -81,9 +81,9 @@ export const handleLogin = async (userName: string, pass: string): Promise<boole
   } else {
     await setDoc(docRef, {
       // Use user.uid as the path for the document reference
-      activeSkin: 'defaultSkin',
-      currency: 2000,
-      inventory: ['defaultSkin'],
+      activeSkin: 'SKIN1',
+      currency: 200,
+      inventory: ['SKIN1'],
       lastLogin: Date.now(),
       password: pass,
     });
@@ -92,7 +92,7 @@ export const handleLogin = async (userName: string, pass: string): Promise<boole
   }
 };
 
-export const getCurrency = async (userName: string) => {
+export const getCurrency = async (userName: string): Promise<number> => {
   const db = getFirestore(getApp());
 
   const cred = userName;
@@ -133,7 +133,7 @@ export const updateCurrencyIncrement = (userName: string, newValue: number) => {
   }
 };
 
-export const getInventory = async (userName: string) => {
+export const getInventory = async (userName: string): Promise<string[]> => {
   const db = getFirestore(getApp());
 
   const cred = userName;
@@ -150,7 +150,7 @@ export const getInventory = async (userName: string) => {
   }
 };
 
-export const updateInventory = (userName: string, newValue: number) => {
+export const updateInventory = (userName: string, newValue: string) => {
   const db = getFirestore(getApp());
 
   const cred = userName;

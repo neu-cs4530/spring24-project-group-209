@@ -11,12 +11,15 @@ import {
   ModalHeader,
   ModalOverlay,
   chakra,
+  Text,
+  useToast,
 } from '@chakra-ui/react';
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useInteractable } from '../../../classes/TownController';
 import ShopAreaInteractable from './ShopArea';
 import useTownController from '../../../hooks/useTownController';
 import { Image } from '@chakra-ui/react';
+import * as firebaseUtils from '../../../firebaseUtils';
 
 const StyledShopComponent = chakra(Container, {
   baseStyle: {
@@ -40,55 +43,81 @@ const StyledButton = chakra(Box, {
 });
 
 function ShopArea(): JSX.Element {
-  const shopArea = useInteractable('shopArea');
+  // const shopArea = useInteractable('shopArea');
+  const toast = useToast();
   const townController = useTownController();
-  const closeModal = useCallback(() => {
-    if (shopArea) {
-      townController.interactEnd(shopArea);
+  const username = townController.ourPlayer.userName;
+  const [balance, setBalance] = useState(0);
+  const [inventory, setInventory] = useState<string[]>([]);
+
+  useEffect(() => {
+    async function fetchData() {
+      const fetchedBalance = await firebaseUtils.getCurrency(username);
+      const fetchedInventory = await firebaseUtils.getInventory(username);
+      setBalance(fetchedBalance);
+      setInventory(fetchedInventory);
     }
-  }, [townController, shopArea]);
-  return (
-    <StyledShopComponent>
-      <Grid templateColumns='repeat(2, 1fr)' templateRows='repeat(2, 1fr)' gap={5}>
-        <GridItem>
-        <StyledButton>
-          <Grid templateColumns='repeat(2, 1fr)' gap={0}>
-            <GridItem> <Image h='150px' w='100px' src='/assets/cards/SKIN1/aceOfSpades.png' /> </GridItem>
-            <GridItem> <Image h='150px' w='100px' src='/assets/cards/SKIN1/backOfCard.png' /> </GridItem>
-          </Grid>
-          <Button>Test1</Button>
-        </StyledButton>
-        </GridItem>
-        <GridItem>
-        <StyledButton>
-      <Grid templateColumns='repeat(2, 1fr)' gap={0}>
-          <GridItem> <Image h='150px' w='100px' src='/assets/cards/SKIN2/aceOfSpades.png' /> </GridItem>
-          <GridItem> <Image h='150px' w='100px' src='/assets/cards/SKIN2/backOfCard.png' /> </GridItem>
+    fetchData();
+  }, [username]);
+
+  const handlePurchase = async (item: string, cost: number) => {
+    if (cost > balance) {
+      toast({
+        title: 'Insufficient funds',
+        description: 'You do not have enough money to purchase this item',
+        status: 'error',
+      });
+      return;
+    }
+    await firebaseUtils.updateCurrencyIncrement(username, -cost);
+    await firebaseUtils.updateInventory(username, item);
+    const newBalance = balance - cost;
+    const newInventory = inventory.includes(item) ? inventory : [...inventory, item];
+    setBalance(newBalance);
+    setInventory(newInventory);
+    toast({
+      title: 'Purchase successful',
+      description: `${item} has been equipped`,
+      status: 'success',
+    });
+  };
+  if (inventory.length === 0) {
+    return <Text fontSize='xl'>Loading...</Text>;
+  } else {
+    return (
+      <StyledShopComponent>
+        <Text fontSize='lg'>Balance: ${balance}</Text>
+        <Grid templateColumns='repeat(2, 1fr)' templateRows='repeat(2, 1fr)' gap={5}>
+          {[1, 2, 3, 4].map(skin => (
+            <GridItem key={`skin${skin}`}>
+              <StyledButton>
+                <Grid templateColumns='repeat(2, 1fr)' gap={0}>
+                  <GridItem>
+                    <Image h='150px' w='100px' src={`/assets/cards/SKIN${skin}/aceOfSpades.png`} />
+                  </GridItem>
+                  <GridItem>
+                    <Image h='150px' w='100px' src={`/assets/cards/SKIN${skin}/backOfCard.png`} />
+                  </GridItem>
+                </Grid>
+                <Button
+                  onClick={() => {
+                    handlePurchase(
+                      `SKIN${skin}`,
+                      inventory.includes(`SKIN${skin}`) ? 0 : 1000 * skin,
+                    );
+                  }}>
+                  {!inventory.includes(`SKIN${skin}`) ? 'Buy' : 'Equip'}
+                </Button>
+                {!inventory.includes(`SKIN${skin}`) && (
+                  <Text fontSize='md'>Cost: ${1000 * skin}</Text>
+                )}
+              </StyledButton>
+            </GridItem>
+          ))}
         </Grid>
-        <Button>Test2</Button>
-      </StyledButton>
-        </GridItem>
-        <GridItem>
-        <StyledButton>
-          <Grid templateColumns='repeat(2, 1fr)' gap={0}>
-            <GridItem> <Image h='150px' w='100px' src='/assets/cards/SKIN3/aceOfSpades.png' /> </GridItem>
-            <GridItem> <Image h='150px' w='100px' src='/assets/cards/SKIN3/backOfCard.png' /> </GridItem>
-          </Grid>
-          <Button>Test3</Button>
-        </StyledButton>
-        </GridItem>
-        <GridItem>
-        <StyledButton>
-      <Grid templateColumns='repeat(2, 1fr)' gap={0}>
-          <GridItem> <Image h='150px' w='100px' src='/assets/cards/SKIN4/aceOfSpades.png' /> </GridItem>
-          <GridItem> <Image h='150px' w='100px' src='/assets/cards/SKIN4/backOfCard.png' /> </GridItem>
-        </Grid>
-        <Button>Test4</Button>
-      </StyledButton>
-        </GridItem>
-        </Grid>
-    </StyledShopComponent>
-  );
+      </StyledShopComponent>
+    );
+  }
 }
 
 export default function ShopAreaWrapper(): JSX.Element {
@@ -115,17 +144,17 @@ export default function ShopAreaWrapper(): JSX.Element {
   }
   return <></>;
 }
-function chackra(
-  arg0: any,
-  arg1: {
-    baseStyle: {
-      display: string;
-      flexDirection: string;
-      alignItems: string;
-      justifyContent: string;
-      padding: string;
-    };
-  },
-) {
-  throw new Error('Function not implemented.');
-}
+// function chackra(
+//   arg0: any,
+//   arg1: {
+//     baseStyle: {
+//       display: string;
+//       flexDirection: string;
+//       alignItems: string;
+//       justifyContent: string;
+//       padding: string;
+//     };
+//   },
+// ) {
+//   throw new Error('Function not implemented.');
+// }

@@ -118,7 +118,7 @@ export default class PokerAreaController extends GameAreaController<PokerGameSta
     if (firstPlayer) {
       let activeSeat = (this.moveCount % 7) + firstPlayer;
       let player = this._model.game?.state.occupiedSeats.get(activeSeat as SeatNumber);
-      while (this._model.game?.state._foldedPlayers.get(activeSeat as SeatNumber)) {
+      while (this._model.game?.state.foldedPlayers.get(activeSeat as SeatNumber)) {
         player = this._model.game?.state.occupiedSeats.get(activeSeat as SeatNumber);
         activeSeat = activeSeat + 1;
       }

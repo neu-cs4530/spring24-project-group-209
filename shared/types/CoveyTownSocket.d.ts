@@ -183,7 +183,7 @@ export interface PokerGameState extends WinnableGameState {
   // A map representing which players in the game are ready to start.
   readyPlayers: Map<SeatNumber, boolean | undefined>;
   // A map representing which players in the game have folded
-  _foldedPlayers: Map<SeatNumber, boolean>
+  foldedPlayers: Map<SeatNumber, boolean>
   // A map representing the balance of players in each seat.
   playerBalances: Map<SeatNumber, Integer | undefined>;
   // The player who will be the small blind
