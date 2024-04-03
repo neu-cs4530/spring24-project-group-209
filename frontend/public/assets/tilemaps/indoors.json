@@ -621,23 +621,6 @@
                  "width":221.333333333333,
                  "x":2089.33333333333,
                  "y":446.666666666667
-                }, 
-                {
-                 "height":133.333333333333,
-                 "id":62,
-                 "name":"Poker1",
-                 "properties":[
-                        {
-                         "name":"type",
-                         "type":"string",
-                         "value":"Poker"
-                        }],
-                 "rotation":0,
-                 "type":"GameArea",
-                 "visible":true,
-                 "width":162.666666666667,
-                 "x":2282.66666666667,
-                 "y":280
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -646,7 +629,7 @@
          "y":0
         }],
  "nextlayerid":8,
- "nextobjectid":63,
+ "nextobjectid":62,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.10.2",

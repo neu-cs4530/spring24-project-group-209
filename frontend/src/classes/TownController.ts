@@ -646,15 +646,16 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
             this._interactableControllers.push(
               new ConnectFourAreaController(eachInteractable.id, eachInteractable, this),
             );
-          } else if (isPokerArea(eachInteractable)) {
-            this._interactableControllers.push(
-              new PokerAreaController(eachInteractable.id, eachInteractable, this),
-            );
-          } else if (isBlackJackArea(eachInteractable)) {
-            this._interactableControllers.push(
-              new BlackjackAreaController(eachInteractable.id, eachInteractable, this),
-            );
           }
+          // else if (isPokerArea(eachInteractable)) {
+          //   this._interactableControllers.push(
+          //     new PokerAreaController(eachInteractable.id, eachInteractable, this),
+          //   );
+          // } else if (isBlackJackArea(eachInteractable)) {
+          //   this._interactableControllers.push(
+          //     new BlackjackAreaController(eachInteractable.id, eachInteractable, this),
+          //   );
+          // }
         });
         this._userID = initialData.userID;
         this._ourPlayer = this.players.find(eachPlayer => eachPlayer.id == this.userID);
