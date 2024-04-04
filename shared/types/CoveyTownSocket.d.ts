@@ -117,13 +117,6 @@ export type PokerAction = 'RAISE' | 'CALL' | 'FOLD';
  */
 export type RaiseAmount = Integer | undefined;
 
-/**
- * Type for the seat position at a poker table,
- * used to limit the max number of players and keep track of 
- * player seats for subsequent rounds and moving the blinds.
- */
-export type SeatNumber = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
-
 export type CardSuite = 'DIAMONDS' | 'CLUBS' | 'SPADES' | 'HEARTS';
 
 // Represents the face of a card. Ace is 1, and J, Q and K are 11, 12 and 13 respectively.

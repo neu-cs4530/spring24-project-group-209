@@ -588,69 +588,6 @@ describe('BlackjackGame', () => {
         expect(game.state.readyPlayers.get(seats[0])).toBe(true);
         expect(game.state.status).toBe('WAITING_FOR_PLAYERS');
       });
-      describe('should properly assign the blind based on players in the game', () => {
-        /** it('should properly adjust the balances of the big and small blinds', () => {
-          game.join(players[2]);
-          game.join(players[3]);
-          game.join(players[4]);
-          game.join(players[5]);
-          game.join(players[6]);
-          game.join(players[7]);
-
-          game.startGame(players[0]);
-          game.startGame(players[1]);
-          game.startGame(players[2]);
-          game.startGame(players[3]);
-          game.startGame(players[4]);
-          game.startGame(players[5]);
-          game.startGame(players[6]);
-          game.startGame(players[7]);
-
-          expect(game.state.playerBalances.get(seats[0])).toBe(
-            DEFAULT_BUY_IN - DEFAULT_SMALL_BLIND,
-          );
-          expect(game.state.playerBalances.get(seats[1])).toBe(DEFAULT_BUY_IN - DEFAULT_BIG_BLIND);
-          expect(game.state.playerBalances.get(seats[2])).toBe(DEFAULT_BUY_IN);
-          expect(game.state.playerBalances.get(seats[3])).toBe(DEFAULT_BUY_IN);
-          expect(game.state.playerBalances.get(seats[4])).toBe(DEFAULT_BUY_IN);
-          expect(game.state.playerBalances.get(seats[5])).toBe(DEFAULT_BUY_IN);
-          expect(game.state.playerBalances.get(seats[6])).toBe(DEFAULT_BUY_IN);
-          expect(game.state.playerBalances.get(seats[7])).toBe(DEFAULT_BUY_IN);
-
-          const game2 = new BlackjackGame(new TestDeck(), game);
-
-          game2.join(players[0]);
-          game2.join(players[1]);
-          game2.join(players[2]);
-          game2.join(players[3]);
-          game2.join(players[4]);
-          game2.join(players[5]);
-          game2.join(players[6]);
-          game2.join(players[7]);
-
-          game2.startGame(players[0]);
-          game2.startGame(players[1]);
-          game2.startGame(players[2]);
-          game2.startGame(players[3]);
-          game2.startGame(players[4]);
-          game2.startGame(players[5]);
-          game2.startGame(players[6]);
-          game2.startGame(players[7]);
-
-          expect(game2.state.playerBalances.get(seats[0])).toBe(
-            DEFAULT_BUY_IN - DEFAULT_SMALL_BLIND,
-          );
-          expect(game2.state.playerBalances.get(seats[1])).toBe(
-            DEFAULT_BUY_IN - DEFAULT_BIG_BLIND - DEFAULT_SMALL_BLIND,
-          );
-          expect(game2.state.playerBalances.get(seats[2])).toBe(DEFAULT_BUY_IN - DEFAULT_BIG_BLIND);
-          expect(game2.state.playerBalances.get(seats[3])).toBe(DEFAULT_BUY_IN);
-          expect(game2.state.playerBalances.get(seats[4])).toBe(DEFAULT_BUY_IN);
-          expect(game2.state.playerBalances.get(seats[5])).toBe(DEFAULT_BUY_IN);
-          expect(game2.state.playerBalances.get(seats[6])).toBe(DEFAULT_BUY_IN);
-          expect(game2.state.playerBalances.get(seats[7])).toBe(DEFAULT_BUY_IN);
-        }); */
-      });
       describe('should deal 2 cards to each player in the game at the start of the game', () => {
         it('should deal 2 cards to each player in a two-player game', () => {
           game.startGame(players[0]);
@@ -1131,7 +1068,7 @@ describe('BlackjackGame', () => {
         }),
       ).toThrowError('Not enough money to double down');
     });
-    it('should deal cards in the order of seat index', () => {
+    it('should end game and deduct money if dealer wins', () => {
       game.join(players[2]);
       game.join(players[3]);
       game.join(players[4]);
@@ -1159,6 +1096,7 @@ describe('BlackjackGame', () => {
       deck.addNextDraw({ face: 2, suite: 'SPADES' });
       deck.addNextDraw({ face: 1, suite: 'CLUBS' });
       deck.addNextDraw({ face: 1, suite: 'SPADES' });
+      expect(game.state.playerBalances.get(seats[0])).toBe(1000);
       game.startGame(players[0]);
       game.startGame(players[1]);
       game.startGame(players[2]);
@@ -1167,7 +1105,6 @@ describe('BlackjackGame', () => {
       game.startGame(players[5]);
       game.startGame(players[6]);
       game.startGame(players[7]);
-      expect(game.state.playerBalances.get(seats[0])).toBe(1000);
       const dealerCardsBefore = game.state.dealerMoves;
       expect(dealerCardsBefore.length).toBe(1);
       for (let i = 0; i < 8; i++) {
@@ -1181,294 +1118,353 @@ describe('BlackjackGame', () => {
       expect(game.state.status).toBe('OVER');
       expect(dealerCards.length).toBe(2);
       expect(game.state.playerBalances.get(seats[0])).toBe(1000 - 100);
+      expect(game.state.playerBalances.get(seats[1])).toBe(1000 - 100);
+      const game2 = new BlackjackGame(new TestDeck(), game);
+      game2.join(players[0]);
+      game2.join(players[1]);
+      expect(game2.state.playerBalances.get(seats[0])).toBe(900);
+      expect(game2.state.playerBalances.get(seats[1])).toBe(900);
     });
-    describe('if a valid move is made which does not end the game', () => {
-      /** it('should allow a player to fold without modifying their balance', () => {
-        game.join(players[2]);
-
-        game.startGame(players[0]);
-        game.startGame(players[1]);
-        game.startGame(players[2]);
-
-        expect(game.state.playerBalances.get(seats[2])).toBe(DEFAULT_BUY_IN);
-
-        game.applyMove({
-          gameID: game.id,
-          playerID: players[2].id,
-          move: { moveType: 'RAISE', raiseAmount: 100 },
-        });
-
-        expect(game.state.playerBalances.get(seats[2])).toBe(
-          DEFAULT_BUY_IN - DEFAULT_BIG_BLIND - 100,
-        );
-
-        expect(game.state.playerBalances.get(seats[0])).toBe(DEFAULT_BUY_IN - DEFAULT_SMALL_BLIND);
-
-        game.applyMove({
-          gameID: game.id,
-          playerID: players[0].id,
-          move: { moveType: 'FOLD' },
-        });
-
-        expect(game.state.playerBalances.get(seats[0])).toBe(DEFAULT_BUY_IN - DEFAULT_SMALL_BLIND);
-      }); */
-      /** it('should allow a player to check without modyfing their balance', () => {
-        game.join(players[2]);
-
-        game.startGame(players[0]);
-        game.startGame(players[1]);
-        game.startGame(players[2]);
-
-        game.applyMove({
-          gameID: game.id,
-          playerID: players[2].id,
-          move: { moveType: 'CALL' },
-        });
-
-        game.applyMove({
-          gameID: game.id,
-          playerID: players[0].id,
-          move: { moveType: 'CALL' },
-        });
-
-        expect(game.state.playerBalances.get(seats[1])).toBe(DEFAULT_BUY_IN - DEFAULT_BIG_BLIND);
-
-        game.applyMove({
-          gameID: game.id,
-          playerID: players[1].id,
-          move: { moveType: 'CHECK' },
-        });
-
-        expect(game.state.playerBalances.get(seats[1])).toBe(DEFAULT_BUY_IN - DEFAULT_BIG_BLIND);
-      }); */
-      /** it('when the entire table goes around and either checks or calls, cards should be dealt to the pool - three, then one, then one', () => {
-        game.join(players[2]);
-        game.join(players[3]);
-
-        game.startGame(players[0]);
-        game.startGame(players[1]);
-        game.startGame(players[2]);
-        game.startGame(players[3]);
-
-        game.applyMove({
-          gameID: game.id,
-          playerID: players[2].id,
-          move: { moveType: 'CALL' },
-        });
-
-        game.applyMove({
-          gameID: game.id,
-          playerID: players[3].id,
-          move: { moveType: 'CALL' },
-        });
-
-        game.applyMove({
-          gameID: game.id,
-          playerID: players[0].id,
-          move: { moveType: 'CALL' },
-        });
-
-        let cardsDrawn = game.state.moves.filter(m => m.moveType === 'DEAL');
-
-        expect(cardsDrawn.filter(m => m.player === undefined).length).toBe(0);
-
-        game.applyMove({
-          gameID: game.id,
-          playerID: players[1].id,
-          move: { moveType: 'CHECK' },
-        });
-
-        cardsDrawn = game.state.moves.filter(m => m.moveType === 'DEAL');
-
-        expect(cardsDrawn.filter(m => m.player === undefined).length).toBe(3);
-
-        game.applyMove({
-          gameID: game.id,
-          playerID: players[2].id,
-          move: { moveType: 'CHECK' },
-        });
-
-        game.applyMove({
-          gameID: game.id,
-          playerID: players[3].id,
-          move: { moveType: 'CHECK' },
-        });
-
-        game.applyMove({
-          gameID: game.id,
-          playerID: players[0].id,
-          move: { moveType: 'CHECK' },
-        });
-
-        cardsDrawn = game.state.moves.filter(m => m.moveType === 'DEAL');
-
-        expect(cardsDrawn.filter(m => m.player === undefined).length).toBe(3);
-
-        game.applyMove({
-          gameID: game.id,
-          playerID: players[1].id,
-          move: { moveType: 'CHECK' },
-        });
-
-        cardsDrawn = game.state.moves.filter(m => m.moveType === 'DEAL');
-
-        expect(cardsDrawn.filter(m => m.player === undefined).length).toBe(4);
-
-        game.applyMove({
-          gameID: game.id,
-          playerID: players[2].id,
-          move: { moveType: 'CHECK' },
-        });
-
-        game.applyMove({
-          gameID: game.id,
-          playerID: players[3].id,
-          move: { moveType: 'CHECK' },
-        });
-
-        game.applyMove({
-          gameID: game.id,
-          playerID: players[0].id,
-          move: { moveType: 'CHECK' },
-        });
-
-        cardsDrawn = game.state.moves.filter(m => m.moveType === 'DEAL');
-
-        expect(cardsDrawn.filter(m => m.player === undefined).length).toBe(4);
-
-        game.applyMove({
-          gameID: game.id,
-          playerID: players[1].id,
-          move: { moveType: 'CHECK' },
-        });
-
-        cardsDrawn = game.state.moves.filter(m => m.moveType === 'DEAL');
-
-        expect(cardsDrawn.filter(m => m.player === undefined).length).toBe(5);
-
-        game.applyMove({
-          gameID: game.id,
-          playerID: players[2].id,
-          move: { moveType: 'CHECK' },
-        });
-
-        game.applyMove({
-          gameID: game.id,
-          playerID: players[3].id,
-          move: { moveType: 'CHECK' },
-        });
-
-        game.applyMove({
-          gameID: game.id,
-          playerID: players[0].id,
-          move: { moveType: 'CHECK' },
-        });
-      }); */
-      /** it('should remove a player from the turn order when they fold', () => {
-        game.join(players[2]);
-        game.join(players[3]);
-
-        game.startGame(players[0]);
-        game.startGame(players[1]);
-        game.startGame(players[2]);
-        game.startGame(players[3]);
-
-        game.applyMove({
-          gameID: game.id,
-          playerID: players[2].id,
-          move: { moveType: 'CALL' },
-        });
-
-        game.applyMove({
-          gameID: game.id,
-          playerID: players[3].id,
-          move: { moveType: 'FOLD' },
-        });
-
-        game.applyMove({
-          gameID: game.id,
-          playerID: players[0].id,
-          move: { moveType: 'CALL' },
-        });
-
-        let cardsDrawn = game.state.moves.filter(m => m.moveType === 'DEAL');
-
-        expect(cardsDrawn.filter(m => m.player === undefined).length).toBe(0);
-
-        game.applyMove({
-          gameID: game.id,
-          playerID: players[1].id,
-          move: { moveType: 'CHECK' },
-        });
-
-        cardsDrawn = game.state.moves.filter(m => m.moveType === 'DEAL');
-
-        expect(cardsDrawn.filter(m => m.player === undefined).length).toBe(3);
-
-        game.applyMove({
-          gameID: game.id,
-          playerID: players[2].id,
-          move: { moveType: 'CHECK' },
-        });
-
-        game.applyMove({
-          gameID: game.id,
-          playerID: players[0].id,
-          move: { moveType: 'CHECK' },
-        });
-
-        cardsDrawn = game.state.moves.filter(m => m.moveType === 'DEAL');
-
-        expect(cardsDrawn.filter(m => m.player === undefined).length).toBe(3);
-
-        game.applyMove({
-          gameID: game.id,
-          playerID: players[1].id,
-          move: { moveType: 'CHECK' },
-        });
-
-        cardsDrawn = game.state.moves.filter(m => m.moveType === 'DEAL');
-
-        expect(cardsDrawn.filter(m => m.player === undefined).length).toBe(4);
-
-        game.applyMove({
-          gameID: game.id,
-          playerID: players[2].id,
-          move: { moveType: 'CHECK' },
-        });
-
-        game.applyMove({
-          gameID: game.id,
-          playerID: players[0].id,
-          move: { moveType: 'CHECK' },
-        });
-
-        cardsDrawn = game.state.moves.filter(m => m.moveType === 'DEAL');
-
-        expect(cardsDrawn.filter(m => m.player === undefined).length).toBe(4);
-
-        game.applyMove({
-          gameID: game.id,
-          playerID: players[1].id,
-          move: { moveType: 'CHECK' },
-        });
-
-        cardsDrawn = game.state.moves.filter(m => m.moveType === 'DEAL');
-
-        expect(cardsDrawn.filter(m => m.player === undefined).length).toBe(5);
-
-        game.applyMove({
-          gameID: game.id,
-          playerID: players[2].id,
-          move: { moveType: 'CHECK' },
-        });
-
-        game.applyMove({
-          gameID: game.id,
-          playerID: players[0].id,
-          move: { moveType: 'CHECK' },
-        });
-      }); */
+    it('should end game and add money if player wins', () => {
+      deck.addNextDraw({ face: 9, suite: 'HEARTS' });
+      deck.addNextDraw({ face: 9, suite: 'HEARTS' });
+      deck.addNextDraw({ face: 10, suite: 'HEARTS' });
+      deck.addNextDraw({ face: 10, suite: 'HEARTS' });
+      deck.addNextDraw({ face: 13, suite: 'CLUBS' });
+      deck.addNextDraw({ face: 13, suite: 'SPADES' });
+      expect(game.state.playerBalances.get(seats[0])).toBe(1000);
+      game.startGame(players[0]);
+      game.startGame(players[1]);
+      const dealerCardsBefore = game.state.dealerMoves;
+      expect(dealerCardsBefore.length).toBe(1);
+      game.applyMove({
+        gameID: game.id,
+        playerID: players[0].id,
+        move: { moveType: 'STAND' },
+      });
+      expect(game.state.status).toBe('IN_PROGRESS');
+      game.applyMove({
+        gameID: game.id,
+        playerID: players[1].id,
+        move: { moveType: 'STAND' },
+      });
+      const dealerCards = game.state.dealerMoves;
+      expect(game.state.status).toBe('OVER');
+      expect(dealerCards.length).toBe(2);
+      expect(game.state.playerBalances.get(seats[0])).toBe(1000 + 100);
+      expect(game.state.playerBalances.get(seats[1])).toBe(1000 + 100);
+      const game2 = new BlackjackGame(new TestDeck(), game);
+      game2.join(players[0]);
+      game2.join(players[1]);
+      expect(game2.state.playerBalances.get(seats[0])).toBe(1100);
+      expect(game2.state.playerBalances.get(seats[1])).toBe(1100);
+    });
+    it('should end game and keep money if tie', () => {
+      deck.addNextDraw({ face: 10, suite: 'HEARTS' });
+      deck.addNextDraw({ face: 10, suite: 'HEARTS' });
+      deck.addNextDraw({ face: 10, suite: 'HEARTS' });
+      deck.addNextDraw({ face: 10, suite: 'HEARTS' });
+      deck.addNextDraw({ face: 10, suite: 'CLUBS' });
+      deck.addNextDraw({ face: 10, suite: 'SPADES' });
+      expect(game.state.playerBalances.get(seats[0])).toBe(1000);
+      game.startGame(players[0]);
+      game.startGame(players[1]);
+      const dealerCardsBefore = game.state.dealerMoves;
+      expect(dealerCardsBefore.length).toBe(1);
+      game.applyMove({
+        gameID: game.id,
+        playerID: players[0].id,
+        move: { moveType: 'STAND' },
+      });
+      expect(game.state.status).toBe('IN_PROGRESS');
+      game.applyMove({
+        gameID: game.id,
+        playerID: players[1].id,
+        move: { moveType: 'STAND' },
+      });
+      const dealerCards = game.state.dealerMoves;
+      expect(game.state.status).toBe('OVER');
+      expect(dealerCards.length).toBe(2);
+      expect(game.state.playerBalances.get(seats[0])).toBe(1000);
+      expect(game.state.playerBalances.get(seats[1])).toBe(1000);
+      const game2 = new BlackjackGame(new TestDeck(), game);
+      game2.join(players[0]);
+      game2.join(players[1]);
+      expect(game2.state.playerBalances.get(seats[0])).toBe(1000);
+      expect(game2.state.playerBalances.get(seats[1])).toBe(1000);
+    });
+    it('should treat aces as 11', () => {
+      deck.addNextDraw({ face: 10, suite: 'HEARTS' });
+      deck.addNextDraw({ face: 10, suite: 'HEARTS' });
+      deck.addNextDraw({ face: 10, suite: 'HEARTS' });
+      deck.addNextDraw({ face: 10, suite: 'HEARTS' });
+      deck.addNextDraw({ face: 10, suite: 'CLUBS' });
+      deck.addNextDraw({ face: 1, suite: 'SPADES' });
+      expect(game.state.playerBalances.get(seats[0])).toBe(1000);
+      game.startGame(players[0]);
+      game.startGame(players[1]);
+      const dealerCardsBefore = game.state.dealerMoves;
+      expect(dealerCardsBefore.length).toBe(1);
+      game.applyMove({
+        gameID: game.id,
+        playerID: players[0].id,
+        move: { moveType: 'STAND' },
+      });
+      expect(game.state.status).toBe('IN_PROGRESS');
+      game.applyMove({
+        gameID: game.id,
+        playerID: players[1].id,
+        move: { moveType: 'STAND' },
+      });
+      const dealerCards = game.state.dealerMoves;
+      expect(game.state.status).toBe('OVER');
+      expect(dealerCards.length).toBe(2);
+      expect(game.state.playerBalances.get(seats[0])).toBe(1100);
+      expect(game.state.playerBalances.get(seats[1])).toBe(1000);
+      const game2 = new BlackjackGame(new TestDeck(), game);
+      game2.join(players[0]);
+      game2.join(players[1]);
+      expect(game2.state.playerBalances.get(seats[0])).toBe(1100);
+      expect(game2.state.playerBalances.get(seats[1])).toBe(1000);
+    });
+    it('should treat aces as 1 if bust', () => {
+      deck.addNextDraw({ face: 10, suite: 'HEARTS' });
+      deck.addNextDraw({ face: 1, suite: 'SPADES' });
+      deck.addNextDraw({ face: 10, suite: 'HEARTS' });
+      deck.addNextDraw({ face: 10, suite: 'HEARTS' });
+      deck.addNextDraw({ face: 10, suite: 'HEARTS' });
+      deck.addNextDraw({ face: 10, suite: 'CLUBS' });
+      deck.addNextDraw({ face: 10, suite: 'CLUBS' });
+      expect(game.state.playerBalances.get(seats[0])).toBe(1000);
+      game.startGame(players[0]);
+      game.startGame(players[1]);
+      const dealerCardsBefore = game.state.dealerMoves;
+      expect(dealerCardsBefore.length).toBe(1);
+      game.applyMove({
+        gameID: game.id,
+        playerID: players[0].id,
+        move: { moveType: 'HIT' },
+      });
+      game.applyMove({
+        gameID: game.id,
+        playerID: players[0].id,
+        move: { moveType: 'STAND' },
+      });
+      expect(game.state.status).toBe('IN_PROGRESS');
+      game.applyMove({
+        gameID: game.id,
+        playerID: players[1].id,
+        move: { moveType: 'STAND' },
+      });
+      const dealerCards = game.state.dealerMoves;
+      expect(game.state.status).toBe('OVER');
+      expect(dealerCards.length).toBe(2);
+      expect(game.state.playerBalances.get(seats[0])).toBe(1100);
+      expect(game.state.playerBalances.get(seats[1])).toBe(1000);
+      const game2 = new BlackjackGame(new TestDeck(), game);
+      game2.join(players[0]);
+      game2.join(players[1]);
+      expect(game2.state.playerBalances.get(seats[0])).toBe(1100);
+      expect(game2.state.playerBalances.get(seats[1])).toBe(1000);
+    });
+    it('should double wins with double', () => {
+      deck.addNextDraw({ face: 8, suite: 'HEARTS' });
+      deck.addNextDraw({ face: 1, suite: 'SPADES' });
+      deck.addNextDraw({ face: 10, suite: 'HEARTS' });
+      deck.addNextDraw({ face: 8, suite: 'HEARTS' });
+      deck.addNextDraw({ face: 10, suite: 'HEARTS' });
+      deck.addNextDraw({ face: 10, suite: 'CLUBS' });
+      deck.addNextDraw({ face: 10, suite: 'CLUBS' });
+      expect(game.state.playerBalances.get(seats[0])).toBe(1000);
+      game.startGame(players[0]);
+      game.startGame(players[1]);
+      const dealerCardsBefore = game.state.dealerMoves;
+      expect(dealerCardsBefore.length).toBe(1);
+      game.applyMove({
+        gameID: game.id,
+        playerID: players[0].id,
+        move: { moveType: 'DOUBLE' },
+      });
+      expect(game.state.status).toBe('IN_PROGRESS');
+      game.applyMove({
+        gameID: game.id,
+        playerID: players[1].id,
+        move: { moveType: 'STAND' },
+      });
+      const dealerCards = game.state.dealerMoves;
+      expect(game.state.status).toBe('OVER');
+      expect(dealerCards.length).toBe(2);
+      expect(game.state.playerBalances.get(seats[0])).toBe(1200);
+      expect(game.state.playerBalances.get(seats[1])).toBe(1000);
+      const game2 = new BlackjackGame(new TestDeck(), game);
+      game2.join(players[0]);
+      game2.join(players[1]);
+      expect(game2.state.playerBalances.get(seats[0])).toBe(1200);
+      expect(game2.state.playerBalances.get(seats[1])).toBe(1000);
+    });
+    it('should double losses with double', () => {
+      deck.addNextDraw({ face: 8, suite: 'HEARTS' });
+      deck.addNextDraw({ face: 10, suite: 'SPADES' });
+      deck.addNextDraw({ face: 10, suite: 'HEARTS' });
+      deck.addNextDraw({ face: 8, suite: 'HEARTS' });
+      deck.addNextDraw({ face: 10, suite: 'HEARTS' });
+      deck.addNextDraw({ face: 10, suite: 'CLUBS' });
+      deck.addNextDraw({ face: 2, suite: 'CLUBS' });
+      expect(game.state.playerBalances.get(seats[0])).toBe(1000);
+      game.startGame(players[0]);
+      game.startGame(players[1]);
+      const dealerCardsBefore = game.state.dealerMoves;
+      expect(dealerCardsBefore.length).toBe(1);
+      game.applyMove({
+        gameID: game.id,
+        playerID: players[0].id,
+        move: { moveType: 'DOUBLE' },
+      });
+      expect(game.state.status).toBe('IN_PROGRESS');
+      game.applyMove({
+        gameID: game.id,
+        playerID: players[1].id,
+        move: { moveType: 'STAND' },
+      });
+      const dealerCards = game.state.dealerMoves;
+      expect(game.state.status).toBe('OVER');
+      expect(dealerCards.length).toBe(2);
+      expect(game.state.playerBalances.get(seats[0])).toBe(800);
+      expect(game.state.playerBalances.get(seats[1])).toBe(1000);
+      const game2 = new BlackjackGame(new TestDeck(), game);
+      game2.join(players[0]);
+      game2.join(players[1]);
+      expect(game2.state.playerBalances.get(seats[0])).toBe(800);
+      expect(game2.state.playerBalances.get(seats[1])).toBe(1000);
+    });
+    it('should be able to hit many times', () => {
+      deck.addNextDraw({ face: 8, suite: 'HEARTS' });
+      deck.addNextDraw({ face: 2, suite: 'CLUBS' });
+      deck.addNextDraw({ face: 2, suite: 'CLUBS' });
+      deck.addNextDraw({ face: 2, suite: 'CLUBS' });
+      deck.addNextDraw({ face: 2, suite: 'CLUBS' });
+      deck.addNextDraw({ face: 10, suite: 'HEARTS' });
+      deck.addNextDraw({ face: 8, suite: 'HEARTS' });
+      deck.addNextDraw({ face: 10, suite: 'HEARTS' });
+      deck.addNextDraw({ face: 10, suite: 'CLUBS' });
+      deck.addNextDraw({ face: 2, suite: 'CLUBS' });
+      expect(game.state.playerBalances.get(seats[0])).toBe(1000);
+      game.startGame(players[0]);
+      game.startGame(players[1]);
+      const dealerCardsBefore = game.state.dealerMoves;
+      expect(dealerCardsBefore.length).toBe(1);
+      game.applyMove({
+        gameID: game.id,
+        playerID: players[0].id,
+        move: { moveType: 'HIT' },
+      });
+      game.applyMove({
+        gameID: game.id,
+        playerID: players[0].id,
+        move: { moveType: 'HIT' },
+      });
+      game.applyMove({
+        gameID: game.id,
+        playerID: players[0].id,
+        move: { moveType: 'HIT' },
+      });
+      game.applyMove({
+        gameID: game.id,
+        playerID: players[0].id,
+        move: { moveType: 'HIT' },
+      });
+      game.applyMove({
+        gameID: game.id,
+        playerID: players[0].id,
+        move: { moveType: 'STAND' },
+      });
+      expect(game.state.status).toBe('IN_PROGRESS');
+      game.applyMove({
+        gameID: game.id,
+        playerID: players[1].id,
+        move: { moveType: 'STAND' },
+      });
+      const dealerCards = game.state.dealerMoves;
+      expect(game.state.status).toBe('OVER');
+      expect(dealerCards.length).toBe(2);
+      expect(game.state.playerBalances.get(seats[0])).toBe(1100);
+      expect(game.state.playerBalances.get(seats[1])).toBe(1000);
+      const game2 = new BlackjackGame(new TestDeck(), game);
+      game2.join(players[0]);
+      game2.join(players[1]);
+      expect(game2.state.playerBalances.get(seats[0])).toBe(1100);
+      expect(game2.state.playerBalances.get(seats[1])).toBe(1000);
+    });
+    it('should stop busted players', () => {
+      deck.addNextDraw({ face: 8, suite: 'HEARTS' });
+      deck.addNextDraw({ face: 10, suite: 'CLUBS' });
+      deck.addNextDraw({ face: 10, suite: 'HEARTS' });
+      deck.addNextDraw({ face: 8, suite: 'HEARTS' });
+      deck.addNextDraw({ face: 10, suite: 'HEARTS' });
+      deck.addNextDraw({ face: 10, suite: 'CLUBS' });
+      deck.addNextDraw({ face: 2, suite: 'CLUBS' });
+      expect(game.state.playerBalances.get(seats[0])).toBe(1000);
+      game.startGame(players[0]);
+      game.startGame(players[1]);
+      const dealerCardsBefore = game.state.dealerMoves;
+      expect(dealerCardsBefore.length).toBe(1);
+      game.applyMove({
+        gameID: game.id,
+        playerID: players[0].id,
+        move: { moveType: 'HIT' },
+      });
+      expect(game.state.status).toBe('IN_PROGRESS');
+      game.applyMove({
+        gameID: game.id,
+        playerID: players[1].id,
+        move: { moveType: 'STAND' },
+      });
+      const dealerCards = game.state.dealerMoves;
+      expect(game.state.status).toBe('OVER');
+      expect(dealerCards.length).toBe(2);
+      expect(game.state.playerBalances.get(seats[0])).toBe(900);
+      expect(game.state.playerBalances.get(seats[1])).toBe(1000);
+      const game2 = new BlackjackGame(new TestDeck(), game);
+      game2.join(players[0]);
+      game2.join(players[1]);
+      expect(game2.state.playerBalances.get(seats[0])).toBe(900);
+      expect(game2.state.playerBalances.get(seats[1])).toBe(1000);
+    });
+    it('should stop Dealer if bust', () => {
+      deck.addNextDraw({ face: 6, suite: 'HEARTS' });
+      deck.addNextDraw({ face: 6, suite: 'HEARTS' });
+      deck.addNextDraw({ face: 10, suite: 'CLUBS' });
+      deck.addNextDraw({ face: 10, suite: 'HEARTS' });
+      deck.addNextDraw({ face: 8, suite: 'HEARTS' });
+      deck.addNextDraw({ face: 10, suite: 'HEARTS' });
+      deck.addNextDraw({ face: 10, suite: 'CLUBS' });
+      deck.addNextDraw({ face: 2, suite: 'CLUBS' });
+      expect(game.state.playerBalances.get(seats[0])).toBe(1000);
+      game.startGame(players[0]);
+      game.startGame(players[1]);
+      const dealerCardsBefore = game.state.dealerMoves;
+      expect(dealerCardsBefore.length).toBe(1);
+      game.applyMove({
+        gameID: game.id,
+        playerID: players[0].id,
+        move: { moveType: 'HIT' },
+      });
+      expect(game.state.status).toBe('IN_PROGRESS');
+      game.applyMove({
+        gameID: game.id,
+        playerID: players[1].id,
+        move: { moveType: 'STAND' },
+      });
+      const dealerCards = game.state.dealerMoves;
+      expect(game.state.status).toBe('OVER');
+      expect(dealerCards.length).toBe(3);
+      expect(game.state.playerBalances.get(seats[0])).toBe(900);
+      expect(game.state.playerBalances.get(seats[1])).toBe(1100);
+      const game2 = new BlackjackGame(new TestDeck(), game);
+      game2.join(players[0]);
+      game2.join(players[1]);
+      expect(game2.state.playerBalances.get(seats[0])).toBe(900);
+      expect(game2.state.playerBalances.get(seats[1])).toBe(1100);
     });
   });
 });

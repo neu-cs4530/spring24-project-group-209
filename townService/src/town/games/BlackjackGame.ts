@@ -36,7 +36,7 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
 
   private _firstPlayer: number;
 
-  private _currentBets: Map<SeatNumber, number> = new Map<SeatNumber, number>();
+  private _doubled: Map<SeatNumber, boolean> = new Map<SeatNumber, boolean>();
 
   private _standPlayers: Map<SeatNumber, boolean> = new Map<SeatNumber, boolean>();
 
@@ -65,7 +65,7 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
       occupiedSeats: initialOccupiedSeats,
       readyPlayers: initialReadyPlayers,
       playerBalances: initialPlayerBalances,
-    }); // This is not necessarily accurate, written to get rid of syntax errors in shell file
+    });
 
     for (let i = 0; i < 8; i++) {
       this._bustedPlayers.set(i as SeatNumber, false);
@@ -87,7 +87,7 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
         }
       }
     }
-    this._next = 0;
+    this._next = 0 as SeatNumber;
     this._firstPlayer = 0;
     this._betAmt = 100; // default bet amount for now
   }
@@ -101,11 +101,12 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
     current = (from + 1) as SeatNumber;
     while (
       this.state.occupiedSeats.get(current) === undefined ||
-      this._bustedPlayers.get(current)
+      this._bustedPlayers.get(current) ||
+      this._standPlayers.get(current)
     ) {
+      if (current === 7) return 8 as SeatNumber;
       current += 1;
     }
-
     return current;
   }
 
@@ -225,12 +226,12 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
           break;
         } else if (bal) {
           this.state.playerBalances.set(seat, bal - this._betAmt);
-          this._currentBets.set(seat, this._betAmt);
         }
         break;
       }
       case 'STAND': {
         this._standPlayers.set(seat, true);
+        this._next = this._getNextSeat(this._next);
         break;
       }
       case 'HIT': {
@@ -244,14 +245,16 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
           moves: newMoves,
         };
         this.state = newState;
+        if (this._checkValue(seat) > 21) {
+          this._bustedPlayers.set(seat, true);
+          this._next = this._getNextSeat(this._next);
+        }
         break;
       }
       case 'DOUBLE': {
+        this._next = this._getNextSeat(this._next);
         if (bal && bal < this._betAmt) {
           throw new InvalidParametersError('Not enough money to double down');
-        } else if (bal) {
-          this.state.playerBalances.set(seat, bal - this._betAmt);
-          this._currentBets.set(seat, this._betAmt * 2);
         }
         const newCard = this._deck.drawCard();
         const newMoves = [
@@ -264,13 +267,12 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
         };
         this.state = newState;
         this._standPlayers.set(seat, true);
+        this._doubled.set(seat, true);
         break;
       }
       default:
         throw new InvalidParametersError(BOARD_POSITION_NOT_VALID_MESSAGE);
     }
-
-    this._next = this._getNextSeat(this._next);
 
     const newMoves = [...this.state.moves, move.move];
     const newState: BlackjackGameState = {
@@ -310,13 +312,29 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
         const prev = this.state.playerBalances.get(i as SeatNumber) as number;
         const playerTotal = this._checkValue(i as SeatNumber);
         if (playerTotal > 21) {
-          this.state.playerBalances.set(i as SeatNumber, prev - this._betAmt);
+          if (this._doubled.get(i as SeatNumber)) {
+            this.state.playerBalances.set(i as SeatNumber, prev - this._betAmt * 2);
+          } else {
+            this.state.playerBalances.set(i as SeatNumber, prev - this._betAmt);
+          }
         } else if (dealerTotal > 21) {
-          this.state.playerBalances.set(i as SeatNumber, prev - this._betAmt);
+          if (this._doubled.get(i as SeatNumber)) {
+            this.state.playerBalances.set(i as SeatNumber, prev + this._betAmt * 2);
+          } else {
+            this.state.playerBalances.set(i as SeatNumber, prev + this._betAmt);
+          }
         } else if (playerTotal > dealerTotal) {
-          this.state.playerBalances.set(i as SeatNumber, prev + this._betAmt * 2);
+          if (this._doubled.get(i as SeatNumber)) {
+            this.state.playerBalances.set(i as SeatNumber, prev + this._betAmt * 2);
+          } else {
+            this.state.playerBalances.set(i as SeatNumber, prev + this._betAmt);
+          }
         } else if (playerTotal < dealerTotal) {
-          this.state.playerBalances.set(i as SeatNumber, prev - this._betAmt);
+          if (this._doubled.get(i as SeatNumber)) {
+            this.state.playerBalances.set(i as SeatNumber, prev - this._betAmt * 2);
+          } else {
+            this.state.playerBalances.set(i as SeatNumber, prev - this._betAmt);
+          }
         }
       }
     }
@@ -329,13 +347,9 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
     if (seat !== (8 as SeatNumber)) {
       for (const move of this.state.moves) {
         if (move.player === seat && move.moveType === 'DEAL') {
-          if (move.card.rank === 'ACE') {
+          if (move.card.face === 1) {
             aces += 1;
-          } else if (
-            move.card.rank === 'JACK' ||
-            move.card.rank === 'QUEEN' ||
-            move.card.rank === 'KING'
-          ) {
+          } else if (move.card.face >= 11) {
             total += 10;
           } else {
             total += parseInt(move.card.face, 10);
@@ -344,13 +358,9 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
       }
     } else {
       for (const move of this.state.dealerMoves) {
-        if (move.card.rank === 'ACE') {
+        if (move.card.face === 1) {
           aces += 1;
-        } else if (
-          move.card.rank === 'JACK' ||
-          move.card.rank === 'QUEEN' ||
-          move.card.rank === 'KING'
-        ) {
+        } else if (move.card.face >= 11) {
           total += 10;
         } else {
           total += parseInt(move.card.face, 10);
