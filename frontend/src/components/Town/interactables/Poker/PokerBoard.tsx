@@ -2,9 +2,12 @@ import PokerAreaController, {
   PokerCell,
 } from '../../../../classes/interactable/PokerAreaController';
 import { Box, chakra, Container } from '@chakra-ui/react';
-import Image from 'next/image';
 import React, { useEffect, useState } from 'react';
 import useTownController from '../../../../hooks/useTownController';
+import CardToImage from './CardToImages';
+import * as firebaseUtils from '../../../../firebaseUtils';
+import { Image } from '@chakra-ui/react';
+
 export type PokerGameProps = {
   gameAreaController: PokerAreaController;
 };
@@ -31,17 +34,22 @@ const StyledPokerSquare = chakra(Box, {
   },
 });
 
-// const cardMap: Map<Card, string> =
-
 export default function PokerBoard({ gameAreaController }: PokerGameProps): JSX.Element {
   const [board, setBoard] = useState<PokerCell[][]>(gameAreaController.board);
   const townController = useTownController();
+  const [activeSkin, setActiveSkin] = useState<string>('SKIN1');
+  const cardMap: CardToImage = new CardToImage('default');
   useEffect(() => {
+    async function fetchData() {
+      const fetchedSkin = await firebaseUtils.getActiveSkin(townController.ourPlayer.userName);
+      setActiveSkin(fetchedSkin);
+    }
+    fetchData();
     gameAreaController.addListener('boardChanged', setBoard);
     return () => {
       gameAreaController.removeListener('boardChanged', setBoard);
     };
-  }, [gameAreaController]);
+  }, [gameAreaController, townController]);
   return (
     <StyledPokerBoard aria-label='Poker Board'>
       {board.map((row, rowIndex) => {
@@ -53,9 +61,23 @@ export default function PokerBoard({ gameAreaController }: PokerGameProps): JSX.
               aria-label={`Cell ${rowIndex},${colIndex} (${cell || 'Empty'})`}>
               {cell ? (
                 cell.player === gameAreaController.playerSeat(townController.ourPlayer) ? (
-                  <Image src={cardMap.get(cell)} alt={`Card ${cell}`} />
+                  <Image
+                    h='20px'
+                    w='10px'
+                    // src={cardMap.getCardUrl(cell.card)}
+                    src={`/assets/cards/${activeSkin}/aceOfSpades.png`}
+                    alt={`Card ${cell.card.face} of ${cell.card.suite}`}
+                  />
+                ) : cell.player !== undefined ? (
+                  <Image src={`/assets/cards/${activeSkin}/cardBack.png`} alt={`Card ${cell}`} />
                 ) : (
-                  <Image src={'cardBack.png'} alt={`Card ${cell}`} />
+                  <Image
+                    h='20px'
+                    w='10px'
+                    // src={cardMap.getCardUrl(cell.card)}
+                    src={`/assets/cards/${activeSkin}/aceOfSpades.png`}
+                    alt={`Card ${cell.card.face} of ${cell.card.suite}`}
+                  />
                 )
               ) : undefined}
             </StyledPokerSquare>

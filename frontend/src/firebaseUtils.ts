@@ -149,6 +149,22 @@ export const getInventory = async (userName: string): Promise<string[]> => {
     throw new Error('User not found');
   }
 };
+export const getActiveSkin = async (userName: string): Promise<string> => {
+  const db = getFirestore(getApp());
+
+  const cred = userName;
+  if (cred) {
+    const docRef = doc(db, 'users', cred);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return docSnap.data().activeSkin;
+    } else {
+      throw new Error('User data not found');
+    }
+  } else {
+    throw new Error('User not found');
+  }
+};
 
 export const updateInventory = (userName: string, newValue: string) => {
   const db = getFirestore(getApp());

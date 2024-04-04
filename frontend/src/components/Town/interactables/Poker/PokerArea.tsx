@@ -195,9 +195,8 @@ export default function PokerArea({
     const foldButton = <Button disabled={true}>Fold</Button>;
     gameStatusText = (
       <>
-        Game in progress, {moveCount} moves in, currently{' '}
-        {gameAreaController.whoseTurn?.userName + "'s"} turn . Players left: {activePlayers} Pot:{' '}
-        {gameAreaController.pot} {raiseButton} {callButton}
+        Game in progress, {moveCount} moves in, currently {gameAreaController.whoseTurn + "'s"} turn
+        . Players left: {activePlayers} Pot: {gameAreaController.pot} {raiseButton} {callButton}
         {foldButton}
       </>
     );
@@ -224,7 +223,30 @@ export default function PokerArea({
     );
     gameStatusText = <b>Waiting for players to press start. {startGameButton}</b>;
   } else {
-    const joinGameButton = (
+    let startGameButton = <Button disabled={true}>Start Game</Button>;
+    if (gameAreaController.players.length >= 2) {
+      startGameButton = (
+        <Button
+          onClick={async () => {
+            setJoiningGame(true);
+            try {
+              await gameAreaController.startGame();
+            } catch (err) {
+              toast({
+                title: 'Error starting game',
+                description: (err as Error).toString(),
+                status: 'error',
+              });
+            }
+            setJoiningGame(false);
+          }}
+          isLoading={joiningGame}
+          disabled={joiningGame}>
+          Start Game
+        </Button>
+      );
+    }
+    let joinGameButton = (
       <Button
         onClick={async () => {
           setJoiningGame(true);
@@ -244,12 +266,15 @@ export default function PokerArea({
         Join New Game
       </Button>
     );
+    if (gameAreaController.isPlayer) {
+      joinGameButton = <Button disabled={true}>Join New Game</Button>;
+    }
     let gameStatusStr;
     if (gameStatus === 'OVER') gameStatusStr = 'over';
     else if (gameStatus === 'WAITING_FOR_PLAYERS') gameStatusStr = 'waiting for players to join';
     gameStatusText = (
       <b>
-        Game {gameStatusStr}. {joinGameButton}
+        Game {gameStatusStr}. {joinGameButton} {startGameButton}
       </b>
     );
   }
