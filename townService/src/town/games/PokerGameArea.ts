@@ -35,7 +35,7 @@ export default class PokerGameArea extends GameArea<PokerGame> {
       if (gameID && !this._history.find(eachResult => eachResult.gameID === gameID)) {
         const players: Array<PlayerID> = [];
         for (let i = 0; i < 8; i++) {
-          const player = updatedState.state.occupiedSeats.get(i as SeatNumber);
+          const player = updatedState.state.occupiedSeats[i];
           if (player) players.push(player);
         }
         if (players.length >= 2) {
@@ -130,6 +130,7 @@ export default class PokerGameArea extends GameArea<PokerGame> {
       if (game.id !== command.gameID) throw new InvalidParametersError(GAME_ID_MISSMATCH_MESSAGE);
       game.leave(player);
       this._stateUpdated(game.toModel());
+
       return undefined as InteractableCommandReturnType<CommandType>;
     }
     if (command.type === 'StartGame') {

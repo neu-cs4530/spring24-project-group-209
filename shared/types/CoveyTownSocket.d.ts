@@ -179,13 +179,13 @@ export interface PokerGameState extends WinnableGameState {
   // The moves in this game
   moves: ReadonlyArray<PokerMove>;
   // A map that represents the player at each seat in the table, if there is a player in that seat.
-  occupiedSeats: Map<SeatNumber, PlayerID | undefined>;
+  occupiedSeats: Array<Playerid | undefined>; // Map<SeatNumber, PlayerID | undefined>;
   // A map representing which players in the game are ready to start.
-  readyPlayers: Map<SeatNumber, boolean | undefined>;
+  readyPlayers: Array<boolean | undefined>; // Map<SeatNumber, boolean | undefined>;
   // A map representing which players in the game have folded
-  foldedPlayers: Map<SeatNumber, boolean>
+  foldedPlayers: Array<boolean>; // Map<SeatNumber, boolean>;
   // A map representing the balance of players in each seat.
-  playerBalances: Map<SeatNumber, Integer | undefined>;
+  playerBalances: Array<number | undefind>; // Map<SeatNumber, Integer | undefined>;
   // The player who will be the small blind
   smallBlind: SeatNumber;
   // The player who will be the big blind

@@ -32,8 +32,6 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
 
   protected _oldBalances?: Map<PlayerID, number>;
 
-  protected _foldedPlayers: Map<SeatNumber, boolean> = new Map<SeatNumber, boolean>();
-
   private _firstPlayer: SeatNumber;
 
   private _next: SeatNumber;
@@ -56,15 +54,19 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
    * and the blind will be the next seat after the previous blind.
    */
   public constructor(deck?: DeckOfCards, priorGame?: PokerGame) {
-    const initialOccupiedSeats = new Map<SeatNumber, PlayerID | undefined>();
-    const initialReadyPlayers = new Map<SeatNumber, boolean | undefined>();
-    const initialPlayerBalances = new Map<SeatNumber, number | undefined>();
-    const initialFoldedPlayers = new Map<SeatNumber, boolean>();
+    const initialOccupiedSeats = new Array<PlayerID | undefined>(); // Map<SeatNumber, PlayerID | undefined>();
+    const initialReadyPlayers = new Array<boolean | undefined>(); // Map<SeatNumber, boolean | undefined>();
+    const initialPlayerBalances = new Array<number | undefined>(); // Map<SeatNumber, number | undefined>();
+    const initialFoldedPlayers = new Array<boolean>(); // new Map<SeatNumber, boolean>();
 
     for (let i = 0; i < 8; i++) {
-      initialOccupiedSeats.set(i as SeatNumber, undefined);
-      initialReadyPlayers.set(i as SeatNumber, undefined);
-      initialPlayerBalances.set(i as SeatNumber, undefined);
+      initialOccupiedSeats[i] = undefined;
+      initialReadyPlayers[i] = undefined;
+      initialPlayerBalances[i] = undefined;
+      initialFoldedPlayers[i] = false;
+      // initialOccupiedSeats.set(i as SeatNumber, undefined);
+      // initialReadyPlayers.set(i as SeatNumber, undefined);
+      // initialPlayerBalances.set(i as SeatNumber, undefined);
     }
 
     let priorSmallBlind = 0 as SeatNumber;
@@ -81,10 +83,8 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
       pot: 0,
     });
 
-    this._foldedPlayers = initialFoldedPlayers;
-
     for (let i = 0; i < 8; i++) {
-      this._foldedPlayers.set(i as SeatNumber, false);
+      // this._foldedPlayers.set(i as SeatNumber, false);
       this._currentBets.set(i as SeatNumber, 0);
     }
 
@@ -98,10 +98,10 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
       this._preferredSeats = new Map<PlayerID, SeatNumber>();
       this._oldBalances = new Map<PlayerID, number>();
       for (let i = 0; i < 8; i++) {
-        const p = priorGame.state.occupiedSeats.get(i as SeatNumber);
+        const p = priorGame.state.occupiedSeats[i]; // priorGame.state.occupiedSeats.get(i as SeatNumber);
         if (p) {
           this._preferredSeats.set(p, i as SeatNumber);
-          this._oldBalances.set(p, priorGame.state.playerBalances.get(i as SeatNumber));
+          this._oldBalances.set(p, priorGame.state.playerBalances[i]); // this._oldBalances.set(p, priorGame.state.playerBalances.get(i as SeatNumber));
         }
       }
     }
@@ -120,8 +120,10 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
     else current = (from + 1) as SeatNumber;
 
     while (
-      this.state.occupiedSeats.get(current) === undefined ||
-      this._foldedPlayers.get(current)
+      // this.state.occupiedSeats.get(current) === undefined ||
+      this.state.occupiedSeats[current] === undefined ||
+      // this._foldedPlayers.get(current)
+      this.state.foldedPlayers[current]
     ) {
       if (current === 7) current = 0;
       else current += 1;
@@ -137,7 +139,8 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
   private _getNextOpenSeat(): SeatNumber | undefined {
     let current = 0 as SeatNumber;
 
-    while (this.state.occupiedSeats.get(current) !== undefined) {
+    // while (this.state.occupiedSeats.get(current) !== undefined) {
+    while (this.state.occupiedSeats[current] !== undefined) {
       if (current === 7) return undefined;
       current += 1;
     }
@@ -152,7 +155,8 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
    */
   private _getPlayerSeat(playerID: string): SeatNumber | undefined {
     for (let i = 0; i < 8; i++) {
-      if (this.state.occupiedSeats.get(i as SeatNumber) === playerID) return i as SeatNumber;
+      // if (this.state.occupiedSeats.get(i as SeatNumber) === playerID) return i as SeatNumber;
+      if (this.state.occupiedSeats[i] === playerID) return i as SeatNumber;
     }
     return undefined;
   }
@@ -196,24 +200,28 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
     )
       throw new InvalidParametersError(GAME_NOT_STARTABLE_MESSAGE);
 
-    this.state.readyPlayers.set(seat, true);
+    // this.state.readyPlayers.set(seat, true);
+    this.state.readyPlayers[seat] = true;
 
     for (let i = 0; i < 8; i++) {
-      if (this.state.readyPlayers.get(i as SeatNumber) === false) return;
+      // if (this.state.readyPlayers.get(i as SeatNumber) === false) return;
+      if (this.state.readyPlayers[i] === false) return;
     }
 
     if (!this._preferredSeats || this._preferredSeats.size === 0) this.state.smallBlind = 0;
     else this.state.smallBlind = this._getNextSeat(this.state.smallBlind);
     this.state.status = 'IN_PROGRESS';
 
-    this.state.playerBalances.set(
-      this.state.smallBlind,
-      this.state.playerBalances.get(this.state.smallBlind) - DEFAULT_SMALL_BLIND,
-    );
-    this.state.playerBalances.set(
-      this._getNextSeat(this.state.smallBlind),
-      this.state.playerBalances.get(this._getNextSeat(this.state.smallBlind)) - DEFAULT_BIG_BLIND,
-    );
+    // this.state.playerBalances.set(
+    //   this.state.smallBlind,
+    //   this.state.playerBalances.get(this.state.smallBlind) - DEFAULT_SMALL_BLIND,
+    // );
+    this.state.playerBalances[this.state.smallBlind] -= DEFAULT_SMALL_BLIND;
+    // this.state.playerBalances.set(
+    //   this._getNextSeat(this.state.smallBlind),
+    //   this.state.playerBalances.get(this._getNextSeat(this.state.smallBlind)) - DEFAULT_BIG_BLIND,
+    // );
+    this.state.playerBalances[this._getNextSeat(this.state.smallBlind)] -= DEFAULT_BIG_BLIND;
 
     this.state.pot = DEFAULT_SMALL_BLIND + DEFAULT_BIG_BLIND;
     this._next = this._getNextSeat(this._getNextSeat(this.state.smallBlind));
@@ -224,7 +232,8 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
     this._deck.shuffle();
 
     for (let i = 0; i < 8; i++) {
-      const p = this.state.occupiedSeats.get(i as SeatNumber);
+      // const p = this.state.occupiedSeats.get(i as SeatNumber);
+      const p = this.state.occupiedSeats[i];
       if (p) {
         const newMoves = [
           ...this.state.moves,
@@ -270,20 +279,24 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
         const curBet = this._currentBets.get(seat);
         if (curBet === undefined) throw new Error('Issue with recording bets');
         if (
-          this.state.playerBalances.get(seat) < this._getMaxBet() - curBet &&
+          // this.state.playerBalances.get(seat) < this._getMaxBet() - curBet &&
+          this.state.playerBalances[seat] < this._getMaxBet() - curBet &&
           !this._maxBetsCapped.get(seat)
         ) {
           this.state.pot += curBet;
-          this.state.playerBalances.set(seat, 0);
+          // this.state.playerBalances.set(seat, 0);
+          this.state.playerBalances[seat] = 0;
           this._maxBets.set(seat, this.state.pot);
           this._maxBetsCapped.set(seat, false);
-        } else if (this.state.playerBalances.get(seat) === 0) {
+          // } else if (this.state.playerBalances.get(seat) === 0) {
+        } else if (this.state.playerBalances[seat] === 0) {
           break;
         } else {
-          this.state.playerBalances.set(
-            seat,
-            this.state.playerBalances.get(seat) - (this._getMaxBet() - curBet),
-          );
+          // this.state.playerBalances.set(
+          //   seat,
+          //   this.state.playerBalances.get(seat) - (this._getMaxBet() - curBet),
+          // );
+          this.state.playerBalances[seat] -= this._getMaxBet() - curBet;
           this.state.pot += this._getMaxBet() - curBet;
           this._currentBets.set(seat, this._getMaxBet());
           for (let i = 0; i < 8; i++) {
@@ -296,7 +309,8 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
       }
       case 'CHECK': {
         if (this._currentBets.get(seat) !== this._getMaxBet()) {
-          if (this.state.playerBalances.get(seat) === 0) {
+          // if (this.state.playerBalances.get(seat) === 0) {
+          if (this.state.playerBalances[seat] === 0) {
             // All in
           } else {
             throw new InvalidParametersError(BOARD_POSITION_NOT_VALID_MESSAGE);
@@ -305,7 +319,8 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
         break;
       }
       case 'FOLD': {
-        this._foldedPlayers.set(seat, true);
+        // this._foldedPlayers.set(seat, true);
+        this.state.foldedPlayers[seat] = true;
         const remaining = this._oneRemainingPlayer();
         if (remaining) {
           this._payOut([remaining]);
@@ -319,14 +334,16 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
         if (curBet === undefined) throw new Error('Issue with recording bets');
         if (
           move.move.raiseAmount === undefined ||
-          this.state.playerBalances.get(seat) < this._getMaxBet() - curBet + move.move.raiseAmount
+          // this.state.playerBalances.get(seat) < this._getMaxBet() - curBet + move.move.raiseAmount
+          this.state.playerBalances[seat] < this._getMaxBet() - curBet + move.move.raiseAmount
         )
           throw new InvalidParametersError(BOARD_POSITION_NOT_VALID_MESSAGE);
-        this.state.playerBalances.set(
-          seat,
-          this.state.playerBalances.get(seat) -
-            (this._getMaxBet() - curBet + move.move.raiseAmount),
-        );
+        // this.state.playerBalances.set(
+        //   seat,
+        //   this.state.playerBalances.get(seat) -
+        //     (this._getMaxBet() - curBet + move.move.raiseAmount),
+        // );
+        this.state.playerBalances[seat] -= this._getMaxBet() - curBet + move.move.raiseAmount;
         this.state.pot += this._getMaxBet() - curBet + move.move.raiseAmount;
         this._currentBets.set(seat, this._getMaxBet() + move.move.raiseAmount);
 
@@ -338,7 +355,8 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
           }
         }
 
-        if (this.state.playerBalances.get(seat) === 0) {
+        // if (this.state.playerBalances.get(seat) === 0) {
+        if (this.state.playerBalances[seat] === 0) {
           this._maxBets.set(seat, this.state.pot);
           this._maxBetsCapped.set(seat, false);
         }
@@ -407,13 +425,15 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
   private _payOut(winners: Array<SeatNumber>): void {
     if (winners.length === 1) {
       this.state.status = 'OVER';
-      this.state.winner = this.state.occupiedSeats.get(winners[0]);
+      // this.state.winner = this.state.occupiedSeats.get(winners[0]);
+      this.state.winner = this.state.occupiedSeats[winners[0]];
       const maxWin = this._maxBets.get(winners[0]);
       if (maxWin) {
-        this.state.playerBalances.set(
-          winners[0],
-          this.state.playerBalances.get(winners[0]) + maxWin,
-        );
+        // this.state.playerBalances.set(
+        //   winners[0],
+        //   this.state.playerBalances.get(winners[0]) + maxWin,
+        // );
+        this.state.playerBalances[winners[0]] += maxWin;
         this.state.pot -= maxWin;
         let playersToRefund: Array<SeatNumber> = [];
         for (let i = 0; i < 8; i++) {
@@ -423,26 +443,31 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
 
         playersToRefund = playersToRefund.filter(p => p !== winners[0]);
         for (let i = 0; i < playersToRefund.length; i++) {
-          this.state.playerBalances.set(
-            playersToRefund[i],
-            this.state.playerBalances.get(playersToRefund[i]) +
-              Math.floor(this.state.pot / playersToRefund.length),
+          // this.state.playerBalances.set(
+          //   playersToRefund[i],
+          //   this.state.playerBalances.get(playersToRefund[i]) +
+          //     Math.floor(this.state.pot / playersToRefund.length),
+          // );
+          this.state.playerBalances[playersToRefund[i]] += Math.floor(
+            this.state.pot / playersToRefund.length,
           );
         }
       } else {
-        this.state.playerBalances.set(
-          winners[0],
-          this.state.playerBalances.get(winners[0]) + this.state.pot,
-        );
+        // this.state.playerBalances.set(
+        //   winners[0],
+        //   this.state.playerBalances.get(winners[0]) + this.state.pot,
+        // );
+        this.state.playerBalances[winners[0]] += this.state.pot;
       }
     } else {
       this.state.status = 'OVER';
       this.state.winner = undefined;
       for (let win = 0; win < winners.length; win++) {
-        this.state.playerBalances.set(
-          winners[win],
-          this.state.playerBalances.get(winners[win]) + this.state.pot / winners.length,
-        );
+        // this.state.playerBalances.set(
+        //   winners[win],
+        //   this.state.playerBalances.get(winners[win]) + this.state.pot / winners.length,
+        // );
+        this.state.playerBalances[winners[win]] += this.state.pot / winners.length;
       }
     }
   }
@@ -615,8 +640,10 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
     let numberInGame = 0;
     let lastPlayer;
     for (let i = 0; i < 8; i++) {
-      const folded = this._foldedPlayers.get(i as SeatNumber);
-      if (!folded && this.state.occupiedSeats.get(i as SeatNumber)) {
+      // const folded = this._foldedPlayers.get(i as SeatNumber);
+      const folded = this.state.foldedPlayers[i];
+      // if (!folded && this.state.occupiedSeats.get(i as SeatNumber)) {
+      if (!folded && this.state.occupiedSeats[i]) {
         numberInGame += 1;
         lastPlayer = i as SeatNumber;
       }
@@ -647,20 +674,29 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
       throw new InvalidParametersError(GAME_FULL_MESSAGE);
     if (this._preferredSeats && this._oldBalances) {
       const preferred = this._preferredSeats.get(player.id);
-      if (preferred && this.state.occupiedSeats.get(preferred) === undefined) {
-        this.state.occupiedSeats.set(preferred, player.id);
-        this.state.readyPlayers.set(preferred, false);
-        this.state.playerBalances.set(preferred, this._oldBalances.get(player.id));
+      // if (preferred && this.state.occupiedSeats.get(preferred) === undefined) {
+      if (preferred && this.state.occupiedSeats[preferred] === undefined) {
+        // this.state.occupiedSeats.set(preferred, player.id);
+        // this.state.readyPlayers.set(preferred, false);
+        // this.state.playerBalances.set(preferred, this._oldBalances.get(player.id));
+        this.state.occupiedSeats[preferred] = player.id;
+        this.state.readyPlayers[preferred] = false;
+        this.state.playerBalances[preferred] = this._oldBalances.get(player.id);
         return;
       }
     }
-    this.state.occupiedSeats.set(nextOpen, player.id);
-    this.state.readyPlayers.set(nextOpen, false);
-    this._foldedPlayers.set(nextOpen, false);
+    // this.state.occupiedSeats.set(nextOpen, player.id);
+    // this.state.readyPlayers.set(nextOpen, false);
+    // this._foldedPlayers.set(nextOpen, false);
+    this.state.occupiedSeats[nextOpen] = player.id;
+    this.state.readyPlayers[nextOpen] = false;
+    this.state.foldedPlayers[nextOpen] = false;
 
     if (this._oldBalances && this._oldBalances.get(player.id))
-      this.state.playerBalances.set(nextOpen, this._oldBalances.get(player.id));
-    else this.state.playerBalances.set(nextOpen, DEFAULT_BUY_IN);
+      // this.state.playerBalances.set(nextOpen, this._oldBalances.get(player.id));
+      this.state.playerBalances[nextOpen] = this._oldBalances.get(player.id);
+    // else this.state.playerBalances.set(nextOpen, DEFAULT_BUY_IN);
+    else this.state.playerBalances[nextOpen] = DEFAULT_BUY_IN;
     if (this._getNextOpenSeat() === undefined) this.state.status = 'WAITING_TO_START';
   }
 
@@ -691,10 +727,15 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
         };
         this.state = newState;
 
-        this.state.occupiedSeats.set(seat, undefined);
-        this.state.playerBalances.set(seat, undefined);
-        this.state.readyPlayers.set(seat, undefined);
-        this._foldedPlayers.set(seat, false);
+        // this.state.occupiedSeats.set(seat, undefined);
+        // this.state.playerBalances.set(seat, undefined);
+        // this.state.readyPlayers.set(seat, undefined);
+        // this._foldedPlayers.set(seat, false);
+
+        this.state.occupiedSeats[seat] = undefined;
+        this.state.playerBalances[seat] = undefined;
+        this.state.readyPlayers[seat] = undefined;
+        this.state.foldedPlayers[seat] = false;
 
         if (this._firstPlayer === seat) this._firstPlayer = this._getNextSeat(this._firstPlayer);
 
@@ -705,19 +746,28 @@ export default class PokerGame extends Game<PokerGameState, PokerMove> {
         return;
       }
       case 'WAITING_TO_START': {
-        this.state.occupiedSeats.set(seat, undefined);
-        this.state.playerBalances.set(seat, undefined);
-        this.state.readyPlayers.set(seat, undefined);
-        this._foldedPlayers.set(seat, false);
+        // this.state.occupiedSeats.set(seat, undefined);
+        // this.state.playerBalances.set(seat, undefined);
+        // this.state.readyPlayers.set(seat, undefined);
+        // this._foldedPlayers.set(seat, false);
+        this.state.occupiedSeats[seat] = undefined;
+        this.state.playerBalances[seat] = undefined;
+        this.state.readyPlayers[seat] = undefined;
+        this.state.foldedPlayers[seat] = false;
 
         this.state.status = 'WAITING_FOR_PLAYERS';
         return;
       }
       case 'WAITING_FOR_PLAYERS': {
-        this.state.occupiedSeats.set(seat, undefined);
-        this.state.playerBalances.set(seat, undefined);
-        this.state.readyPlayers.set(seat, undefined);
-        this._foldedPlayers.set(seat, false);
+        // this.state.occupiedSeats.set(seat, undefined);
+        // this.state.playerBalances.set(seat, undefined);
+        // this.state.readyPlayers.set(seat, undefined);
+        // this._foldedPlayers.set(seat, false);
+
+        this.state.occupiedSeats[seat] = undefined;
+        this.state.playerBalances[seat] = undefined;
+        this.state.readyPlayers[seat] = undefined;
+        this.state.foldedPlayers[seat] = false;
         return;
       }
       case 'OVER': {
