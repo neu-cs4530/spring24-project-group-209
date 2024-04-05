@@ -1,7 +1,7 @@
 import PokerAreaController, {
   PokerCell,
 } from '../../../../classes/interactable/PokerAreaController';
-import { Box, chakra, Container } from '@chakra-ui/react';
+import { Box, chakra, Container, Text } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import useTownController from '../../../../hooks/useTownController';
 import CardToImage from './CardToImages';
@@ -14,18 +14,21 @@ export type PokerGameProps = {
 const StyledPokerBoard = chakra(Container, {
   baseStyle: {
     display: 'flex',
-    width: '350px',
-    height: '350px',
+    width: '100%',
+    height: '400px',
     padding: '5px',
-    flexWrap: 'wrap',
+    flexWrap: 'nowrap',
+    backgroundColor: 'green',
+    alignItems: 'flex-end',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
   },
 });
 const StyledPokerSquare = chakra(Box, {
   baseStyle: {
     justifyContent: 'center',
     alignItems: 'center',
-    flexBasis: '14%',
-    border: '1px solid black',
+    padding: '1px',
     height: '14%',
     fontSize: '50px',
     _disabled: {
@@ -38,7 +41,7 @@ export default function PokerBoard({ gameAreaController }: PokerGameProps): JSX.
   const [board, setBoard] = useState<PokerCell[][]>(gameAreaController.board);
   const townController = useTownController();
   const [activeSkin, setActiveSkin] = useState<string>('SKIN1');
-  const cardMap: CardToImage = new CardToImage('default');
+  const cardMap: CardToImage = new CardToImage('SKIN1');
   useEffect(() => {
     async function fetchData() {
       const fetchedSkin = await firebaseUtils.getActiveSkin(townController.ourPlayer.userName);
@@ -51,38 +54,154 @@ export default function PokerBoard({ gameAreaController }: PokerGameProps): JSX.
     };
   }, [gameAreaController, townController]);
   return (
+    // <StyledPokerBoard aria-label='Poker Board'>
+    //   {board.map((row, rowIndex) => {
+    //     return (
+    //       <Box
+    //         alignSelf={rowIndex === 8 ? 'flex-start' : 'auto'}
+    //         padding='5px'
+    //         key={`row-${rowIndex}`}
+    //         display='flex'
+    //         flexDirection='row'>
+    //         {gameAreaController.status === 'IN_PROGRESS' && rowIndex === 8 && (
+    //           <Text alignSelf={rowIndex === 8 ? 'flex-start' : 'auto'} fontSize='md'>
+    //             Community Cards:{' '}
+    //           </Text>
+    //         )}
+    //         {row.map((cell, colIndex) => {
+    //           return (
+    //             <StyledPokerSquare
+    //               key={`${rowIndex}.${colIndex}`}
+    //               aria-label={`Cell ${rowIndex},${colIndex} (${cell ? 'Filled' : 'Empty'})`}>
+    //               {cell ? (
+    //                 cell.player === gameAreaController.playerSeat(townController.ourPlayer) ||
+    //                 !gameAreaController.isPlayer ? (
+    //                   <Image
+    //                     h='50px'
+    //                     w='25px'
+    //                     // Uncomment and use the correct path or function to get the card URL
+    //                     // src={cardMap.getCardUrl(cell.card)}
+    //                     src={`/assets/cards/${activeSkin}/aceOfSpades.png`}
+    //                   />
+    //                 ) : cell.player !== undefined ? (
+    //                   <Image h='50px' w='25px' src={`/assets/cards/${activeSkin}/backOfCard.png`} />
+    //                 ) : (
+    //                   <Image
+    //                     h='50px'
+    //                     w='25px'
+    //                     // Uncomment and use the correct path or function to get the card URL
+    //                     // src={cardMap.getCardUrl(cell.card)}
+    //                     src={`/assets/cards/${activeSkin}/aceOfSpades.png`}
+    //                   />
+    //                 )
+    //               ) : (
+    //                 'Empty'
+    //               )}
+    //             </StyledPokerSquare>
+    //           );
+    //         })}
+    //       </Box>
+    //     );
+    //   })}
+    // </StyledPokerBoard>
     <StyledPokerBoard aria-label='Poker Board'>
-      {board.map((row, rowIndex) => {
-        return row.map((cell, colIndex) => {
-          return (
-            <StyledPokerSquare
-              key={`${rowIndex}.${colIndex}`}
-              backgroundColor={'green'}
-              aria-label={`Cell ${rowIndex},${colIndex} (${cell || 'Empty'})`}>
-              {cell ? (
-                cell.player === gameAreaController.playerSeat(townController.ourPlayer) ? (
+      <Box
+        alignSelf='flex-start'
+        width='100%'
+        display={board.length > 8 && board[8].length > 0 ? 'flex' : 'none'} // Display only if rowIndex === 8 has cards
+        flexDirection='row'
+        padding='5px'>
+        <Text fontSize='md'>Community Cards: </Text>
+        <Box display='flex' flexDirection='row' justifyContent='space-around'>
+          {/* Render community cards here */}
+          {board.length > 8 &&
+            board[8].map((cell, colIndex) => (
+              <StyledPokerSquare
+                key={`8.${colIndex}`}
+                aria-label={`Cell 8,${colIndex} (${cell ? 'Filled' : 'Empty'})`}>
+                {cell ? (
                   <Image
-                    h='20px'
-                    w='10px'
-                    // src={cardMap.getCardUrl(cell.card)}
-                    src={`/assets/cards/${activeSkin}/aceOfSpades.png`}
-                    alt={`Card ${cell.card.face} of ${cell.card.suite}`}
+                    h='50px'
+                    w='25px'
+                    src={`/assets/cards/${activeSkin}/aceOfSpades.png`} // Adjust according to your logic
                   />
-                ) : cell.player !== undefined ? (
-                  <Image src={`/assets/cards/${activeSkin}/cardBack.png`} alt={`Card ${cell}`} />
                 ) : (
-                  <Image
-                    h='20px'
-                    w='10px'
-                    // src={cardMap.getCardUrl(cell.card)}
-                    src={`/assets/cards/${activeSkin}/aceOfSpades.png`}
-                    alt={`Card ${cell.card.face} of ${cell.card.suite}`}
-                  />
-                )
-              ) : undefined}
-            </StyledPokerSquare>
-          );
-        });
+                  'Empty'
+                )}
+              </StyledPokerSquare>
+            ))}
+        </Box>
+      </Box>
+      {board.map((row, rowIndex) => {
+        if (rowIndex === 8) return null; // Skip rowIndex === 8 since it's handled separately as the tables cards
+        return (
+          <Box
+            // alignSelf={rowIndex === 8 ? 'flex-start' : 'auto'}
+            padding='5px'
+            key={`row-${rowIndex}`}
+            display='flex'
+            flexDirection='column'>
+            <Box display='flex' flexDirection='row'>
+              {gameAreaController.status === 'IN_PROGRESS' && rowIndex === 8 && (
+                <Text fontSize='md'>Community Cards: </Text>
+              )}
+              {row.map((cell, colIndex) => {
+                return (
+                  <StyledPokerSquare
+                    key={`${rowIndex}.${colIndex}`}
+                    aria-label={`Cell ${rowIndex},${colIndex} (${cell ? 'Filled' : 'Empty'})`}>
+                    {cell ? (
+                      cell.player === gameAreaController.playerSeat(townController.ourPlayer) ||
+                      !gameAreaController.isPlayer ? (
+                        <Image
+                          h='50px'
+                          w='25px'
+                          src={`/assets/cards/${activeSkin}/aceOfSpades.png`}
+                        />
+                      ) : cell.player !== undefined ? (
+                        <Image
+                          h='50px'
+                          w='25px'
+                          src={`/assets/cards/${activeSkin}/backOfCard.png`}
+                        />
+                      ) : (
+                        <Image
+                          h='50px'
+                          w='25px'
+                          src={`/assets/cards/${activeSkin}/aceOfSpades.png`}
+                        />
+                      )
+                    ) : (
+                      'Empty'
+                    )}
+                  </StyledPokerSquare>
+                );
+              })}
+            </Box>
+            {row.some(cell => cell && cell.player !== undefined) && (
+              <Box display='flex' flexDirection='row' justifyContent='center' paddingTop='5px'>
+                <Text
+                  key={`${rowIndex}-name`}
+                  fontSize='sm'
+                  width='50px'
+                  textAlign='center'
+                  whiteSpace='nowrap'
+                  overflow='hidden'
+                  textOverflow='ellipsis'
+                  title={
+                    gameAreaController.occupiedSeats[rowIndex]
+                      ? gameAreaController.occupiedSeats[rowIndex].userName
+                      : ''
+                  }>
+                  {/* Adjust this to show player name or ID based on your data structure */}
+                  {gameAreaController.occupiedSeats[rowIndex]
+                    ? gameAreaController.occupiedSeats[rowIndex].userName
+                    : ''}
+                </Text>
+              </Box>
+            )}
+          </Box>
+        );
       })}
     </StyledPokerBoard>
   );

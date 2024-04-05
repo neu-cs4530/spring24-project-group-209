@@ -6,7 +6,7 @@ import { useInteractableAreaController } from '../../../../classes/TownControlle
 import useTownController from '../../../../hooks/useTownController';
 import { GameStatus, InteractableID } from '../../../../types/CoveyTownSocket';
 import TicTacToeBoard from './TicTacToeBoard';
-
+import * as firebaseUtils from '../../../../firebaseUtils';
 /**
  * The TicTacToeArea component renders the TicTacToe game area.
  * It renders the current state of the area, optionally allowing the player to join the game.
@@ -74,6 +74,7 @@ export default function TicTacToeArea({
           description: 'You won!',
           status: 'success',
         });
+        firebaseUtils.updateCurrencyIncrement(townController.ourPlayer.userName, 200);
       } else {
         toast({
           title: 'Game over',

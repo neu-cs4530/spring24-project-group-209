@@ -6,6 +6,7 @@ import { useInteractableAreaController } from '../../../../classes/TownControlle
 import useTownController from '../../../../hooks/useTownController';
 import { GameStatus, InteractableID } from '../../../../types/CoveyTownSocket';
 import ConnectFourBoard from './ConnectFourBoard';
+import * as firebaseUtils from '../../../../firebaseUtils';
 
 /**
  * The ConnectFourArea component renders the Connect Four game area.
@@ -81,6 +82,7 @@ export default function ConnectFourArea({
           description: 'You won!',
           status: 'success',
         });
+        firebaseUtils.updateCurrencyIncrement(townController.ourPlayer.userName, 200);
       } else {
         toast({
           title: 'Game over',

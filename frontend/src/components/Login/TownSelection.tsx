@@ -11,6 +11,7 @@ import {
   Input,
   Stack,
   Table,
+  Text,
   TableCaption,
   Tbody,
   Td,
@@ -286,6 +287,8 @@ export default function TownSelection(): JSX.Element {
             <Heading as='h2' size='lg'>
               Select a username and password
             </Heading>
+            <Text fontSize='sm'>Enter existing username and password to log-in</Text>
+            <Text fontSize='sm'>Or new username and password to register</Text>
 
             <FormControl>
               <FormLabel htmlFor='name'>Name</FormLabel>

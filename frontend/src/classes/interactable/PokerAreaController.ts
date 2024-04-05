@@ -21,7 +21,7 @@ export type PokerEvents = GameEventTypes & {
 export const POKER_ROWS = 9;
 
 function createEmptyBoard(): PokerCell[][] {
-  const board = new Array(POKER_ROWS);
+  const board = new Array(POKER_ROWS).fill(undefined).map(() => []);
   return board;
 }
 
@@ -67,14 +67,30 @@ export default class PokerAreaController extends GameAreaController<PokerGameSta
   }
 
   get occupiedSeats(): Array<PlayerController> {
+    // const occupiedSeats = new Array(8).fill(undefined);
+    // this.occupants.forEach(player => {
+    //   const seat = this.playerSeat(player);
+    //   if (seat !== undefined) {
+    //     occupiedSeats[seat] = player;
+    //   }
+    // });
+    // return occupiedSeats;
     const occupiedSeats = new Array(8).fill(undefined);
-    this.occupants.forEach(player => {
-      const seat = this.playerSeat(player);
-      if (seat !== undefined) {
+    this._model.game?.state.occupiedSeats.forEach((playerID, seat) => {
+      const player = this.occupants.find(eachOccupant => eachOccupant.id === playerID);
+      if (player) {
         occupiedSeats[seat] = player;
       }
     });
     return occupiedSeats;
+  }
+
+  get foldedPlayers(): Array<boolean> {
+    const foldedSeats = new Array(8).fill(undefined);
+    this._model.game?.state.foldedPlayers.forEach((isFolded, seat) => {
+      foldedSeats[seat] = isFolded;
+    });
+    return foldedSeats;
   }
 
   /**
@@ -109,22 +125,22 @@ export default class PokerAreaController extends GameAreaController<PokerGameSta
    *
    * Follows the same logic as the backend, respecting the firstPlayer field of the gameState
    */
-  get whoseTurn(): PlayerController {
+  get whoseTurn(): PlayerController | undefined {
     if (this._prevTurn) {
       return this._nextActivePlayer(this._prevTurn);
     }
     if (this._model.game?.state) {
       return this._nextActivePlayer(((this._model.game?.state.smallBlind + 2) % 8) as SeatNumber);
     }
-    return undefined as unknown as PlayerController;
+    return undefined;
   }
 
   private _nextActivePlayer(seat: SeatNumber): PlayerController {
-    let nextTurn;
+    let nextTurn: PlayerController | undefined = undefined;
     while (!nextTurn) {
-      const next = (seat + 1) % 8;
-      if (this.occupiedSeats[next]) {
-        nextTurn = this.occupiedSeats[next];
+      seat = (seat + 1) % 8;
+      if (this.occupiedSeats[seat]) {
+        nextTurn = this.occupiedSeats[seat];
       }
     }
     return nextTurn;
@@ -140,7 +156,7 @@ export default class PokerAreaController extends GameAreaController<PokerGameSta
 
   playerSeat(player: PlayerController | undefined): SeatNumber | undefined {
     if (player) {
-      for (let i = 0; i < 7; i++) {
+      for (let i = 0; i < 8; i++) {
         if (this._model.game?.state.occupiedSeats[i] === player.id) {
           return i as SeatNumber;
         }
@@ -149,8 +165,9 @@ export default class PokerAreaController extends GameAreaController<PokerGameSta
     return undefined;
   }
 
-  numActivePlayers(): number {
-    const players = this.occupiedSeats;
+  get numActivePlayers(): number {
+    const occupiedSeats = this.occupiedSeats;
+    const players = occupiedSeats;
     if (!players) return 0;
     let count = 0;
     for (let i = 0; i < 8; i++) {
@@ -188,7 +205,7 @@ export default class PokerAreaController extends GameAreaController<PokerGameSta
       const newBoard = createEmptyBoard();
       newGame.state.moves.forEach(move => {
         if (move.moveType == 'DEAL') {
-          if (move.player && move.card) {
+          if (move.player !== undefined && move.card) {
             newBoard[move.player].push({ card: move.card, player: move.player });
           } else if (move.player === undefined && move.card) {
             newBoard[8].push({ card: move.card, player: undefined });
@@ -235,7 +252,7 @@ export default class PokerAreaController extends GameAreaController<PokerGameSta
     if (!instanceID || this._model.game?.state.status !== 'IN_PROGRESS') {
       throw new Error(NO_GAME_IN_PROGRESS_ERROR);
     }
-
+    this._prevTurn = move.player;
     await this._townController.sendInteractableCommand(this.id, {
       gameID: instanceID,
       type: 'GameMove',

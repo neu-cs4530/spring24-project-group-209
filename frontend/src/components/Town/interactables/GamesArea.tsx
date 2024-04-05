@@ -148,7 +148,7 @@ export default function GameAreaWrapper(): JSX.Element {
     return (
       <Modal isOpen={true} onClose={closeModal} closeOnOverlayClick={false} size='xl'>
         <ModalOverlay />
-        <ModalContent>
+        <ModalContent maxW='800px'>
           <ModalHeader>{gameArea.name}</ModalHeader>
           <ModalCloseButton />
           <ModalBody>

@@ -1,5 +1,7 @@
 import {
+  Box,
   Button,
+  Flex,
   List,
   ListItem,
   NumberDecrementStepper,
@@ -75,6 +77,7 @@ export default function PokerArea({
       setSeats(gameAreaController.occupiedSeats);
       setGameStatus(gameAreaController.status || 'WAITING_TO_START');
       setMoveCount(gameAreaController.moveCount || 0);
+      setActivePlayers(gameAreaController.numActivePlayers);
     };
     const onGameEnd = () => {
       const winner = gameAreaController.winner;
@@ -100,9 +103,11 @@ export default function PokerArea({
     };
   }, [townController, gameAreaController, toast]);
   let gameStatusText = <></>;
-  if (gameAreaController.whoseTurn === townController.ourPlayer && gameStatus == 'IN_PROGRESS') {
+  if (gameStatus == 'IN_PROGRESS' && gameAreaController.whoseTurn === townController.ourPlayer) {
     const raiseInput = (
       <NumberInput
+        paddingLeft={1}
+        width={100}
         defaultValue={5}
         min={1}
         onChange={valueString => setRaiseValue(parseInt(valueString))}>
@@ -114,25 +119,29 @@ export default function PokerArea({
       </NumberInput>
     );
     const raiseButton = (
-      <Button
-        onClick={async () => {
-          setJoiningGame(true);
-          try {
-            await gameAreaController.makeMove({
-              moveType: 'RAISE',
-              raiseAmount: raiseValue,
-            });
-          } catch (err) {
-            toast({
-              title: 'Error raising, insufficient funds!',
-              description: (err as Error).toString(),
-              status: 'error',
-            });
-          }
-          setJoiningGame(false);
-        }}>
-        Raise
-      </Button>
+      <Flex paddingLeft='0' paddingTop='1' paddingRight='1' paddingBottom='1'>
+        <Button
+          onClick={async () => {
+            setJoiningGame(true);
+            try {
+              await gameAreaController.makeMove({
+                moveType: 'RAISE',
+                raiseAmount: raiseValue,
+              });
+            } catch (err) {
+              toast({
+                title: 'Error raising, insufficient funds!',
+                description: (err as Error).toString(),
+                status: 'error',
+              });
+            }
+            setJoiningGame(false);
+          }}>
+          Raise
+        </Button>
+
+        {raiseInput}
+      </Flex>
     );
     const callButton = (
       <Button
@@ -179,22 +188,24 @@ export default function PokerArea({
     );
     gameStatusText = (
       <>
-        Game in progress, {moveCount} moves in, currently your turn. Players left: {activePlayers}{' '}
-        Pot: {gameAreaController.pot} {raiseButton}
-        {raiseInput} {callButton} {foldButton}
+        Game in progress, {moveCount - activePlayers * 2} moves in, currently your turn. Players
+        left: {activePlayers} Pot: {gameAreaController.pot} <hr /> {raiseButton}
+        {callButton} {foldButton}
       </>
     );
   } else if (
-    gameAreaController.whoseTurn !== townController.ourPlayer &&
-    gameStatus == 'IN_PROGRESS'
+    gameStatus == 'IN_PROGRESS' &&
+    gameAreaController.whoseTurn !== townController.ourPlayer
   ) {
+    const turnName = gameAreaController.whoseTurn?.userName;
     const raiseButton = <Button disabled={true}>Raise</Button>;
     const callButton = <Button disabled={true}>Call</Button>;
     const foldButton = <Button disabled={true}>Fold</Button>;
     gameStatusText = (
       <>
-        Game in progress, {moveCount} moves in, currently {gameAreaController.whoseTurn + "'s"} turn
-        . Players left: {activePlayers} Pot: {gameAreaController.pot} {raiseButton} {callButton}
+        Game in progress, {moveCount - activePlayers * 2} moves in, currently {turnName + "'s"} turn
+        . Players left: {activePlayers} Pot: {gameAreaController.pot} <hr />
+        {raiseButton} {callButton}
         {foldButton}
       </>
     );
@@ -222,7 +233,7 @@ export default function PokerArea({
     gameStatusText = <b>Waiting for players to press start. {startGameButton}</b>;
   } else {
     let startGameButton = <Button disabled={true}>Start Game</Button>;
-    if (gameAreaController.players.length >= 2) {
+    if (gameAreaController.players.length >= 2 && gameAreaController.isPlayer) {
       startGameButton = (
         <Button
           onClick={async () => {
@@ -277,16 +288,18 @@ export default function PokerArea({
     );
   }
   return (
-    <>
+    <Box width='600px'>
       {gameStatusText}
-      <List aria-label='list of players in the game'>
-        {Array.from(seats.entries()).map(([seatNumber, player]) => (
-          <ListItem key={seatNumber}>
-            Seat {seatNumber} : {player?.userName || '(No player yet!)'}
-          </ListItem>
-        ))}
-      </List>
+      {gameAreaController.status !== 'IN_PROGRESS' && (
+        <List aria-label='list of players in the game'>
+          {seats.map((player, seatNumber) => (
+            <ListItem key={seatNumber}>
+              Seat {seatNumber + 1} : {player?.userName || '(No player yet!)'}
+            </ListItem>
+          ))}
+        </List>
+      )}
       <PokerBoard gameAreaController={gameAreaController} />
-    </>
+    </Box>
   );
 }
