@@ -109,22 +109,22 @@ export default class PokerAreaController extends GameAreaController<PokerGameSta
    *
    * Follows the same logic as the backend, respecting the firstPlayer field of the gameState
    */
-  get whoseTurn(): PlayerController {
+  get whoseTurn(): PlayerController | undefined {
     if (this._prevTurn) {
       return this._nextActivePlayer(this._prevTurn);
     }
     if (this._model.game?.state) {
       return this._nextActivePlayer(((this._model.game?.state.smallBlind + 2) % 8) as SeatNumber);
     }
-    return undefined as unknown as PlayerController;
+    return undefined;
   }
 
   private _nextActivePlayer(seat: SeatNumber): PlayerController {
-    let nextTurn;
+    let nextTurn: PlayerController | undefined = undefined;
     while (!nextTurn) {
-      const next = (seat + 1) % 8;
-      if (this.occupiedSeats[next]) {
-        nextTurn = this.occupiedSeats[next];
+      seat = (seat + 1) % 8;
+      if (this.occupiedSeats[seat]) {
+        nextTurn = this.occupiedSeats[seat];
       }
     }
     return nextTurn;
@@ -235,7 +235,7 @@ export default class PokerAreaController extends GameAreaController<PokerGameSta
     if (!instanceID || this._model.game?.state.status !== 'IN_PROGRESS') {
       throw new Error(NO_GAME_IN_PROGRESS_ERROR);
     }
-
+    this._prevTurn = move.player;
     await this._townController.sendInteractableCommand(this.id, {
       gameID: instanceID,
       type: 'GameMove',
