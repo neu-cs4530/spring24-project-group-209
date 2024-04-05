@@ -35,7 +35,7 @@ export default class BlackjackGameArea extends GameArea<BlackjackGame> {
       if (gameID && !this._history.find(eachResult => eachResult.gameID === gameID)) {
         const players: Array<PlayerID> = [];
         for (let i = 0; i < 8; i++) {
-          const player = updatedState.state.occupiedSeats.get(i as SeatNumber);
+          const player = updatedState.state.occupiedSeats[i];
           if (player) players.push(player);
         }
         if (players.length >= 2) {
