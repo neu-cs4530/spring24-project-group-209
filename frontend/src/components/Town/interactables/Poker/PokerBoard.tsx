@@ -18,7 +18,7 @@ const StyledPokerBoard = chakra(Container, {
     height: '400px',
     padding: '5px',
     flexWrap: 'nowrap',
-    backgroundColor: 'green',
+    bgImage: '/assets/cardTables/pokerFelt.jpg',
     alignItems: 'flex-end',
     flexDirection: 'row',
     justifyContent: 'space-around',
