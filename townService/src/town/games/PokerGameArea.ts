@@ -130,6 +130,7 @@ export default class PokerGameArea extends GameArea<PokerGame> {
       if (game.id !== command.gameID) throw new InvalidParametersError(GAME_ID_MISSMATCH_MESSAGE);
       game.leave(player);
       this._stateUpdated(game.toModel());
+
       return undefined as InteractableCommandReturnType<CommandType>;
     }
     if (command.type === 'StartGame') {
