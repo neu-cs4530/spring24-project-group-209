@@ -31,6 +31,8 @@ function createEmptyBoard(): PokerCell[][] {
 export default class PokerAreaController extends GameAreaController<PokerGameState, PokerEvents> {
   protected _board: PokerCell[][] = createEmptyBoard();
 
+  private _prevTurn: SeatNumber | undefined;
+
   /**
    * Returns the current state of the board.
    *
@@ -64,12 +66,12 @@ export default class PokerAreaController extends GameAreaController<PokerGameSta
     return this._model.game?.state.moves.length || 0;
   }
 
-  get occupiedSeats(): Map<SeatNumber, PlayerController> {
-    const occupiedSeats = new Map<SeatNumber, PlayerController>();
+  get occupiedSeats(): Array<PlayerController> {
+    const occupiedSeats = new Array(8).fill(undefined);
     this.occupants.forEach(player => {
       const seat = this.playerSeat(player);
       if (seat !== undefined) {
-        occupiedSeats.set(seat, player);
+        occupiedSeats[seat] = player;
       }
     });
     return occupiedSeats;
@@ -107,31 +109,25 @@ export default class PokerAreaController extends GameAreaController<PokerGameSta
    *
    * Follows the same logic as the backend, respecting the firstPlayer field of the gameState
    */
-  get whoseTurn(): PlayerController | undefined {
-    if (
-      this._model.game?.state.occupiedSeats.size === 0 ||
-      this._model.game?.state.status !== 'IN_PROGRESS'
-    ) {
-      return undefined;
+  get whoseTurn(): PlayerController {
+    if (this._prevTurn) {
+      return this._nextActivePlayer(this._prevTurn);
     }
-    if (this._model.game?.state.occupiedSeats instanceof Map) {
-      const firstPlayer = Array.from(this._model.game?.state.occupiedSeats.keys()).find(seat => {
-        return !this._model.game?.state.foldedPlayers.has(seat);
-      });
-      if (firstPlayer) {
-        let activeSeat = (this.moveCount + firstPlayer) % 8;
-        let player = this._model.game?.state.occupiedSeats.get(activeSeat as SeatNumber);
-        while (this._model.game?.state.foldedPlayers.get(activeSeat as SeatNumber) !== undefined) {
-          player = this._model.game?.state.occupiedSeats.get(activeSeat as SeatNumber);
-          activeSeat = activeSeat + 1;
-        }
-        if (player) {
-          return this.occupants.find(eachOccupant => eachOccupant.id === player);
-        }
-        return undefined;
+    if (this._model.game?.state) {
+      return this._nextActivePlayer(((this._model.game?.state.smallBlind + 2) % 8) as SeatNumber);
+    }
+    return undefined as unknown as PlayerController;
+  }
+
+  private _nextActivePlayer(seat: SeatNumber): PlayerController {
+    let nextTurn;
+    while (!nextTurn) {
+      const next = (seat + 1) % 8;
+      if (this.occupiedSeats[next]) {
+        nextTurn = this.occupiedSeats[next];
       }
     }
-    return undefined;
+    return nextTurn;
   }
 
   /**
@@ -144,19 +140,25 @@ export default class PokerAreaController extends GameAreaController<PokerGameSta
 
   playerSeat(player: PlayerController | undefined): SeatNumber | undefined {
     if (player) {
-      // Check if occupiedSeats is a Map before proceeding
-      if (this._model.game?.state.occupiedSeats instanceof Map) {
-        for (let i = 0; i < 7; i++) {
-          if (this._model.game.state.occupiedSeats.get(i as SeatNumber) === player.id) {
-            return i as SeatNumber;
-          }
+      for (let i = 0; i < 7; i++) {
+        if (this._model.game?.state.occupiedSeats[i] === player.id) {
+          return i as SeatNumber;
         }
-      } else {
-        console.error('occupiedSeats is not a Map.');
-        return undefined;
       }
     }
     return undefined;
+  }
+
+  numActivePlayers(): number {
+    const players = this.occupiedSeats;
+    if (!players) return 0;
+    let count = 0;
+    for (let i = 0; i < 8; i++) {
+      if (players[i] !== undefined) {
+        count++;
+      }
+    }
+    return count;
   }
 
   /**

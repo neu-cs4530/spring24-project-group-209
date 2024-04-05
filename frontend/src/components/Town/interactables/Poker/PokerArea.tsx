@@ -62,15 +62,13 @@ export default function PokerArea({
   const gameAreaController = useInteractableAreaController<PokerAreaController>(interactableID);
   const townController = useTownController();
 
-  const [seats, setSeats] = useState<Map<SeatNumber, PlayerController>>(
-    gameAreaController.occupiedSeats,
-  );
+  const [seats, setSeats] = useState<Array<PlayerController>>(gameAreaController.occupiedSeats);
   const [joiningGame, setJoiningGame] = useState(false);
 
   const [gameStatus, setGameStatus] = useState<GameStatus>(gameAreaController.status);
   const [moveCount, setMoveCount] = useState<number>(gameAreaController.moveCount);
   const [raiseValue, setRaiseValue] = useState<number>(0);
-  const [activePlayers, setActivePlayers] = useState<number>(gameAreaController.occupiedSeats.size);
+  const [activePlayers, setActivePlayers] = useState<number>(0);
   const toast = useToast();
   useEffect(() => {
     const updateGameState = () => {
