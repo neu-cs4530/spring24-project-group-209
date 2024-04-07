@@ -54,56 +54,6 @@ export default function PokerBoard({ gameAreaController }: PokerGameProps): JSX.
     };
   }, [gameAreaController, townController]);
   return (
-    // <StyledPokerBoard aria-label='Poker Board'>
-    //   {board.map((row, rowIndex) => {
-    //     return (
-    //       <Box
-    //         alignSelf={rowIndex === 8 ? 'flex-start' : 'auto'}
-    //         padding='5px'
-    //         key={`row-${rowIndex}`}
-    //         display='flex'
-    //         flexDirection='row'>
-    //         {gameAreaController.status === 'IN_PROGRESS' && rowIndex === 8 && (
-    //           <Text alignSelf={rowIndex === 8 ? 'flex-start' : 'auto'} fontSize='md'>
-    //             Community Cards:{' '}
-    //           </Text>
-    //         )}
-    //         {row.map((cell, colIndex) => {
-    //           return (
-    //             <StyledPokerSquare
-    //               key={`${rowIndex}.${colIndex}`}
-    //               aria-label={`Cell ${rowIndex},${colIndex} (${cell ? 'Filled' : 'Empty'})`}>
-    //               {cell ? (
-    //                 cell.player === gameAreaController.playerSeat(townController.ourPlayer) ||
-    //                 !gameAreaController.isPlayer ? (
-    //                   <Image
-    //                     h='50px'
-    //                     w='25px'
-    //                     // Uncomment and use the correct path or function to get the card URL
-    //                     // src={cardMap.getCardUrl(cell.card)}
-    //                     src={`/assets/cards/${activeSkin}/aceOfSpades.png`}
-    //                   />
-    //                 ) : cell.player !== undefined ? (
-    //                   <Image h='50px' w='25px' src={`/assets/cards/${activeSkin}/backOfCard.png`} />
-    //                 ) : (
-    //                   <Image
-    //                     h='50px'
-    //                     w='25px'
-    //                     // Uncomment and use the correct path or function to get the card URL
-    //                     // src={cardMap.getCardUrl(cell.card)}
-    //                     src={`/assets/cards/${activeSkin}/aceOfSpades.png`}
-    //                   />
-    //                 )
-    //               ) : (
-    //                 'Empty'
-    //               )}
-    //             </StyledPokerSquare>
-    //           );
-    //         })}
-    //       </Box>
-    //     );
-    //   })}
-    // </StyledPokerBoard>
     <StyledPokerBoard aria-label='Poker Board'>
       <Box
         alignSelf='flex-start'
@@ -142,9 +92,6 @@ export default function PokerBoard({ gameAreaController }: PokerGameProps): JSX.
             display='flex'
             flexDirection='column'>
             <Box display='flex' flexDirection='row'>
-              {gameAreaController.status === 'IN_PROGRESS' && rowIndex === 8 && (
-                <Text fontSize='md'>Community Cards: </Text>
-              )}
               {row.map((cell, colIndex) => {
                 return (
                   <StyledPokerSquare
@@ -193,7 +140,6 @@ export default function PokerBoard({ gameAreaController }: PokerGameProps): JSX.
                       ? gameAreaController.occupiedSeats[rowIndex].userName
                       : ''
                   }>
-                  {/* Adjust this to show player name or ID based on your data structure */}
                   {gameAreaController.occupiedSeats[rowIndex]
                     ? gameAreaController.occupiedSeats[rowIndex].userName
                     : ''}

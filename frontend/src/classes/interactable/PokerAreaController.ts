@@ -67,14 +67,6 @@ export default class PokerAreaController extends GameAreaController<PokerGameSta
   }
 
   get occupiedSeats(): Array<PlayerController> {
-    // const occupiedSeats = new Array(8).fill(undefined);
-    // this.occupants.forEach(player => {
-    //   const seat = this.playerSeat(player);
-    //   if (seat !== undefined) {
-    //     occupiedSeats[seat] = player;
-    //   }
-    // });
-    // return occupiedSeats;
     const occupiedSeats = new Array(8).fill(undefined);
     this._model.game?.state.occupiedSeats.forEach((playerID, seat) => {
       const player = this.occupants.find(eachOccupant => eachOccupant.id === playerID);

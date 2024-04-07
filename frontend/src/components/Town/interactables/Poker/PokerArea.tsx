@@ -130,7 +130,7 @@ export default function PokerArea({
               });
             } catch (err) {
               toast({
-                title: 'Error raising, insufficient funds!',
+                title: 'Error raising',
                 description: (err as Error).toString(),
                 status: 'error',
               });
