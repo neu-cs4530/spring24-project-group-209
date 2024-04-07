@@ -130,7 +130,9 @@ export default class PokerAreaController extends GameAreaController<PokerGameSta
       return this._nextActivePlayer(this._prevTurn);
     }
     if (this._model.game?.state) {
-      return this._nextActivePlayer(((this._model.game?.state.smallBlind + 2) % 8) as SeatNumber);
+      return this._nextActivePlayer(
+        this.playerSeat(this._nextActivePlayer(this._model.game?.state.smallBlind)) as SeatNumber,
+      );
     }
     return undefined;
   }

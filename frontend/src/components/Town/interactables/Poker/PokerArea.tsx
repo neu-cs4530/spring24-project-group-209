@@ -103,7 +103,7 @@ export default function PokerArea({
     };
   }, [townController, gameAreaController, toast]);
   let gameStatusText = <></>;
-  if (gameStatus == 'IN_PROGRESS' && gameAreaController.whoseTurn === townController.ourPlayer) {
+  if (gameStatus == 'IN_PROGRESS') {
     const raiseInput = (
       <NumberInput
         paddingLeft={1}
@@ -193,22 +193,22 @@ export default function PokerArea({
         {callButton} {foldButton}
       </>
     );
-  } else if (
-    gameStatus == 'IN_PROGRESS' &&
-    gameAreaController.whoseTurn !== townController.ourPlayer
-  ) {
-    const turnName = gameAreaController.whoseTurn?.userName;
-    const raiseButton = <Button disabled={true}>Raise</Button>;
-    const callButton = <Button disabled={true}>Call</Button>;
-    const foldButton = <Button disabled={true}>Fold</Button>;
-    gameStatusText = (
-      <>
-        Game in progress, {moveCount - activePlayers * 2} moves in, currently {turnName + "'s"} turn
-        . Players left: {activePlayers} Pot: {gameAreaController.pot} <hr />
-        {raiseButton} {callButton}
-        {foldButton}
-      </>
-    );
+    // } else if (
+    //   gameStatus == 'IN_PROGRESS' &&
+    //   gameAreaController.whoseTurn !== townController.ourPlayer
+    // ) {
+    //   const turnName = gameAreaController.whoseTurn?.userName;
+    //   const raiseButton = <Button disabled={true}>Raise</Button>;
+    //   const callButton = <Button disabled={true}>Call</Button>;
+    //   const foldButton = <Button disabled={true}>Fold</Button>;
+    //   gameStatusText = (
+    //     <>
+    //       Game in progress, {moveCount - activePlayers * 2} moves in, currently {turnName + "'s"} turn
+    //       . Players left: {activePlayers} Pot: {gameAreaController.pot} <hr />
+    //       {raiseButton} {callButton}
+    //       {foldButton}
+    //     </>
+    //   );
   } else if (gameStatus == 'WAITING_TO_START') {
     const startGameButton = (
       <Button
