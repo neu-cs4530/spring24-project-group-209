@@ -70,11 +70,7 @@ export default function PokerBoard({ gameAreaController }: PokerGameProps): JSX.
                 key={`8.${colIndex}`}
                 aria-label={`Cell 8,${colIndex} (${cell ? 'Filled' : 'Empty'})`}>
                 {cell ? (
-                  <Image
-                    h='50px'
-                    w='25px'
-                    src={`/assets/cards/${activeSkin}/aceOfSpades.png`} // Adjust according to your logic
-                  />
+                  <Image h='50px' w='25px' src={`/assets/cards/${activeSkin}/aceOfSpades.png`} />
                 ) : (
                   'Empty'
                 )}
@@ -99,23 +95,18 @@ export default function PokerBoard({ gameAreaController }: PokerGameProps): JSX.
                     aria-label={`Cell ${rowIndex},${colIndex} (${cell ? 'Filled' : 'Empty'})`}>
                     {cell ? (
                       cell.player === gameAreaController.playerSeat(townController.ourPlayer) ||
-                      !gameAreaController.isPlayer ? (
+                      !gameAreaController.isPlayer ||
+                      gameAreaController.status == 'OVER' ? (
                         <Image
                           h='50px'
                           w='25px'
                           src={`/assets/cards/${activeSkin}/aceOfSpades.png`}
-                        />
-                      ) : cell.player !== undefined ? (
-                        <Image
-                          h='50px'
-                          w='25px'
-                          src={`/assets/cards/${activeSkin}/backOfCard.png`}
                         />
                       ) : (
                         <Image
                           h='50px'
                           w='25px'
-                          src={`/assets/cards/${activeSkin}/aceOfSpades.png`}
+                          src={`/assets/cards/${activeSkin}/backOfCard.png`}
                         />
                       )
                     ) : (

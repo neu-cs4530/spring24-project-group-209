@@ -69,21 +69,30 @@ export default function BlackjackBoard({ gameAreaController }: BlackjackGameProp
         <Box display='flex' flexDirection='row' justifyContent='space-around'>
           {/* Render community cards here */}
           {board.length > 8 &&
-            board[8].map((cell, colIndex) => (
+            board[8].map((cell, colIndex) => {
+              if (colIndex === 0) {
+                return (
+                  <StyledBlackjackSquare
+                    key={`8.${colIndex}`}
+                    aria-label={`Cell 8,${colIndex} (${cell ? 'Filled' : 'Empty'})`}>
+                    {cell ? (
+                      <Image h='50px' w='25px' src={`/assets/cards/${activeSkin}/backOfCard.png`} />
+                    ) : (
+                      'Empty'
+                    )}
+                  </StyledBlackjackSquare>
+                );
+              }
               <StyledBlackjackSquare
                 key={`8.${colIndex}`}
                 aria-label={`Cell 8,${colIndex} (${cell ? 'Filled' : 'Empty'})`}>
                 {cell ? (
-                  <Image
-                    h='50px'
-                    w='25px'
-                    src={`/assets/cards/${activeSkin}/aceOfSpades.png`} // Adjust according to your logic
-                  />
+                  <Image h='50px' w='25px' src={`/assets/cards/${activeSkin}/aceOfSpades.png`} />
                 ) : (
                   'Empty'
                 )}
-              </StyledBlackjackSquare>
-            ))}
+              </StyledBlackjackSquare>;
+            })}
         </Box>
       </Box>
       {board.map((row, rowIndex) => {
@@ -101,29 +110,12 @@ export default function BlackjackBoard({ gameAreaController }: BlackjackGameProp
                   <StyledBlackjackSquare
                     key={`${rowIndex}.${colIndex}`}
                     aria-label={`Cell ${rowIndex},${colIndex} (${cell ? 'Filled' : 'Empty'})`}>
-                    {cell ? (
-                      cell.player === gameAreaController.playerSeat(townController.ourPlayer) ||
-                      !gameAreaController.isPlayer ? (
-                        <Image
-                          h='50px'
-                          w='25px'
-                          src={`/assets/cards/${activeSkin}/aceOfSpades.png`}
-                        />
-                      ) : cell.player !== undefined ? (
-                        <Image
-                          h='50px'
-                          w='25px'
-                          src={`/assets/cards/${activeSkin}/backOfCard.png`}
-                        />
-                      ) : (
-                        <Image
-                          h='50px'
-                          w='25px'
-                          src={`/assets/cards/${activeSkin}/aceOfSpades.png`}
-                        />
-                      )
-                    ) : (
-                      'Empty'
+                    {cell && (
+                      <Image
+                        h='50px'
+                        w='25px'
+                        src={`/assets/cards/${activeSkin}/aceOfSpades.png`}
+                      />
                     )}
                   </StyledBlackjackSquare>
                 );
