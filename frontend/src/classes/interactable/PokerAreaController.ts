@@ -59,6 +59,14 @@ export default class PokerAreaController extends GameAreaController<PokerGameSta
     return this._model.game?.state.pot || 0;
   }
 
+  get balances(): Array<number> {
+    const balances = new Array(8).fill(0);
+    this._model.game?.state.playerBalances.forEach((balance, seat) => {
+      balances[seat] = balance;
+    });
+    return balances;
+  }
+
   /**
    * Returns the number of moves that have been made in the game
    */

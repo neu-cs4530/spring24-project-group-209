@@ -42,6 +42,7 @@ export default function PokerBoard({ gameAreaController }: PokerGameProps): JSX.
   const townController = useTownController();
   const [activeSkin, setActiveSkin] = useState<string>('SKIN1');
   const [cardMap, setCardMap] = useState<CardToImage | undefined>(undefined);
+  const [playerBalances, setPlayerBalances] = useState<Array<number>>([]);
 
   useEffect(() => {
     async function fetchData() {
@@ -50,11 +51,12 @@ export default function PokerBoard({ gameAreaController }: PokerGameProps): JSX.
     }
     fetchData();
     setCardMap(new CardToImage(activeSkin));
+    setPlayerBalances(gameAreaController.balances);
     gameAreaController.addListener('boardChanged', setBoard);
     return () => {
       gameAreaController.removeListener('boardChanged', setBoard);
     };
-  }, [activeSkin, gameAreaController, townController]);
+  }, [activeSkin, gameAreaController, townController, playerBalances]);
   return (
     <StyledPokerBoard aria-label='Poker Board'>
       <Box
@@ -128,7 +130,7 @@ export default function PokerBoard({ gameAreaController }: PokerGameProps): JSX.
                 })}
               </Box>
               {row.some(cell => cell && cell.player !== undefined) && (
-                <Box display='flex' flexDirection='row' justifyContent='center' paddingTop='5px'>
+                <Box display='flex' flexDirection='column' justifyContent='center' paddingTop='5px'>
                   <Text
                     key={`${rowIndex}-name`}
                     display={gameAreaController.occupiedSeats[rowIndex] ? 'block' : 'none'}
@@ -155,6 +157,17 @@ export default function PokerBoard({ gameAreaController }: PokerGameProps): JSX.
                     {gameAreaController.occupiedSeats[rowIndex]
                       ? gameAreaController.occupiedSeats[rowIndex].userName
                       : ''}
+                  </Text>
+                  <Text
+                    key={`${rowIndex}-name`}
+                    display={gameAreaController.occupiedSeats[rowIndex] ? 'block' : 'none'}
+                    fontSize='sm'
+                    width='50px'
+                    textAlign='center'
+                    background='white'
+                    border='1px solid black'
+                    borderRadius='5px'>
+                    ${playerBalances[rowIndex]}
                   </Text>
                 </Box>
               )}

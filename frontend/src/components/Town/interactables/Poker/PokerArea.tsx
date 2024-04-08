@@ -19,6 +19,7 @@ import useTownController from '../../../../hooks/useTownController';
 import { GameStatus, InteractableID } from '../../../../types/CoveyTownSocket';
 import PokerBoard from './PokerBoard';
 import * as firebaseUtils from '../../../../firebaseUtils';
+import { DEFAULT_BUY_IN } from './PokerGameDefaults';
 
 /**
  * The PokerArea component renders the Poker game area.
@@ -73,6 +74,8 @@ export default function PokerArea({
   const [raiseValue, setRaiseValue] = useState<number>(0);
   const [activePlayers, setActivePlayers] = useState<number>(0);
   const [playerBalance, setPlayerBalance] = useState<number>(0);
+  const [dbBalance, setDbBalance] = useState<number>(0);
+
   const toast = useToast();
   useEffect(() => {
     const updateGameState = () => {
@@ -80,6 +83,9 @@ export default function PokerArea({
       setGameStatus(gameAreaController.status || 'WAITING_TO_START');
       setMoveCount(gameAreaController.moveCount || 0);
       setActivePlayers(gameAreaController.numActivePlayers);
+      setPlayerBalance(
+        gameAreaController.balances[gameAreaController.playerSeat(townController.ourPlayer) || 0],
+      );
     };
     const onGameEnd = () => {
       const winner = gameAreaController.winner;
@@ -96,10 +102,14 @@ export default function PokerArea({
           status: 'error',
         });
       }
+      firebaseUtils.updateCurrencyIncrement(
+        townController.ourPlayer.userName,
+        gameAreaController.balances[gameAreaController.playerSeat(townController.ourPlayer) || 0],
+      );
     };
     async function fetchData() {
       const balance = await firebaseUtils.getCurrency(townController.ourPlayer.userName);
-      setPlayerBalance(balance);
+      setDbBalance(balance);
     }
     fetchData();
     gameAreaController.addListener('gameUpdated', updateGameState);
@@ -267,6 +277,15 @@ export default function PokerArea({
       <Button
         onClick={async () => {
           setJoiningGame(true);
+          if (dbBalance < DEFAULT_BUY_IN) {
+            toast({
+              title: 'Error joining game',
+              description: 'You do not have enough currency to join this game',
+              status: 'error',
+            });
+            setJoiningGame(false);
+            return;
+          }
           try {
             await gameAreaController.joinGame();
           } catch (err) {
@@ -276,6 +295,7 @@ export default function PokerArea({
               status: 'error',
             });
           }
+          firebaseUtils.updateCurrencyIncrement(townController.ourPlayer.userName, -DEFAULT_BUY_IN);
           setJoiningGame(false);
         }}
         isLoading={joiningGame}

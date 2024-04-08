@@ -125,6 +125,14 @@ export default class BlackjackAreaController extends GameAreaController<
     return status;
   }
 
+  get balances(): Array<number> {
+    const balances = new Array(8).fill(0);
+    this._model.game?.state.playerBalances.forEach((balance, seat) => {
+      balances[seat] = balance;
+    });
+    return balances;
+  }
+
   /**
    * Returns the player whose turn it is, if the game is in progress
    * Returns undefined if the game is not in progress

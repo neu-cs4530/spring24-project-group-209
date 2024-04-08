@@ -7,6 +7,7 @@ import useTownController from '../../../../hooks/useTownController';
 import { GameStatus, InteractableID } from '../../../../types/CoveyTownSocket';
 import BlackjackBoard from './BlackjackBoard';
 import * as firebaseUtils from '../../../../firebaseUtils';
+import { set } from 'lodash';
 
 /**
  * The BlackjackArea component renders the Blackjack game area.
@@ -61,6 +62,7 @@ export default function BlackjackArea({
   const [moveCount, setMoveCount] = useState<number>(gameAreaController.moveCount);
   const [activePlayers, setActivePlayers] = useState<number>(0);
   const [playerBalance, setPlayerBalance] = useState<number>(0);
+  const [dbBalance, setDbBalance] = useState<number>(0);
 
   const toast = useToast();
   useEffect(() => {
@@ -69,6 +71,9 @@ export default function BlackjackArea({
       setGameStatus(gameAreaController.status || 'WAITING_TO_START');
       setMoveCount(gameAreaController.moveCount || 0);
       setActivePlayers(gameAreaController.numActivePlayers);
+      setPlayerBalance(
+        gameAreaController.balances[gameAreaController.playerSeat(townController.ourPlayer) || 0],
+      );
     };
     const onGameEnd = () => {
       const winner = gameAreaController.winner;
@@ -85,10 +90,11 @@ export default function BlackjackArea({
           status: 'error',
         });
       }
+      firebaseUtils.updateCurrencyIncrement(townController.ourPlayer.userName, playerBalance);
     };
     async function fetchData() {
       const balance = await firebaseUtils.getCurrency(townController.ourPlayer.userName);
-      setPlayerBalance(balance);
+      setDbBalance(balance);
     }
     fetchData();
     gameAreaController.addListener('gameUpdated', updateGameState);
@@ -97,7 +103,7 @@ export default function BlackjackArea({
       gameAreaController.removeListener('gameUpdated', updateGameState);
       gameAreaController.removeListener('gameEnd', onGameEnd);
     };
-  }, [townController, gameAreaController, toast]);
+  }, [townController, gameAreaController, toast, playerBalance]);
   let gameStatusText = <></>;
   if (gameStatus === 'IN_PROGRESS' && gameAreaController.whoseTurn === townController.ourPlayer) {
     const hitButton = (
@@ -241,6 +247,15 @@ export default function BlackjackArea({
       <Button
         onClick={async () => {
           setJoiningGame(true);
+          if (dbBalance < 1000) {
+            toast({
+              title: 'Error joining game',
+              description: 'You do not have enough currency to join this game',
+              status: 'error',
+            });
+            setJoiningGame(false);
+            return;
+          }
           try {
             await gameAreaController.joinGame();
           } catch (err) {
@@ -250,6 +265,7 @@ export default function BlackjackArea({
               status: 'error',
             });
           }
+          firebaseUtils.updateCurrencyIncrement(townController.ourPlayer.userName, -1000);
           setJoiningGame(false);
         }}
         isLoading={joiningGame}
