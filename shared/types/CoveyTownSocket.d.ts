@@ -211,6 +211,8 @@ export interface BlackjackGameState extends WinnableGameState {
   readyPlayers: Array< boolean | undefined>;
   // A map representing the balance of players in each seat.
   playerBalances: Array<number | undefined>;
+
+  winners: Array<boolean | undefined>;
 }
 
 

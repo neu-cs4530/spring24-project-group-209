@@ -103,6 +103,12 @@ describe('BlackjackGame', () => {
       const player3 = createPlayerForTesting();
       expect(() => game.join(player3)).toThrowError(GAME_FULL_MESSAGE);
     });
+    it('should let a single player start', () => {
+      const player = createPlayerForTesting();
+      game.join(player);
+      game.startGame(player);
+      expect(game.state.status).toBe('IN_PROGRESS');
+    });
     describe('if the player is not in the game and the game is not full', () => {
       it('should add the player to the next avaiable seat  with the default balance', () => {
         const seats: Array<SeatNumber> = [0, 1, 2, 3, 4, 5, 6, 7];

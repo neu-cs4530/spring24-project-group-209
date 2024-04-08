@@ -61,6 +61,7 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
     super({
       moves: [],
       dealerMoves: [],
+      winners: [],
       status: 'WAITING_FOR_PLAYERS',
       occupiedSeats: initialOccupiedSeats,
       readyPlayers: initialReadyPlayers,
@@ -312,24 +313,28 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
         const prev = this.state.playerBalances[i] as number;
         const playerTotal = this._checkValue(i as SeatNumber);
         if (playerTotal > 21) {
+          this.state.winners[i] = false;
           if (this._doubled.get(i as SeatNumber)) {
             this.state.playerBalances[i] = prev - this._betAmt * 2;
           } else {
             this.state.playerBalances[i] = prev - this._betAmt;
           }
         } else if (dealerTotal > 21) {
+          this.state.winners[i] = true;
           if (this._doubled.get(i as SeatNumber)) {
             this.state.playerBalances[i] = prev + this._betAmt * 2;
           } else {
             this.state.playerBalances[i] = prev + this._betAmt;
           }
         } else if (playerTotal > dealerTotal) {
+          this.state.winners[i] = true;
           if (this._doubled.get(i as SeatNumber)) {
             this.state.playerBalances[i] = prev + this._betAmt * 2;
           } else {
             this.state.playerBalances[i] = prev + this._betAmt;
           }
         } else if (playerTotal < dealerTotal) {
+          this.state.winners[i] = false;
           if (this._doubled.get(i as SeatNumber)) {
             this.state.playerBalances[i] = prev - this._betAmt * 2;
           } else {
@@ -352,7 +357,7 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
           } else if (move.card.face >= 11) {
             total += 10;
           } else {
-            total += parseInt(move.card.face, 10);
+            total += move.card.face;
           }
         }
       }
@@ -363,7 +368,7 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
         } else if (move.card.face >= 11) {
           total += 10;
         } else {
-          total += parseInt(move.card.face, 10);
+          total += move.card.face;
         }
       }
     }
