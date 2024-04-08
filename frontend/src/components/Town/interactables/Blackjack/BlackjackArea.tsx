@@ -52,19 +52,21 @@ export default function BlackjackArea({
   const gameAreaController = useInteractableAreaController<BlackjackAreaController>(interactableID);
   const townController = useTownController();
 
-  const [seats, setSeats] = useState<Map<SeatNumber, PlayerController>>(
-    gameAreaController.occupiedSeats,
-  );
+  const [seats, setSeats] = useState<Array<PlayerController>>(gameAreaController.occupiedSeats);
+
   const [joiningGame, setJoiningGame] = useState(false);
 
   const [gameStatus, setGameStatus] = useState<GameStatus>(gameAreaController.status);
   const [moveCount, setMoveCount] = useState<number>(gameAreaController.moveCount);
+  const [activePlayers, setActivePlayers] = useState<number>(0);
+
   const toast = useToast();
   useEffect(() => {
     const updateGameState = () => {
       setSeats(gameAreaController.occupiedSeats);
       setGameStatus(gameAreaController.status || 'WAITING_TO_START');
       setMoveCount(gameAreaController.moveCount || 0);
+      setActivePlayers(gameAreaController.numActivePlayers);
     };
     const onGameEnd = () => {
       const winner = gameAreaController.winner;
@@ -200,7 +202,30 @@ export default function BlackjackArea({
     );
     gameStatusText = <b>Waiting for players to press start. {startGameButton}</b>;
   } else {
-    const joinGameButton = (
+    let startGameButton = <Button disabled={true}>Start Game</Button>;
+    if (gameAreaController.players.length >= 2 && gameAreaController.isPlayer) {
+      startGameButton = (
+        <Button
+          onClick={async () => {
+            setJoiningGame(true);
+            try {
+              await gameAreaController.startGame();
+            } catch (err) {
+              toast({
+                title: 'Error starting game',
+                description: (err as Error).toString(),
+                status: 'error',
+              });
+            }
+            setJoiningGame(false);
+          }}
+          isLoading={joiningGame}
+          disabled={joiningGame}>
+          Start Game
+        </Button>
+      );
+    }
+    let joinGameButton = (
       <Button
         onClick={async () => {
           setJoiningGame(true);
@@ -220,25 +245,30 @@ export default function BlackjackArea({
         Join New Game
       </Button>
     );
+    if (gameAreaController.isPlayer) {
+      joinGameButton = <Button disabled={true}>Join New Game</Button>;
+    }
     let gameStatusStr;
     if (gameStatus === 'OVER') gameStatusStr = 'over';
     else if (gameStatus === 'WAITING_FOR_PLAYERS') gameStatusStr = 'waiting for players to join';
     gameStatusText = (
       <b>
-        Game {gameStatusStr}. {joinGameButton}
+        Game {gameStatusStr}. {joinGameButton} {startGameButton}
       </b>
     );
   }
   return (
     <>
       {gameStatusText}
-      <List aria-label='list of players in the game'>
-        {Array.from(seats.entries()).map(([seatNumber, player]) => (
-          <ListItem key={seatNumber}>
-            Seat {seatNumber} : {player?.userName || '(No player yet!)'}
-          </ListItem>
-        ))}
-      </List>
+      {gameAreaController.status !== 'IN_PROGRESS' && (
+        <List aria-label='list of players in the game'>
+          {seats.map((player, seatNumber) => (
+            <ListItem key={seatNumber}>
+              Seat {seatNumber + 1} : {player?.userName || '(No player yet!)'}
+            </ListItem>
+          ))}
+        </List>
+      )}
       <BlackjackBoard gameAreaController={gameAreaController} />
     </>
   );

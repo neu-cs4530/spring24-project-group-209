@@ -14,7 +14,7 @@ import GameAreaController, {
   NO_GAME_STARTABLE,
 } from './GameAreaController';
 
-export type BlackjackCell = Card;
+export type BlackjackCell = { card: Card; player: SeatNumber | undefined };
 export type BlackjackEvents = GameEventTypes & {
   boardChanged: (board: BlackjackCell[][]) => void;
   turnChanged: (isOurTurn: boolean) => void;
@@ -22,7 +22,7 @@ export type BlackjackEvents = GameEventTypes & {
 export const BLACKJACK_ROWS = 9;
 
 function createEmptyBoard(): BlackjackCell[][] {
-  const board = new Array(BLACKJACK_ROWS);
+  const board = new Array(BLACKJACK_ROWS).fill(undefined).map(() => []);
   return board;
 }
 
@@ -64,15 +64,31 @@ export default class BlackjackAreaController extends GameAreaController<
     return this._model.game?.state.moves.length || 0;
   }
 
-  get occupiedSeats(): Map<SeatNumber, PlayerController> {
-    const occupiedSeats = new Map<SeatNumber, PlayerController>();
-    this.occupants.forEach(player => {
-      const seat = this.playerSeat(player);
-      if (seat !== undefined) {
-        occupiedSeats.set(seat, player);
+  get occupiedSeats(): Array<PlayerController> {
+    const occupiedSeats = new Array(8).fill(undefined);
+    this._model.game?.state.occupiedSeats.forEach((playerID, seat) => {
+      const player = this.occupants.find(eachOccupant => eachOccupant.id === playerID);
+      if (player) {
+        occupiedSeats[seat] = player;
       }
     });
     return occupiedSeats;
+  }
+
+  get bustedPlayers(): Array<boolean> {
+    const bustedSeats = new Array(8).fill(undefined);
+    this._model.game?.state.bustedPlayers.forEach((isBusted, seat) => {
+      bustedSeats[seat] = isBusted;
+    });
+    return bustedSeats;
+  }
+
+  get standPlayers(): Array<boolean> {
+    const standSeats = new Array(8).fill(undefined);
+    this._model.game?.state.standPlayers.forEach((isStanding, seat) => {
+      standSeats[seat] = isStanding;
+    });
+    return standSeats;
   }
 
   /**
@@ -108,27 +124,15 @@ export default class BlackjackAreaController extends GameAreaController<
    * Follows the same logic as the backend, respecting the firstPlayer field of the gameState
    */
   get whoseTurn(): PlayerController | undefined {
-    if (
-      this._model.game?.state.occupiedSeats.size === 0 ||
-      this._model.game?.state.status !== 'IN_PROGRESS'
-    ) {
-      return undefined;
-    }
-    const firstPlayer = this._model.game?.state.occupiedSeats.keys().next().value;
-    if (firstPlayer) {
-      let activeSeat = (this.moveCount % 7) + firstPlayer;
-      let player = this._model.game?.state.occupiedSeats.get(activeSeat as SeatNumber);
-      while (
-        Array.from(this._model.game?.state.bustedPlayers.values()).includes(player) ||
-        Array.from(this._model.game?.state.standPlayers.values()).includes(player)
+    const occupiedSeats = this.occupiedSeats;
+    for (let i = 0; i < 7; i++) {
+      if (
+        occupiedSeats[i] &&
+        this.standPlayers[i] !== undefined &&
+        this.bustedPlayers[i] !== undefined
       ) {
-        player = this._model.game?.state.occupiedSeats.get(activeSeat as SeatNumber);
-        activeSeat = activeSeat + 1;
+        return occupiedSeats[i];
       }
-      if (player) {
-        return this.occupants.find(eachOccupant => eachOccupant.id === player);
-      }
-      return undefined;
     }
   }
 
@@ -142,8 +146,8 @@ export default class BlackjackAreaController extends GameAreaController<
 
   playerSeat(player: PlayerController | undefined): SeatNumber | undefined {
     if (player) {
-      for (let i = 0; i < 7; i++) {
-        if (this._model.game?.state.occupiedSeats.get(i as SeatNumber) === player.id) {
+      for (let i = 0; i < 8; i++) {
+        if (this._model.game?.state.occupiedSeats[i] === player.id) {
           return i as SeatNumber;
         }
       }
@@ -156,6 +160,19 @@ export default class BlackjackAreaController extends GameAreaController<
    */
   public isActive(): boolean {
     return !this.isEmpty() && this.status !== 'WAITING_FOR_PLAYERS';
+  }
+
+  get numActivePlayers(): number {
+    const occupiedSeats = this.occupiedSeats;
+    const players = occupiedSeats;
+    if (!players) return 0;
+    let count = 0;
+    for (let i = 0; i < 8; i++) {
+      if (players[i] !== undefined) {
+        count++;
+      }
+    }
+    return count;
   }
 
   /**
@@ -178,7 +195,9 @@ export default class BlackjackAreaController extends GameAreaController<
       const newBoard = createEmptyBoard();
       newGame.state.moves.forEach((move: { moveType: string; player: SeatNumber; card: Card }) => {
         if (move.moveType == 'HIT' || move.moveType == 'DOUBLE' || move.moveType == 'DEAL') {
-          newBoard[move.player].push(move.card);
+          newBoard[move.player].push({ card: move.card, player: move.player });
+        } else if (move.player === undefined && move.card) {
+          newBoard[8].push({ card: move.card, player: undefined });
         }
       });
       if (!_.isEqual(newBoard, this._board)) {
@@ -199,7 +218,7 @@ export default class BlackjackAreaController extends GameAreaController<
    */
   public async startGame(): Promise<void> {
     const instanceID = this._instanceID;
-    if (!instanceID || this._model.game?.state.status !== 'WAITING_TO_START') {
+    if (!instanceID) {
       throw new Error(NO_GAME_STARTABLE);
     }
     await this._townController.sendInteractableCommand(this.id, {

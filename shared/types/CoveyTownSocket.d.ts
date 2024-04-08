@@ -228,15 +228,15 @@ export interface BlackjackGameState extends WinnableGameState {
   // The moves in this game
   moves: ReadOnlyArray<BlackjackMove>;
   // A map that represents the player at each seat in the table, if there is a player in that seat.
-  occupiedSeats: Map<SeatNumber, PlayerID | undefined>;
+  occupiedSeats: Array<Playerid | undefined>;
   // A map representing which players in the game are ready to start.
-  readyPlayers: Map<SeatNumber, boolean | undefined>;
+  readyPlayers: Array<boolean | undefined>;
   // A map representing the balance of players in each seat.
-  playerBalances: Map<SeatNumber, number | undefined>;
+  playerBalances: Array<number | undefined>;
   // A map of busted players
-  bustedPlayers: Map<SeatNumber, PlayerID | undefined>;
+  bustedPlayers: Array<PlayerID | undefined>;
   // A map of players standing
-  standPlayers: Map<SeatNumber, PlayerID | undefined>;
+  standPlayers: Array<PlayerID | undefined>;
 
 }
 /**
