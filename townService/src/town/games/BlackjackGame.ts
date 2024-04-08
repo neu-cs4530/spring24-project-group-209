@@ -355,15 +355,21 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
             aces += 1;
           } else if (move.card.face >= 11) {
             total += 10;
+          } else {
+            total += move.card.face;
           }
         }
       }
     } else {
       for (const move of this.state.dealerMoves) {
-        if (move.card && move.card.face === 1) {
-          aces += 1;
-        } else if (move.card && move.card.face >= 11) {
-          total += 10;
+        if (move.card) {
+          if (move.card && move.card.face === 1) {
+            aces += 1;
+          } else if (move.card && move.card.face >= 11) {
+            total += 10;
+          } else {
+            total += move.card.face;
+          }
         }
       }
     }
