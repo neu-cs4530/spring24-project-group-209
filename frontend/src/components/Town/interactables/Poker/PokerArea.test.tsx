@@ -446,7 +446,7 @@ describe('PokerArea', () => {
       renderPokerArea();
       expect(screen.queryByText('Start Game')).not.toBeInTheDocument();
     });
-    it('Isshown if the game status is WAITING_FOR_PLAYERS, and there is are at least two players in the game', () => {
+    it('Is shown if the game status is WAITING_FOR_PLAYERS, and there is are at least two players in the game', () => {
       gameAreaController.mockStatus = 'WAITING_FOR_PLAYERS';
       gameAreaController.mockPlayers.set(0, ourPlayer);
       gameAreaController.mockPlayers.set(
@@ -561,7 +561,292 @@ describe('PokerArea', () => {
       });
     });
   });
-  describe('[T3.4] Players in game text', () => {
+  describe('[T3.4] Call Button', () => {
+    it('should not be clickable if the game is waiting_for_players', () => {
+      gameAreaController.mockStatus = 'WAITING_FOR_PLAYERS';
+      gameAreaController.mockPlayers.set(0, ourPlayer);
+      gameAreaController.mockIsPlayer = true;
+      renderPokerArea();
+      const button = screen.getByText('Call');
+      expect(button).toBeDisabled();
+      fireEvent.click(button);
+      expect(gameAreaController.call).not.toHaveBeenCalled();
+    });
+    it('should not be clickable if the game is waiting_to_start', () => {
+      gameAreaController.mockStatus = 'WAITING_TO_START';
+      gameAreaController.mockPlayers.set(0, ourPlayer);
+      gameAreaController.mockPlayers.set(
+        1,
+        new PlayerController('player one', 'player one', randomLocation()),
+      );
+      gameAreaController.mockIsPlayer = true;
+      renderPokerArea();
+      const button = screen.getByText('Call');
+      expect(button).toBeDisabled();
+      fireEvent.click(button);
+      expect(gameAreaController.call).not.toHaveBeenCalled();
+    });
+    it('should throw an error if the game is in progress, but it is not the players turn', async () => {
+      gameAreaController.mockStatus = 'IN_PROGRESS';
+      gameAreaController.mockPlayers.set(0, ourPlayer);
+      gameAreaController.mockPlayers.set(
+        1,
+        new PlayerController('player one', 'player one', randomLocation()),
+      );
+      gameAreaController.mockIsPlayer = true;
+      gameAreaController.mockIsOurTurn = false;
+      gameAreaController.mockWhoseTurn = gameAreaController.mockPlayers.get(1);
+      renderPokerArea();
+      const button = screen.getByText('Call');
+      expect(button).toBeEnabled();
+      fireEvent.click(button);
+      expect(gameAreaController.startGame).toBeCalled();
+      const errorMessage = `Testing error message ${nanoid()}`;
+      act(() => {
+        startGameReject(new Error(errorMessage));
+      });
+      await waitFor(() => {
+        expect(mockToast).toBeCalledWith(
+          expect.objectContaining({
+            description: `Error: ${errorMessage}`,
+            status: 'error',
+          }),
+        );
+      });
+    });
+    it('should be clickable if it is the players turn, and the game is in progress', () => {
+      gameAreaController.mockStatus = 'IN_PROGRESS';
+      gameAreaController.mockPlayers.set(0, ourPlayer);
+      gameAreaController.mockPlayers.set(
+        1,
+        new PlayerController('player one', 'player one', randomLocation()),
+      );
+      gameAreaController.mockIsPlayer = true;
+      gameAreaController.mockIsOurTurn = true;
+      gameAreaController.mockWhoseTurn = ourPlayer;
+      renderPokerArea();
+      const button = screen.getByText('Call');
+      expect(button).toBeEnabled();
+      fireEvent.click(button);
+      expect(gameAreaController.call).toHaveBeenCalled();
+    });
+    it('Displays a toast with the error message if the startGame method throws an error', async () => {
+      gameAreaController.mockStatus = 'IN_PROGRESS';
+      gameAreaController.mockPlayers.set(0, ourPlayer);
+      gameAreaController.mockPlayers.set(
+        1,
+        new PlayerController('player one', 'player one', randomLocation()),
+      );
+      gameAreaController.mockIsPlayer = true;
+      renderPokerArea();
+      const button = screen.getByText('Call');
+      fireEvent.click(button);
+      expect(gameAreaController.startGame).toBeCalled();
+      const errorMessage = `Testing error message ${nanoid()}`;
+      act(() => {
+        startGameReject(new Error(errorMessage));
+      });
+      await waitFor(() => {
+        expect(mockToast).toBeCalledWith(
+          expect.objectContaining({
+            description: `Error: ${errorMessage}`,
+            status: 'error',
+          }),
+        );
+      });
+    });
+  });
+  describe('[T3.5] Fold Button', () => {
+    it('should not be clickable if the game is waiting_for_players', () => {
+      gameAreaController.mockStatus = 'WAITING_FOR_PLAYERS';
+      gameAreaController.mockPlayers.set(0, ourPlayer);
+      gameAreaController.mockIsPlayer = true;
+      renderPokerArea();
+      const button = screen.getByText('Fold');
+      expect(button).toBeDisabled();
+      fireEvent.click(button);
+      expect(gameAreaController.call).not.toHaveBeenCalled();
+    });
+    it('should not be clickable if the game is waiting_to_start', () => {
+      gameAreaController.mockStatus = 'WAITING_TO_START';
+      gameAreaController.mockPlayers.set(0, ourPlayer);
+      gameAreaController.mockPlayers.set(
+        1,
+        new PlayerController('player one', 'player one', randomLocation()),
+      );
+      gameAreaController.mockIsPlayer = true;
+      renderPokerArea();
+      const button = screen.getByText('Fold');
+      expect(button).toBeDisabled();
+      fireEvent.click(button);
+      expect(gameAreaController.call).not.toHaveBeenCalled();
+    });
+    it('should not be clickable if the game is in progress, but it is not the players turn', async () => {
+      gameAreaController.mockStatus = 'IN_PROGRESS';
+      gameAreaController.mockPlayers.set(0, ourPlayer);
+      gameAreaController.mockPlayers.set(
+        1,
+        new PlayerController('player one', 'player one', randomLocation()),
+      );
+      gameAreaController.mockIsPlayer = true;
+      gameAreaController.mockIsOurTurn = false;
+      gameAreaController.mockWhoseTurn = gameAreaController.mockPlayers.get(1);
+      renderPokerArea();
+      const button = screen.getByText('Fold');
+      expect(button).toBeEnabled();
+      fireEvent.click(button);
+      expect(gameAreaController.startGame).toBeCalled();
+      const errorMessage = `Testing error message ${nanoid()}`;
+      act(() => {
+        startGameReject(new Error(errorMessage));
+      });
+      await waitFor(() => {
+        expect(mockToast).toBeCalledWith(
+          expect.objectContaining({
+            description: `Error: ${errorMessage}`,
+            status: 'error',
+          }),
+        );
+      });
+    });
+    it('should be clickable if it is the players turn, and the game is in progress', () => {
+      gameAreaController.mockStatus = 'IN_PROGRESS';
+      gameAreaController.mockPlayers.set(0, ourPlayer);
+      gameAreaController.mockPlayers.set(
+        1,
+        new PlayerController('player one', 'player one', randomLocation()),
+      );
+      gameAreaController.mockIsPlayer = true;
+      gameAreaController.mockIsOurTurn = true;
+      gameAreaController.mockWhoseTurn = ourPlayer;
+      renderPokerArea();
+      const button = screen.getByText('Fold');
+      expect(button).toBeEnabled();
+      fireEvent.click(button);
+      expect(gameAreaController.call).toHaveBeenCalled();
+    });
+    it('Displays a toast with the error message if the startGame method throws an error', async () => {
+      gameAreaController.mockStatus = 'IN_PROGRESS';
+      gameAreaController.mockPlayers.set(0, ourPlayer);
+      gameAreaController.mockPlayers.set(
+        1,
+        new PlayerController('player one', 'player one', randomLocation()),
+      );
+      gameAreaController.mockIsPlayer = true;
+      renderPokerArea();
+      const button = screen.getByText('Fold');
+      fireEvent.click(button);
+      expect(gameAreaController.startGame).toBeCalled();
+      const errorMessage = `Testing error message ${nanoid()}`;
+      act(() => {
+        startGameReject(new Error(errorMessage));
+      });
+      await waitFor(() => {
+        expect(mockToast).toBeCalledWith(
+          expect.objectContaining({
+            description: `Error: ${errorMessage}`,
+            status: 'error',
+          }),
+        );
+      });
+    });
+  });
+  describe('[T3.6] Raise Button', () => {
+    it('should not be clickable if the game is waiting_for_players', () => {
+      gameAreaController.mockStatus = 'WAITING_FOR_PLAYERS';
+      gameAreaController.mockPlayers.set(0, ourPlayer);
+      gameAreaController.mockIsPlayer = true;
+      renderPokerArea();
+      const button = screen.getByText('Raise');
+      expect(button).toBeDisabled();
+      fireEvent.click(button);
+      expect(gameAreaController.call).not.toHaveBeenCalled();
+    });
+    it('should not be clickable if the game is waiting_to_start', () => {
+      gameAreaController.mockStatus = 'WAITING_TO_START';
+      gameAreaController.mockPlayers.set(0, ourPlayer);
+      gameAreaController.mockPlayers.set(
+        1,
+        new PlayerController('player one', 'player one', randomLocation()),
+      );
+      gameAreaController.mockIsPlayer = true;
+      renderPokerArea();
+      const button = screen.getByText('Raise');
+      expect(button).toBeDisabled();
+      fireEvent.click(button);
+      expect(gameAreaController.call).not.toHaveBeenCalled();
+    });
+    it('should not be clickable if the game is in progress, but it is not the players turn', async () => {
+      gameAreaController.mockStatus = 'IN_PROGRESS';
+      gameAreaController.mockPlayers.set(0, ourPlayer);
+      gameAreaController.mockPlayers.set(
+        1,
+        new PlayerController('player one', 'player one', randomLocation()),
+      );
+      gameAreaController.mockIsPlayer = true;
+      gameAreaController.mockIsOurTurn = false;
+      gameAreaController.mockWhoseTurn = gameAreaController.mockPlayers.get(1);
+      renderPokerArea();
+      const button = screen.getByText('Raise');
+      expect(button).toBeEnabled();
+      fireEvent.click(button);
+      expect(gameAreaController.startGame).toBeCalled();
+      const errorMessage = `Testing error message ${nanoid()}`;
+      act(() => {
+        startGameReject(new Error(errorMessage));
+      });
+      await waitFor(() => {
+        expect(mockToast).toBeCalledWith(
+          expect.objectContaining({
+            description: `Error: ${errorMessage}`,
+            status: 'error',
+          }),
+        );
+      });
+    });
+    it('should be clickable if it is the players turn, and the game is in progress', () => {
+      gameAreaController.mockStatus = 'IN_PROGRESS';
+      gameAreaController.mockPlayers.set(0, ourPlayer);
+      gameAreaController.mockPlayers.set(
+        1,
+        new PlayerController('player one', 'player one', randomLocation()),
+      );
+      gameAreaController.mockIsPlayer = true;
+      gameAreaController.mockIsOurTurn = true;
+      gameAreaController.mockWhoseTurn = ourPlayer;
+      renderPokerArea();
+      const button = screen.getByText('Raise');
+      expect(screen.queryByText('Call')).toBeEnabled();
+      fireEvent.click(button);
+      expect(gameAreaController.call).toHaveBeenCalled();
+    });
+    it('Displays a toast with the error message if the startGame method throws an error', async () => {
+      gameAreaController.mockStatus = 'IN_PROGRESS';
+      gameAreaController.mockPlayers.set(0, ourPlayer);
+      gameAreaController.mockPlayers.set(
+        1,
+        new PlayerController('player one', 'player one', randomLocation()),
+      );
+      gameAreaController.mockIsPlayer = true;
+      renderPokerArea();
+      const button = screen.getByText('Call');
+      fireEvent.click(button);
+      expect(gameAreaController.startGame).toBeCalled();
+      const errorMessage = `Testing error message ${nanoid()}`;
+      act(() => {
+        startGameReject(new Error(errorMessage));
+      });
+      await waitFor(() => {
+        expect(mockToast).toBeCalledWith(
+          expect.objectContaining({
+            description: `Error: ${errorMessage}`,
+            status: 'error',
+          }),
+        );
+      });
+    });
+  });
+  describe('[T3.7] Players in game text', () => {
     it('Displays the username of each seat if there is one', () => {
       for (let i = 0; i < 8; i++) {
         gameAreaController.mockPlayers.set(
@@ -760,7 +1045,7 @@ describe('PokerArea', () => {
       });
     });
   });
-  describe('[T3.5] Game status text', () => {
+  describe('[T3.8] Game status text', () => {
     it('Displays the correct text when the game is waiting to start', () => {
       gameAreaController.mockStatus = 'WAITING_TO_START';
       renderPokerArea();
