@@ -625,7 +625,7 @@
                 {
                  "height":146.666666666667,
                  "id":66,
-                 "name":"Poker1",
+                 "name":"Poker",
                  "properties":[
                         {
                          "name":"type",
@@ -638,6 +638,23 @@
                  "width":180,
                  "x":2214.66666666667,
                  "y":137.333333333333
+                }, 
+                {
+                 "height":148,
+                 "id":68,
+                 "name":"Blackjack",
+                 "properties":[
+                        {
+                         "name":"type",
+                         "type":"string",
+                         "value":"Blackjack"
+                        }],
+                 "rotation":0,
+                 "type":"GameArea",
+                 "visible":true,
+                 "width":174.666666666667,
+                 "x":1980,
+                 "y":134.666666666667
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -646,7 +663,7 @@
          "y":0
         }],
  "nextlayerid":8,
- "nextobjectid":68,
+ "nextobjectid":70,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.10.2",
