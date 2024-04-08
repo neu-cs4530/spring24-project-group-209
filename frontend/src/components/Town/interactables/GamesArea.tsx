@@ -104,7 +104,7 @@ function GameArea({ interactableID }: { interactableID: InteractableID }): JSX.E
             <TicTacToeArea interactableID={interactableID} />
           ) : gameAreaController.toInteractableAreaModel().type === 'PokerArea' ? (
             <PokerArea interactableID={interactableID} />
-          ) : gameAreaController.toInteractableAreaModel().type === 'BlackJackArea' ? (
+          ) : gameAreaController.toInteractableAreaModel().type === 'BlackjackArea' ? (
             <BlackJackArea interactableID={interactableID} />
           ) : (
             <>{INVALID_GAME_AREA_TYPE_MESSAGE}</>
