@@ -28,8 +28,6 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
 
   protected _oldBalances?: Map<PlayerID, number>;
 
-  protected _bustedPlayers: Map<SeatNumber, boolean> = new Map<SeatNumber, boolean>();
-
   private _next: SeatNumber;
 
   private _betAmt: number;
@@ -37,8 +35,6 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
   private _firstPlayer: number;
 
   private _doubled: Map<SeatNumber, boolean> = new Map<SeatNumber, boolean>();
-
-  private _standPlayers: Map<SeatNumber, boolean> = new Map<SeatNumber, boolean>();
 
   /**
    * Creates a new BlackjackGame.
@@ -51,16 +47,16 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
     const initialOccupiedSeats = new Array<PlayerID | undefined>();
     const initialReadyPlayers = new Array<boolean | undefined>();
     const initialPlayerBalances = new Array<number | undefined>();
-    const initialStandPlayers = new Array<PlayerID | undefined>(); // new Map<SeatNumber, boolean>();
-    const initialBustedPlayers = new Array<PlayerID | undefined>(); // new Map<SeatNumber, boolean>();
+    const initialStandPlayers = new Array<boolean>();
+    const initialBustedPlayers = new Array<boolean>();
     const dealerMoves: BlackjackMove[] = [];
 
     for (let i = 0; i < 8; i++) {
       initialOccupiedSeats[i] = undefined;
       initialReadyPlayers[i] = undefined;
       initialPlayerBalances[i] = undefined;
-      initialStandPlayers[i] = undefined;
-      initialBustedPlayers[i] = undefined;
+      initialStandPlayers[i] = false;
+      initialBustedPlayers[i] = false;
     }
 
     super({
@@ -75,8 +71,8 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
     });
 
     for (let i = 0; i < 8; i++) {
-      this._bustedPlayers.set(i as SeatNumber, false);
-      this._standPlayers.set(i as SeatNumber, false);
+      this.state.bustedPlayers[i] = false;
+      this.state.standPlayers[i] = false;
     }
 
     if (deck) {
@@ -108,8 +104,8 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
     current = (from + 1) as SeatNumber;
     while (
       this.state.occupiedSeats[current] === undefined ||
-      this._bustedPlayers.get(current) ||
-      this._standPlayers.get(current)
+      this.state.bustedPlayers[current] ||
+      this.state.standPlayers[current]
     ) {
       if (current === 7) return 8 as SeatNumber;
       current += 1;
@@ -190,8 +186,9 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
       }
     }
     const dealerMoves = [
-      // dealer's first card
+      // dealer's first cards
       ...this.state.dealerMoves,
+      { moveType: 'DEAL' as BlackjackAction, card: this._deck.drawCard(), player: undefined },
       { moveType: 'DEAL' as BlackjackAction, card: this._deck.drawCard(), player: undefined },
     ];
 
@@ -237,7 +234,7 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
         break;
       }
       case 'STAND': {
-        this._standPlayers.set(seat, true);
+        this.state.standPlayers[seat] = true;
         this._next = this._getNextSeat(this._next);
         break;
       }
@@ -253,7 +250,7 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
         };
         this.state = newState;
         if (this._checkValue(seat) > 21) {
-          this._bustedPlayers.set(seat, true);
+          this.state.bustedPlayers[seat] = true;
           this._next = this._getNextSeat(this._next);
         }
         break;
@@ -273,7 +270,7 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
           moves: newMoves,
         };
         this.state = newState;
-        this._standPlayers.set(seat, true);
+        this.state.standPlayers[seat] = true;
         this._doubled.set(seat, true);
         break;
       }
@@ -290,7 +287,7 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
 
     if (
       this._getNextSeat(seat) === (8 as SeatNumber) &&
-      (this._standPlayers.get(seat) === true || this._bustedPlayers.get(seat) === true)
+      (this.state.standPlayers[seat] === true || this.state.bustedPlayers[seat] === true)
     ) {
       this._endGame();
     }
@@ -353,24 +350,20 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
     let aces = 0;
     if (seat !== (8 as SeatNumber)) {
       for (const move of this.state.moves) {
-        if (move.player === seat && move.moveType === 'DEAL') {
+        if (move.player === seat && move.moveType === 'DEAL' && move.card) {
           if (move.card.face === 1) {
             aces += 1;
           } else if (move.card.face >= 11) {
             total += 10;
-          } else {
-            total += parseInt(move.card.face, 10);
           }
         }
       }
     } else {
       for (const move of this.state.dealerMoves) {
-        if (move.card.face === 1) {
+        if (move.card && move.card.face === 1) {
           aces += 1;
-        } else if (move.card.face >= 11) {
+        } else if (move.card && move.card.face >= 11) {
           total += 10;
-        } else {
-          total += parseInt(move.card.face, 10);
         }
       }
     }
@@ -409,7 +402,7 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
 
     this.state.occupiedSeats[nextOpen] = player.id;
     this.state.readyPlayers[nextOpen] = false;
-    this._bustedPlayers.set(nextOpen, false);
+    this.state.bustedPlayers[nextOpen] = false;
 
     if (this._oldBalances && this._oldBalances.get(player.id))
       this.state.playerBalances[nextOpen] = this._oldBalances.get(player.id);
@@ -465,7 +458,7 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
     if (!anyoneLeft) {
       this.state.status = 'OVER';
     } else if (this.state.status === 'IN_PROGRESS') {
-      this._standPlayers.set(playerIdSeat, true);
+      this.state.standPlayers[playerIdSeat] = true;
     } else if (this.state.status === 'WAITING_TO_START') {
       this.state.status = 'WAITING_FOR_PLAYERS';
     }

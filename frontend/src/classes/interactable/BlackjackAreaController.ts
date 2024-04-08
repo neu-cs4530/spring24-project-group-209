@@ -64,6 +64,14 @@ export default class BlackjackAreaController extends GameAreaController<
     return this._model.game?.state.moves.length || 0;
   }
 
+  get moves(): Array<BlackjackMove> {
+    const moves = new Array<BlackjackMove>();
+    this._model.game?.state.moves.forEach((move: BlackjackMove) => {
+      moves.push({ moveType: move.moveType, player: move.player, card: move.card });
+    });
+    return moves;
+  }
+
   get occupiedSeats(): Array<PlayerController> {
     const occupiedSeats = new Array(8).fill(undefined);
     this._model.game?.state.occupiedSeats.forEach((playerID, seat) => {
@@ -125,12 +133,8 @@ export default class BlackjackAreaController extends GameAreaController<
    */
   get whoseTurn(): PlayerController | undefined {
     const occupiedSeats = this.occupiedSeats;
-    for (let i = 0; i < 7; i++) {
-      if (
-        occupiedSeats[i] &&
-        this.standPlayers[i] !== undefined &&
-        this.bustedPlayers[i] !== undefined
-      ) {
+    for (let i = 0; i < 8; i++) {
+      if (occupiedSeats[i] && !this.standPlayers[i] && !this.bustedPlayers[i]) {
         return occupiedSeats[i];
       }
     }
@@ -193,11 +197,16 @@ export default class BlackjackAreaController extends GameAreaController<
     const newGame = newModel.game;
     if (newGame) {
       const newBoard = createEmptyBoard();
-      newGame.state.moves.forEach((move: { moveType: string; player: SeatNumber; card: Card }) => {
-        if (move.moveType == 'HIT' || move.moveType == 'DOUBLE' || move.moveType == 'DEAL') {
-          newBoard[move.player].push({ card: move.card, player: move.player });
-        } else if (move.player === undefined && move.card) {
-          newBoard[8].push({ card: move.card, player: undefined });
+      newGame.state.moves.forEach(move => {
+        if (move.moveType == 'DEAL') {
+          if (move.player !== undefined && move.card) {
+            newBoard[move.player].push({ card: move.card, player: move.player });
+          }
+        }
+      });
+      newGame.state.dealerMoves.forEach(move => {
+        if (move.moveType == 'DEAL' && move.card) {
+          newBoard[8].push({ card: move.card, player: move.player });
         }
       });
       if (!_.isEqual(newBoard, this._board)) {

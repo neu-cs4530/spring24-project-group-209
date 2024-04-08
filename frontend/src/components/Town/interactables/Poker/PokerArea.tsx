@@ -16,8 +16,9 @@ import PokerAreaController from '../../../../classes/interactable/PokerAreaContr
 import PlayerController from '../../../../classes/PlayerController';
 import { useInteractableAreaController } from '../../../../classes/TownController';
 import useTownController from '../../../../hooks/useTownController';
-import { GameStatus, InteractableID, SeatNumber } from '../../../../types/CoveyTownSocket';
+import { GameStatus, InteractableID } from '../../../../types/CoveyTownSocket';
 import PokerBoard from './PokerBoard';
+import * as firebaseUtils from '../../../../firebaseUtils';
 
 /**
  * The PokerArea component renders the Poker game area.
@@ -71,6 +72,7 @@ export default function PokerArea({
   const [moveCount, setMoveCount] = useState<number>(gameAreaController.moveCount);
   const [raiseValue, setRaiseValue] = useState<number>(0);
   const [activePlayers, setActivePlayers] = useState<number>(0);
+  const [playerBalance, setPlayerBalance] = useState<number>(0);
   const toast = useToast();
   useEffect(() => {
     const updateGameState = () => {
@@ -95,6 +97,11 @@ export default function PokerArea({
         });
       }
     };
+    async function fetchData() {
+      const balance = await firebaseUtils.getCurrency(townController.ourPlayer.userName);
+      setPlayerBalance(balance);
+    }
+    fetchData();
     gameAreaController.addListener('gameUpdated', updateGameState);
     gameAreaController.addListener('gameEnd', onGameEnd);
     return () => {
@@ -188,6 +195,7 @@ export default function PokerArea({
     );
     gameStatusText = (
       <>
+        Balance: ${playerBalance} <br />
         Game in progress, {moveCount - activePlayers * 2} moves in, currently your turn. Players
         left: {activePlayers} Pot: {gameAreaController.pot} <hr /> {raiseButton}
         {callButton} {foldButton}

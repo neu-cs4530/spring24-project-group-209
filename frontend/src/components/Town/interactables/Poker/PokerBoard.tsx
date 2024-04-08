@@ -20,7 +20,7 @@ const StyledPokerBoard = chakra(Container, {
     flexWrap: 'nowrap',
     bgImage: '/assets/cardTables/pokerFelt.jpg',
     alignItems: 'flex-end',
-    flexDirection: 'row',
+    flexDirection: 'column',
     justifyContent: 'space-around',
   },
 });
@@ -41,27 +41,39 @@ export default function PokerBoard({ gameAreaController }: PokerGameProps): JSX.
   const [board, setBoard] = useState<PokerCell[][]>(gameAreaController.board);
   const townController = useTownController();
   const [activeSkin, setActiveSkin] = useState<string>('SKIN1');
-  const cardMap: CardToImage = new CardToImage('SKIN1');
+  const [cardMap, setCardMap] = useState<CardToImage | undefined>(undefined);
+
   useEffect(() => {
     async function fetchData() {
       const fetchedSkin = await firebaseUtils.getActiveSkin(townController.ourPlayer.userName);
       setActiveSkin(fetchedSkin);
     }
     fetchData();
+    setCardMap(new CardToImage(activeSkin));
     gameAreaController.addListener('boardChanged', setBoard);
     return () => {
       gameAreaController.removeListener('boardChanged', setBoard);
     };
-  }, [gameAreaController, townController]);
+  }, [activeSkin, gameAreaController, townController]);
   return (
     <StyledPokerBoard aria-label='Poker Board'>
       <Box
+        marginBottom={'auto'}
         alignSelf='flex-start'
         width='100%'
         display={board.length > 8 && board[8].length > 0 ? 'flex' : 'none'} // Display only if rowIndex === 8 has cards
         flexDirection='row'
         padding='5px'>
-        <Text fontSize='md'>Community Cards: </Text>
+        <Text
+          padding={'4px'}
+          margin={'2px'}
+          alignSelf={'center'}
+          fontSize='md'
+          background={'white'}
+          border='1px solid black'
+          borderRadius='5px'>
+          Community Cards:
+        </Text>
         <Box display='flex' flexDirection='row' justifyContent='space-around'>
           {/* Render community cards here */}
           {board.length > 8 &&
@@ -69,77 +81,87 @@ export default function PokerBoard({ gameAreaController }: PokerGameProps): JSX.
               <StyledPokerSquare
                 key={`8.${colIndex}`}
                 aria-label={`Cell 8,${colIndex} (${cell ? 'Filled' : 'Empty'})`}>
-                {cell ? (
-                  <Image h='50px' w='25px' src={`/assets/cards/${activeSkin}/aceOfSpades.png`} />
-                ) : (
-                  'Empty'
-                )}
+                {cell ? <Image h='56px' w='28px' src={cardMap?.getCardUrl(cell.card)} /> : 'Empty'}
               </StyledPokerSquare>
             ))}
         </Box>
       </Box>
-      {board.map((row, rowIndex) => {
-        if (rowIndex === 8) return null; // Skip rowIndex === 8 since it's handled separately as the tables cards
-        return (
-          <Box
-            // alignSelf={rowIndex === 8 ? 'flex-start' : 'auto'}
-            padding='5px'
-            key={`row-${rowIndex}`}
-            display='flex'
-            flexDirection='column'>
-            <Box display='flex' flexDirection='row'>
-              {row.map((cell, colIndex) => {
-                return (
-                  <StyledPokerSquare
-                    key={`${rowIndex}.${colIndex}`}
-                    aria-label={`Cell ${rowIndex},${colIndex} (${cell ? 'Filled' : 'Empty'})`}>
-                    {cell ? (
-                      cell.player === gameAreaController.playerSeat(townController.ourPlayer) ||
-                      !gameAreaController.isPlayer ||
-                      gameAreaController.status == 'OVER' ? (
-                        <Image
-                          h='50px'
-                          w='25px'
-                          src={`/assets/cards/${activeSkin}/aceOfSpades.png`}
-                        />
+      <Box
+        flexDirection='row'
+        display='flex'
+        alignItems='flex-end'
+        alignSelf='flex-start'
+        marginTop={'auto'}
+        justifyContent='space-around'>
+        {board.map((row, rowIndex) => {
+          if (rowIndex === 8) return null; // Skip rowIndex === 8 since it's handled separately as the tables cards
+          return (
+            <Box
+              // alignSelf={rowIndex === 8 ? 'flex-start' : 'auto'}
+              padding='5px'
+              key={`row-${rowIndex}`}
+              display='flex'
+              flexDirection='column'>
+              <Box display='flex' flexDirection='row'>
+                {row.map((cell, colIndex) => {
+                  return (
+                    <StyledPokerSquare
+                      key={`${rowIndex}.${colIndex}`}
+                      aria-label={`Cell ${rowIndex},${colIndex} (${cell ? 'Filled' : 'Empty'})`}>
+                      {cell ? (
+                        cell.player === gameAreaController.playerSeat(townController.ourPlayer) ||
+                        !gameAreaController.isPlayer ||
+                        gameAreaController.status == 'OVER' ? (
+                          <Image h='56px' w='28px' src={cardMap?.getCardUrl(cell.card)} />
+                        ) : (
+                          <Image
+                            h='56px'
+                            w='28px'
+                            src={`/assets/cards/${activeSkin}/backOfCard.png`}
+                          />
+                        )
                       ) : (
-                        <Image
-                          h='50px'
-                          w='25px'
-                          src={`/assets/cards/${activeSkin}/backOfCard.png`}
-                        />
-                      )
-                    ) : (
-                      'Empty'
-                    )}
-                  </StyledPokerSquare>
-                );
-              })}
-            </Box>
-            {row.some(cell => cell && cell.player !== undefined) && (
-              <Box display='flex' flexDirection='row' justifyContent='center' paddingTop='5px'>
-                <Text
-                  key={`${rowIndex}-name`}
-                  fontSize='sm'
-                  width='50px'
-                  textAlign='center'
-                  whiteSpace='nowrap'
-                  overflow='hidden'
-                  textOverflow='ellipsis'
-                  title={
-                    gameAreaController.occupiedSeats[rowIndex]
-                      ? gameAreaController.occupiedSeats[rowIndex].userName
-                      : ''
-                  }>
-                  {gameAreaController.occupiedSeats[rowIndex]
-                    ? gameAreaController.occupiedSeats[rowIndex].userName
-                    : ''}
-                </Text>
+                        'Empty'
+                      )}
+                    </StyledPokerSquare>
+                  );
+                })}
               </Box>
-            )}
-          </Box>
-        );
-      })}
+              {row.some(cell => cell && cell.player !== undefined) && (
+                <Box display='flex' flexDirection='row' justifyContent='center' paddingTop='5px'>
+                  <Text
+                    key={`${rowIndex}-name`}
+                    display={gameAreaController.occupiedSeats[rowIndex] ? 'block' : 'none'}
+                    fontSize='sm'
+                    width='50px'
+                    textAlign='center'
+                    whiteSpace='nowrap'
+                    overflow='hidden'
+                    textOverflow='ellipsis'
+                    background={
+                      gameAreaController.winner?.userName === townController.ourPlayer.userName
+                        ? 'green'
+                        : gameAreaController.foldedPlayers[rowIndex]
+                        ? 'red'
+                        : 'white'
+                    }
+                    border='1px solid black'
+                    borderRadius='5px'
+                    title={
+                      gameAreaController.occupiedSeats[rowIndex]
+                        ? gameAreaController.occupiedSeats[rowIndex].userName
+                        : ''
+                    }>
+                    {gameAreaController.occupiedSeats[rowIndex]
+                      ? gameAreaController.occupiedSeats[rowIndex].userName
+                      : ''}
+                  </Text>
+                </Box>
+              )}
+            </Box>
+          );
+        })}
+      </Box>
     </StyledPokerBoard>
   );
 }

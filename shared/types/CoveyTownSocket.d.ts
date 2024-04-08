@@ -224,9 +224,9 @@ export interface BlackjackMove {
  * Players will be assigned to the first free seat when joining
  */
 export interface BlackjackGameState extends WinnableGameState {
-  dealerMoves: ReadOnlyArray<BlackjackMove>;
+  dealerMoves: ReadonlyArray<BlackjackMove>;
   // The moves in this game
-  moves: ReadOnlyArray<BlackjackMove>;
+  moves: ReadonlyArray<BlackjackMove>;
   // A map that represents the player at each seat in the table, if there is a player in that seat.
   occupiedSeats: Array<Playerid | undefined>;
   // A map representing which players in the game are ready to start.
@@ -234,9 +234,9 @@ export interface BlackjackGameState extends WinnableGameState {
   // A map representing the balance of players in each seat.
   playerBalances: Array<number | undefined>;
   // A map of busted players
-  bustedPlayers: Array<PlayerID | undefined>;
+  bustedPlayers: Array<boolean>;
   // A map of players standing
-  standPlayers: Array<PlayerID | undefined>;
+  standPlayers: Array<boolean>;
 
 }
 /**

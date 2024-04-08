@@ -1,11 +1,12 @@
-import { Button, List, ListItem, useToast } from '@chakra-ui/react';
+import { Box, Button, List, ListItem, useToast } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import BlackjackAreaController from '../../../../classes/interactable/BlackjackAreaController';
 import PlayerController from '../../../../classes/PlayerController';
 import { useInteractableAreaController } from '../../../../classes/TownController';
 import useTownController from '../../../../hooks/useTownController';
-import { GameStatus, InteractableID, SeatNumber } from '../../../../types/CoveyTownSocket';
+import { GameStatus, InteractableID } from '../../../../types/CoveyTownSocket';
 import BlackjackBoard from './BlackjackBoard';
+import * as firebaseUtils from '../../../../firebaseUtils';
 
 /**
  * The BlackjackArea component renders the Blackjack game area.
@@ -59,6 +60,7 @@ export default function BlackjackArea({
   const [gameStatus, setGameStatus] = useState<GameStatus>(gameAreaController.status);
   const [moveCount, setMoveCount] = useState<number>(gameAreaController.moveCount);
   const [activePlayers, setActivePlayers] = useState<number>(0);
+  const [playerBalance, setPlayerBalance] = useState<number>(0);
 
   const toast = useToast();
   useEffect(() => {
@@ -84,6 +86,11 @@ export default function BlackjackArea({
         });
       }
     };
+    async function fetchData() {
+      const balance = await firebaseUtils.getCurrency(townController.ourPlayer.userName);
+      setPlayerBalance(balance);
+    }
+    fetchData();
     gameAreaController.addListener('gameUpdated', updateGameState);
     gameAreaController.addListener('gameEnd', onGameEnd);
     return () => {
@@ -161,8 +168,10 @@ export default function BlackjackArea({
     );
     gameStatusText = (
       <>
-        Game in progress, {moveCount} moves in, currently your turn.
-        {hitButton} {standButton} {doubleButton}
+        Balance: ${playerBalance} <br />
+        Game in progress, {moveCount - activePlayers * 2} moves in, currently your turn.
+        <hr />
+        {hitButton} {standButton} {doubleButton} Moves: {gameAreaController.moveCount}
       </>
     );
   } else if (
@@ -174,8 +183,11 @@ export default function BlackjackArea({
     const doubleButton = <Button disabled={true}>Double</Button>;
     gameStatusText = (
       <>
-        Game in progress, {moveCount} moves in, currently{' '}
-        {gameAreaController.whoseTurn?.userName + "'s"} turn .{hitButton} {standButton}
+        Balance: ${playerBalance} <br />
+        Game in progress, {moveCount - activePlayers * 2} moves in, currently{' '}
+        {gameAreaController.whoseTurn?.userName + "'s"} turn.
+        <hr />
+        {hitButton} {standButton}
         {doubleButton}
       </>
     );
@@ -203,7 +215,7 @@ export default function BlackjackArea({
     gameStatusText = <b>Waiting for players to press start. {startGameButton}</b>;
   } else {
     let startGameButton = <Button disabled={true}>Start Game</Button>;
-    if (gameAreaController.players.length >= 2 && gameAreaController.isPlayer) {
+    if (gameAreaController.isPlayer) {
       startGameButton = (
         <Button
           onClick={async () => {
@@ -258,7 +270,7 @@ export default function BlackjackArea({
     );
   }
   return (
-    <>
+    <Box flexBasis={'auto'}>
       {gameStatusText}
       {gameAreaController.status !== 'IN_PROGRESS' && (
         <List aria-label='list of players in the game'>
@@ -270,6 +282,6 @@ export default function BlackjackArea({
         </List>
       )}
       <BlackjackBoard gameAreaController={gameAreaController} />
-    </>
+    </Box>
   );
 }
