@@ -33,6 +33,8 @@ class TestingGame extends Game<BlackjackGameState, BlackjackMove> {
       playerBalances: new Array<number | undefined>(),
       dealerMoves: [],
       winners: [],
+      bustedPlayers: new Array<boolean>(),
+      standPlayers: new Array<boolean>(),
     });
   }
 
