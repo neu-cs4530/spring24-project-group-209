@@ -11,7 +11,6 @@ import {
   PokerMove,
   GameInstance,
   PokerGameState,
-  SeatNumber,
   PlayerID,
 } from '../../types/CoveyTownSocket';
 import GameArea from './GameArea';

@@ -11,7 +11,6 @@ import {
   BlackjackGameState,
   GameInstance,
   PlayerID,
-  SeatNumber,
   BlackjackMove,
 } from '../../types/CoveyTownSocket';
 import BlackjackGame from './BlackjackGame';
