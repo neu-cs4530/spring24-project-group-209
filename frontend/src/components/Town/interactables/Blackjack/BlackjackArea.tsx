@@ -72,7 +72,7 @@ export default function BlackjackArea({
     };
     const onGameEnd = () => {
       const winners = gameAreaController.winners;
-      if (winners[gameAreaController.playerSeat(townController.ourPlayer)]) {
+      if (winners && winners[gameAreaController.playerSeat(townController.ourPlayer) || 8]) {
         toast({
           title: 'Game over',
           description: 'You won!',

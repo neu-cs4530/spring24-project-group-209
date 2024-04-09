@@ -28,7 +28,6 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
 
   protected _oldBalances?: Map<PlayerID, number>;
 
-
   private _next: SeatNumber;
 
   private _betAmt: number;
@@ -36,7 +35,6 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
   private _firstPlayer: number;
 
   private _doubled: Map<SeatNumber, boolean> = new Map<SeatNumber, boolean>();
-
 
   /**
    * Creates a new BlackjackGame.
@@ -52,8 +50,7 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
 
     const initialStandPlayers = new Array<boolean>();
     const initialBustedPlayers = new Array<boolean>();
-    const dealerMoves: BlackjackMove[] = [];
-
+    const initialWinners = new Array<boolean | undefined>();
 
     for (let i = 0; i < 8; i++) {
       initialOccupiedSeats[i] = undefined;
@@ -62,14 +59,14 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
 
       initialStandPlayers[i] = false;
       initialBustedPlayers[i] = false;
-
+      initialWinners[i] = undefined;
     }
 
     super({
       moves: [],
       dealerMoves: [],
 
-      winners: [],
+      winners: initialWinners,
 
       status: 'WAITING_FOR_PLAYERS',
       occupiedSeats: initialOccupiedSeats,
@@ -114,10 +111,8 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
     current = (from + 1) as SeatNumber;
     while (
       this.state.occupiedSeats[current] === undefined ||
-
       this.state.bustedPlayers[current] ||
       this.state.standPlayers[current]
-
     ) {
       if (current === 7) return 8 as SeatNumber;
       current += 1;
@@ -198,12 +193,10 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
       }
     }
     const dealerMoves = [
-
       // dealer's first cards
       ...this.state.dealerMoves,
       { moveType: 'DEAL' as BlackjackAction, card: this._deck.drawCard(), player: undefined },
       { moveType: 'DEAL' as BlackjackAction, card: this._deck.drawCard(), player: undefined },
-
     ];
 
     const newState: BlackjackGameState = {
@@ -248,7 +241,6 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
         break;
       }
       case 'STAND': {
-
         this.state.standPlayers[seat] = true;
 
         this._next = this._getNextSeat(this._next);
@@ -266,7 +258,6 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
         };
         this.state = newState;
         if (this._checkValue(seat) > 21) {
-
           this.state.bustedPlayers[seat] = true;
 
           this._next = this._getNextSeat(this._next);
@@ -307,9 +298,7 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
 
     if (
       this._getNextSeat(seat) === (8 as SeatNumber) &&
-
       (this.state.standPlayers[seat] === true || this.state.bustedPlayers[seat] === true)
-
     ) {
       this._endGame();
     }
@@ -325,7 +314,6 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
           card: this._deck.drawCard(),
 
           player: undefined,
-
         },
       ];
       const newState: BlackjackGameState = {
@@ -340,7 +328,6 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
         const prev = this.state.playerBalances[i] as number;
         const playerTotal = this._checkValue(i as SeatNumber);
         if (playerTotal > 21) {
-
           this.state.winners[i] = false;
 
           if (this._doubled.get(i as SeatNumber)) {
@@ -349,7 +336,6 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
             this.state.playerBalances[i] = prev - this._betAmt;
           }
         } else if (dealerTotal > 21) {
-
           this.state.winners[i] = true;
 
           if (this._doubled.get(i as SeatNumber)) {
@@ -358,7 +344,6 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
             this.state.playerBalances[i] = prev + this._betAmt;
           }
         } else if (playerTotal > dealerTotal) {
-
           this.state.winners[i] = true;
 
           if (this._doubled.get(i as SeatNumber)) {
@@ -367,7 +352,6 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
             this.state.playerBalances[i] = prev + this._betAmt;
           }
         } else if (playerTotal < dealerTotal) {
-
           this.state.winners[i] = false;
 
           if (this._doubled.get(i as SeatNumber)) {
@@ -386,7 +370,6 @@ export default class BlackjackGame extends Game<BlackjackGameState, BlackjackMov
     let aces = 0;
     if (seat !== (8 as SeatNumber)) {
       for (const move of this.state.moves) {
-
         if (move.player === seat && move.moveType === 'DEAL' && move.card) {
           if (move.card.face === 1) {
             aces += 1;

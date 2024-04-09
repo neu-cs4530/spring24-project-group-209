@@ -76,11 +76,11 @@ export default class BlackjackAreaController extends GameAreaController<
    * Returns the player who won the game, if there is one, or undefined otherwise
    */
   get winners(): Array<boolean | undefined> {
-    const winners = this._model.game?.state.winners;
-    if (winners) {
-      return winners;
-    }
-    return undefined;
+    const winners = new Array(8).fill(undefined);
+    this._model.game?.state.winners.forEach((isWinner, seat) => {
+      winners[seat] = isWinner;
+    });
+    return winners;
   }
 
   get bustedPlayers(): Array<boolean> {

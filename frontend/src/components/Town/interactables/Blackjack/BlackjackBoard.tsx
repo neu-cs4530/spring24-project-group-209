@@ -14,7 +14,7 @@ export type BlackjackGameProps = {
 const StyledBlackjackBoard = chakra(Container, {
   baseStyle: {
     display: 'flex',
-    width: '100%',
+    width: '600px',
     height: '400px',
     padding: '5px',
     flexWrap: 'nowrap',
@@ -122,10 +122,12 @@ export default function BlackjackBoard({ gameAreaController }: BlackjackGameProp
         </Box>
       </Box>
       <Box
+        width={'100%'}
         flexDirection='row'
         display='flex'
         alignItems='flex-end'
         alignSelf='flex-start'
+        marginTop={'auto'}
         justifyContent='space-around'>
         {board.map((row, rowIndex) => {
           if (rowIndex === 8) return null; // Skip rowIndex === 8 since it's handled separately as the tables cards
@@ -142,13 +144,13 @@ export default function BlackjackBoard({ gameAreaController }: BlackjackGameProp
                     <StyledBlackjackSquare
                       key={`${rowIndex}.${colIndex}`}
                       aria-label={`Cell ${rowIndex},${colIndex} (${cell ? 'Filled' : 'Empty'})`}>
-                      {cell && <Image h='56px' w='28px' src={cardMap?.getCardUrl(cell.card)} />}
+                      {cell && <Image h='56px' w='33px' src={cardMap?.getCardUrl(cell.card)} />}
                     </StyledBlackjackSquare>
                   );
                 })}
               </Box>
               {row.some(cell => cell && cell.player !== undefined) && (
-                <Box display='flex' flexDirection='row' justifyContent='center' paddingTop='5px'>
+                <Box display='flex' flexDirection='column' justifyContent='center' paddingTop='5px'>
                   <Text
                     key={`${rowIndex}-name`}
                     display={gameAreaController.occupiedSeats[rowIndex] ? 'block' : 'none'}
@@ -162,7 +164,9 @@ export default function BlackjackBoard({ gameAreaController }: BlackjackGameProp
                     background={
                       gameAreaController.winners[rowIndex]
                         ? 'green'
-                        : gameAreaController.bustedPlayers[rowIndex]
+                        : gameAreaController.bustedPlayers[rowIndex] ||
+                          (gameAreaController.status === 'OVER' &&
+                            !gameAreaController.winners[rowIndex])
                         ? 'red'
                         : 'white'
                     }
