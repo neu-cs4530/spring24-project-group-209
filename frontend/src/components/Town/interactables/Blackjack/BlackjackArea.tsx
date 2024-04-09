@@ -7,7 +7,6 @@ import useTownController from '../../../../hooks/useTownController';
 import { GameStatus, InteractableID } from '../../../../types/CoveyTownSocket';
 import BlackjackBoard from './BlackjackBoard';
 import * as firebaseUtils from '../../../../firebaseUtils';
-import { set } from 'lodash';
 
 /**
  * The BlackjackArea component renders the Blackjack game area.
@@ -59,8 +58,6 @@ export default function BlackjackArea({
   const [joiningGame, setJoiningGame] = useState(false);
 
   const [gameStatus, setGameStatus] = useState<GameStatus>(gameAreaController.status);
-  const [moveCount, setMoveCount] = useState<number>(gameAreaController.moveCount);
-  const [activePlayers, setActivePlayers] = useState<number>(0);
   const [playerBalance, setPlayerBalance] = useState<number>(0);
   const [dbBalance, setDbBalance] = useState<number>(0);
 
@@ -69,15 +66,13 @@ export default function BlackjackArea({
     const updateGameState = () => {
       setSeats(gameAreaController.occupiedSeats);
       setGameStatus(gameAreaController.status || 'WAITING_TO_START');
-      setMoveCount(gameAreaController.moveCount || 0);
-      setActivePlayers(gameAreaController.numActivePlayers);
       setPlayerBalance(
         gameAreaController.balances[gameAreaController.playerSeat(townController.ourPlayer) || 0],
       );
     };
     const onGameEnd = () => {
-      const winner = gameAreaController.winner;
-      if (winner === townController.ourPlayer) {
+      const winners = gameAreaController.winners;
+      if (winners[gameAreaController.playerSeat(townController.ourPlayer)]) {
         toast({
           title: 'Game over',
           description: 'You won!',
@@ -90,20 +85,27 @@ export default function BlackjackArea({
           status: 'error',
         });
       }
-      firebaseUtils.updateCurrencyIncrement(townController.ourPlayer.userName, playerBalance);
+      firebaseUtils.updateCurrencyIncrement(
+        townController.ourPlayer.userName,
+        gameAreaController.balances[gameAreaController.playerSeat(townController.ourPlayer) || 0],
+      );
     };
-    async function fetchData() {
-      const balance = await firebaseUtils.getCurrency(townController.ourPlayer.userName);
-      setDbBalance(balance);
-    }
-    fetchData();
     gameAreaController.addListener('gameUpdated', updateGameState);
     gameAreaController.addListener('gameEnd', onGameEnd);
     return () => {
       gameAreaController.removeListener('gameUpdated', updateGameState);
       gameAreaController.removeListener('gameEnd', onGameEnd);
     };
-  }, [townController, gameAreaController, toast, playerBalance]);
+  }, [townController, gameAreaController, toast]);
+
+  useEffect(() => {
+    async function fetchData() {
+      const balance = await firebaseUtils.getCurrency(townController.ourPlayer.userName);
+      setDbBalance(balance);
+    }
+    fetchData();
+  });
+
   let gameStatusText = <></>;
   if (gameStatus === 'IN_PROGRESS' && gameAreaController.whoseTurn === townController.ourPlayer) {
     const hitButton = (
@@ -175,7 +177,7 @@ export default function BlackjackArea({
     gameStatusText = (
       <>
         Balance: ${playerBalance} <br />
-        Game in progress, {moveCount - activePlayers * 2} moves in, currently your turn.
+        Game in progress, currently your turn.
         <hr />
         {hitButton} {standButton} {doubleButton} Moves: {gameAreaController.moveCount}
       </>
@@ -190,8 +192,7 @@ export default function BlackjackArea({
     gameStatusText = (
       <>
         Balance: ${playerBalance} <br />
-        Game in progress, {moveCount - activePlayers * 2} moves in, currently{' '}
-        {gameAreaController.whoseTurn?.userName + "'s"} turn.
+        Game in progress, currently {gameAreaController.whoseTurn?.userName + "'s"} turn.
         <hr />
         {hitButton} {standButton}
         {doubleButton}
@@ -281,7 +282,8 @@ export default function BlackjackArea({
     else if (gameStatus === 'WAITING_FOR_PLAYERS') gameStatusStr = 'waiting for players to join';
     gameStatusText = (
       <b>
-        Game {gameStatusStr}. {joinGameButton} {startGameButton}
+        Game {gameStatusStr}. <br />
+        Blackjack Guide: https://en.wikipedia.org/wiki/Blackjack {joinGameButton} {startGameButton}
       </b>
     );
   }

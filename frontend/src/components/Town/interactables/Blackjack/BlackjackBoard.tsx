@@ -44,19 +44,32 @@ export default function BlackjackBoard({ gameAreaController }: BlackjackGameProp
   const [activeSkin, setActiveSkin] = useState<string>('SKIN1');
   const townController = useTownController();
   const [cardMap, setCardMap] = useState<CardToImage | undefined>(undefined);
+  const [playerBalances, setPlayerBalances] = useState<Array<number>>([]);
 
   useEffect(() => {
-    async function fetchData() {
+    async function fetchSkinData() {
       const fetchedSkin = await firebaseUtils.getActiveSkin(townController.ourPlayer.userName);
       setActiveSkin(fetchedSkin);
     }
-    fetchData();
+
+    fetchSkinData();
+  }, [townController]);
+
+  useEffect(() => {
     setCardMap(new CardToImage(activeSkin));
+  }, [activeSkin]);
+
+  useEffect(() => {
+    const updateBalances = () => {
+      setPlayerBalances(gameAreaController.balances);
+    };
+    gameAreaController.addListener('gameUpdated', updateBalances);
     gameAreaController.addListener('boardChanged', setBoard);
     return () => {
+      gameAreaController.addListener('gameUpdated', updateBalances);
       gameAreaController.removeListener('boardChanged', setBoard);
     };
-  }, [gameAreaController, townController, activeSkin]);
+  }, [gameAreaController, townController]);
   return (
     <StyledBlackjackBoard aria-label='Poker Board'>
       <Box
@@ -139,6 +152,7 @@ export default function BlackjackBoard({ gameAreaController }: BlackjackGameProp
                   <Text
                     key={`${rowIndex}-name`}
                     display={gameAreaController.occupiedSeats[rowIndex] ? 'block' : 'none'}
+                    padding={'1px'}
                     fontSize='sm'
                     width='50px'
                     textAlign='center'
@@ -146,7 +160,7 @@ export default function BlackjackBoard({ gameAreaController }: BlackjackGameProp
                     overflow='hidden'
                     textOverflow='ellipsis'
                     background={
-                      gameAreaController.winner?.userName === townController.ourPlayer.userName
+                      gameAreaController.winners[rowIndex]
                         ? 'green'
                         : gameAreaController.bustedPlayers[rowIndex]
                         ? 'red'
@@ -162,6 +176,18 @@ export default function BlackjackBoard({ gameAreaController }: BlackjackGameProp
                     {gameAreaController.occupiedSeats[rowIndex]
                       ? gameAreaController.occupiedSeats[rowIndex].userName
                       : ''}
+                  </Text>
+                  <Text
+                    key={`${rowIndex}-balance`}
+                    display={gameAreaController.occupiedSeats[rowIndex] ? 'block' : 'none'}
+                    padding={'1px'}
+                    fontSize='sm'
+                    width='50px'
+                    textAlign='center'
+                    background='white'
+                    border='1px solid black'
+                    borderRadius='5px'>
+                    ${playerBalances[rowIndex]}
                   </Text>
                 </Box>
               )}

@@ -11,15 +11,15 @@ import {
   NumberInputStepper,
   useToast,
 } from '@chakra-ui/react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useReducer, useState } from 'react';
 import PokerAreaController from '../../../../classes/interactable/PokerAreaController';
-import PlayerController from '../../../../classes/PlayerController';
 import { useInteractableAreaController } from '../../../../classes/TownController';
 import useTownController from '../../../../hooks/useTownController';
 import { GameStatus, InteractableID } from '../../../../types/CoveyTownSocket';
 import PokerBoard from './PokerBoard';
 import * as firebaseUtils from '../../../../firebaseUtils';
 import { DEFAULT_BUY_IN } from './PokerGameDefaults';
+import { gameReducer } from './PokerReducer';
 
 /**
  * The PokerArea component renders the Poker game area.
@@ -58,34 +58,41 @@ import { DEFAULT_BUY_IN } from './PokerGameDefaults';
  *    - Our player lost: description 'You lost :('
  *
  */
+
 export default function PokerArea({
   interactableID,
 }: {
   interactableID: InteractableID;
 }): JSX.Element {
+  const initialState = {
+    gameStatus: 'WAITING_FOR_PLAYERS' as GameStatus,
+    raiseValue: 0,
+    activePlayers: 0,
+    playerBalance: 0,
+    dbBalance: 0,
+    joiningGame: false,
+  };
+
+  const [state, dispatch] = useReducer(gameReducer, initialState);
+  const { gameStatus, raiseValue, activePlayers, playerBalance, dbBalance } = state;
   const gameAreaController = useInteractableAreaController<PokerAreaController>(interactableID);
   const townController = useTownController();
 
-  const [seats, setSeats] = useState<Array<PlayerController>>(gameAreaController.occupiedSeats);
   const [joiningGame, setJoiningGame] = useState(false);
-
-  const [gameStatus, setGameStatus] = useState<GameStatus>(gameAreaController.status);
-  const [moveCount, setMoveCount] = useState<number>(gameAreaController.moveCount);
-  const [raiseValue, setRaiseValue] = useState<number>(0);
-  const [activePlayers, setActivePlayers] = useState<number>(0);
-  const [playerBalance, setPlayerBalance] = useState<number>(0);
-  const [dbBalance, setDbBalance] = useState<number>(0);
 
   const toast = useToast();
   useEffect(() => {
     const updateGameState = () => {
-      setSeats(gameAreaController.occupiedSeats);
-      setGameStatus(gameAreaController.status || 'WAITING_TO_START');
-      setMoveCount(gameAreaController.moveCount || 0);
-      setActivePlayers(gameAreaController.numActivePlayers);
-      setPlayerBalance(
-        gameAreaController.balances[gameAreaController.playerSeat(townController.ourPlayer) || 0],
-      );
+      dispatch({
+        type: 'SET_GAME_STATUS',
+        payload: gameAreaController.status || 'WAITING_TO_START',
+      });
+      dispatch({ type: 'SET_ACTIVE_PLAYERS', payload: gameAreaController.numActivePlayers });
+      dispatch({
+        type: 'SET_PLAYER_BALANCE',
+        payload:
+          gameAreaController.balances[gameAreaController.playerSeat(townController.ourPlayer) || 0],
+      });
     };
     const onGameEnd = () => {
       const winner = gameAreaController.winner;
@@ -107,11 +114,6 @@ export default function PokerArea({
         gameAreaController.balances[gameAreaController.playerSeat(townController.ourPlayer) || 0],
       );
     };
-    async function fetchData() {
-      const balance = await firebaseUtils.getCurrency(townController.ourPlayer.userName);
-      setDbBalance(balance);
-    }
-    fetchData();
     gameAreaController.addListener('gameUpdated', updateGameState);
     gameAreaController.addListener('gameEnd', onGameEnd);
     return () => {
@@ -119,6 +121,15 @@ export default function PokerArea({
       gameAreaController.removeListener('gameEnd', onGameEnd);
     };
   }, [townController, gameAreaController, toast]);
+
+  useEffect(() => {
+    async function fetchData() {
+      const balance = await firebaseUtils.getCurrency(townController.ourPlayer.userName);
+      dispatch({ type: 'SET_DB_BALANCE', payload: balance });
+    }
+    fetchData();
+  });
+
   let gameStatusText = <></>;
   if (gameStatus == 'IN_PROGRESS') {
     const raiseInput = (
@@ -127,7 +138,9 @@ export default function PokerArea({
         width={100}
         defaultValue={5}
         min={1}
-        onChange={valueString => setRaiseValue(parseInt(valueString))}>
+        onChange={valueString =>
+          dispatch({ type: 'SET_RAISE_VALUE', payload: parseInt(valueString) })
+        }>
         <NumberInputField />
         <NumberInputStepper>
           <NumberIncrementStepper />
@@ -190,7 +203,7 @@ export default function PokerArea({
               moveType: 'FOLD',
               raiseAmount: undefined,
             });
-            setActivePlayers(activePlayers - 1);
+            dispatch({ type: 'SET_ACTIVE_PLAYERS', payload: gameAreaController.numActivePlayers });
           } catch (err) {
             toast({
               title: 'Error folding',
@@ -206,8 +219,8 @@ export default function PokerArea({
     gameStatusText = (
       <>
         Balance: ${playerBalance} <br />
-        Game in progress, {moveCount - activePlayers * 2} moves in, currently your turn. Players
-        left: {activePlayers} Pot: {gameAreaController.pot} <hr /> {raiseButton}
+        Game in progress, Players left: {activePlayers} Pot: {gameAreaController.pot} <hr />
+        {raiseButton}
         {callButton} {foldButton}
       </>
     );
@@ -265,6 +278,10 @@ export default function PokerArea({
                 status: 'error',
               });
             }
+            firebaseUtils.updateCurrencyIncrement(
+              townController.ourPlayer.userName,
+              -DEFAULT_BUY_IN,
+            );
             setJoiningGame(false);
           }}
           isLoading={joiningGame}
@@ -295,7 +312,6 @@ export default function PokerArea({
               status: 'error',
             });
           }
-          firebaseUtils.updateCurrencyIncrement(townController.ourPlayer.userName, -DEFAULT_BUY_IN);
           setJoiningGame(false);
         }}
         isLoading={joiningGame}
@@ -311,7 +327,8 @@ export default function PokerArea({
     else if (gameStatus === 'WAITING_FOR_PLAYERS') gameStatusStr = 'waiting for players to join';
     gameStatusText = (
       <b>
-        Game {gameStatusStr}. {joinGameButton} {startGameButton}
+        Game {gameStatusStr}. <br /> Poker Guide: https://en.wikipedia.org/wiki/Texas_hold_%27em{' '}
+        {joinGameButton} {startGameButton}
       </b>
     );
   }
@@ -320,7 +337,7 @@ export default function PokerArea({
       {gameStatusText}
       {gameAreaController.status !== 'IN_PROGRESS' && (
         <List aria-label='list of players in the game'>
-          {seats.map((player, seatNumber) => (
+          {gameAreaController.occupiedSeats.map((player, seatNumber) => (
             <ListItem key={seatNumber}>
               Seat {seatNumber + 1} : {player?.userName || '(No player yet!)'}
             </ListItem>

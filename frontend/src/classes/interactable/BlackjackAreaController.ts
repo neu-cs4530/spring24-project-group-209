@@ -47,17 +47,6 @@ export default class BlackjackAreaController extends GameAreaController<
   }
 
   /**
-   * Returns the player who won the game, if there is one, or undefined otherwise
-   */
-  get winner(): PlayerController | undefined {
-    const winner = this._model.game?.state.winner;
-    if (winner) {
-      return this.occupants.find(eachOccupant => eachOccupant.id === winner);
-    }
-    return undefined;
-  }
-
-  /**
    * Returns the number of moves that have been made in the game
    */
   get moveCount(): number {
@@ -81,6 +70,17 @@ export default class BlackjackAreaController extends GameAreaController<
       }
     });
     return occupiedSeats;
+  }
+
+  /**
+   * Returns the player who won the game, if there is one, or undefined otherwise
+   */
+  get winners(): Array<boolean | undefined> {
+    const winners = this._model.game?.state.winners;
+    if (winners) {
+      return winners;
+    }
+    return undefined;
   }
 
   get bustedPlayers(): Array<boolean> {

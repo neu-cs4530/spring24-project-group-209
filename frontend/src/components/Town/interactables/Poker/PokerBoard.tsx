@@ -45,18 +45,30 @@ export default function PokerBoard({ gameAreaController }: PokerGameProps): JSX.
   const [playerBalances, setPlayerBalances] = useState<Array<number>>([]);
 
   useEffect(() => {
-    async function fetchData() {
+    async function fetchSkinData() {
       const fetchedSkin = await firebaseUtils.getActiveSkin(townController.ourPlayer.userName);
       setActiveSkin(fetchedSkin);
     }
-    fetchData();
+
+    fetchSkinData();
+  }, [townController]);
+
+  useEffect(() => {
     setCardMap(new CardToImage(activeSkin));
-    setPlayerBalances(gameAreaController.balances);
+  }, [activeSkin]);
+
+  useEffect(() => {
+    const updateBalances = () => {
+      setPlayerBalances(gameAreaController.balances);
+    };
+    gameAreaController.addListener('gameUpdated', updateBalances);
     gameAreaController.addListener('boardChanged', setBoard);
     return () => {
+      gameAreaController.addListener('gameUpdated', updateBalances);
       gameAreaController.removeListener('boardChanged', setBoard);
     };
-  }, [activeSkin, gameAreaController, townController, playerBalances]);
+  }, [gameAreaController, townController]);
+
   return (
     <StyledPokerBoard aria-label='Poker Board'>
       <Box
@@ -89,6 +101,7 @@ export default function PokerBoard({ gameAreaController }: PokerGameProps): JSX.
         </Box>
       </Box>
       <Box
+        width={'100%'}
         flexDirection='row'
         display='flex'
         alignItems='flex-end'
@@ -134,6 +147,7 @@ export default function PokerBoard({ gameAreaController }: PokerGameProps): JSX.
                   <Text
                     key={`${rowIndex}-name`}
                     display={gameAreaController.occupiedSeats[rowIndex] ? 'block' : 'none'}
+                    padding={'1px'}
                     fontSize='sm'
                     width='50px'
                     textAlign='center'
@@ -141,7 +155,7 @@ export default function PokerBoard({ gameAreaController }: PokerGameProps): JSX.
                     overflow='hidden'
                     textOverflow='ellipsis'
                     background={
-                      gameAreaController.winner?.userName === townController.ourPlayer.userName
+                      gameAreaController.playerSeat(gameAreaController.winner) === rowIndex
                         ? 'green'
                         : gameAreaController.foldedPlayers[rowIndex]
                         ? 'red'
@@ -159,8 +173,9 @@ export default function PokerBoard({ gameAreaController }: PokerGameProps): JSX.
                       : ''}
                   </Text>
                   <Text
-                    key={`${rowIndex}-name`}
+                    key={`${rowIndex}-balance`}
                     display={gameAreaController.occupiedSeats[rowIndex] ? 'block' : 'none'}
+                    padding={'1px'}
                     fontSize='sm'
                     width='50px'
                     textAlign='center'
