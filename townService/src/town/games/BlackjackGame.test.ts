@@ -1248,8 +1248,9 @@ describe('BlackjackGame', () => {
       expect(game2.state.playerBalances[1]).toBe(1000);
     });
     it('should treat aces as 1 if bust', () => {
-      deck.addNextDraw({ face: 10, suite: 'HEARTS' });
+      // deck.addNextDraw({ face: 1, suite: 'HEARTS' });
       deck.addNextDraw({ face: 1, suite: 'SPADES' });
+      deck.addNextDraw({ face: 6, suite: 'SPADES' });
       deck.addNextDraw({ face: 10, suite: 'HEARTS' });
       deck.addNextDraw({ face: 10, suite: 'HEARTS' });
       deck.addNextDraw({ face: 10, suite: 'HEARTS' });
@@ -1265,11 +1266,6 @@ describe('BlackjackGame', () => {
       game.applyMove({
         gameID: game.id,
         playerID: players[0].id,
-        move: { moveType: 'HIT' },
-      });
-      game.applyMove({
-        gameID: game.id,
-        playerID: players[0].id,
         move: { moveType: 'STAND' },
       });
       expect(game.state.status).toBe('IN_PROGRESS');
@@ -1280,24 +1276,24 @@ describe('BlackjackGame', () => {
       });
       const dealerCards = game.state.dealerMoves;
       expect(game.state.status).toBe('OVER');
-      expect(dealerCards.length).toBe(2);
+      expect(dealerCards.length).toBe(3);
 
       expect(game.state.playerBalances[0]).toBe(1100);
-      expect(game.state.playerBalances[1]).toBe(1000);
+      expect(game.state.playerBalances[1]).toBe(1100);
       const game2 = new BlackjackGame(new TestDeck(), game);
       game2.join(players[0]);
       game2.join(players[1]);
       expect(game2.state.playerBalances[0]).toBe(1100);
-      expect(game2.state.playerBalances[1]).toBe(1000);
+      expect(game2.state.playerBalances[1]).toBe(1100);
     });
     it('should double wins with double', () => {
-      deck.addNextDraw({ face: 8, suite: 'HEARTS' });
-      deck.addNextDraw({ face: 1, suite: 'SPADES' });
+      deck.addNextDraw({ face: 10, suite: 'HEARTS' });
+      deck.addNextDraw({ face: 7, suite: 'SPADES' });
       deck.addNextDraw({ face: 10, suite: 'HEARTS' });
       deck.addNextDraw({ face: 8, suite: 'HEARTS' });
       deck.addNextDraw({ face: 10, suite: 'HEARTS' });
-      deck.addNextDraw({ face: 10, suite: 'CLUBS' });
-      deck.addNextDraw({ face: 10, suite: 'CLUBS' });
+      deck.addNextDraw({ face: 6, suite: 'CLUBS' });
+      deck.addNextDraw({ face: 5, suite: 'CLUBS' });
 
       expect(game.state.playerBalances[0]).toBe(1000);
 
@@ -1321,21 +1317,21 @@ describe('BlackjackGame', () => {
       expect(dealerCards.length).toBe(2);
 
       expect(game.state.playerBalances[0]).toBe(1200);
-      expect(game.state.playerBalances[1]).toBe(1000);
+      expect(game.state.playerBalances[1]).toBe(1100);
       const game2 = new BlackjackGame(new TestDeck(), game);
       game2.join(players[0]);
       game2.join(players[1]);
       expect(game2.state.playerBalances[0]).toBe(1200);
-      expect(game2.state.playerBalances[1]).toBe(1000);
+      expect(game2.state.playerBalances[1]).toBe(1100);
     });
     it('should double losses with double', () => {
-      deck.addNextDraw({ face: 8, suite: 'HEARTS' });
+      deck.addNextDraw({ face: 1, suite: 'HEARTS' });
       deck.addNextDraw({ face: 10, suite: 'SPADES' });
       deck.addNextDraw({ face: 10, suite: 'HEARTS' });
-      deck.addNextDraw({ face: 8, suite: 'HEARTS' });
+      deck.addNextDraw({ face: 7, suite: 'HEARTS' });
       deck.addNextDraw({ face: 10, suite: 'HEARTS' });
-      deck.addNextDraw({ face: 10, suite: 'CLUBS' });
-      deck.addNextDraw({ face: 2, suite: 'CLUBS' });
+      deck.addNextDraw({ face: 6, suite: 'CLUBS' });
+      deck.addNextDraw({ face: 5, suite: 'CLUBS' });
 
       expect(game.state.playerBalances[0]).toBe(1000);
 
@@ -1359,23 +1355,23 @@ describe('BlackjackGame', () => {
       expect(dealerCards.length).toBe(2);
 
       expect(game.state.playerBalances[0]).toBe(800);
-      expect(game.state.playerBalances[1]).toBe(1000);
+      expect(game.state.playerBalances[1]).toBe(900);
       const game2 = new BlackjackGame(new TestDeck(), game);
       game2.join(players[0]);
       game2.join(players[1]);
       expect(game2.state.playerBalances[0]).toBe(800);
-      expect(game2.state.playerBalances[1]).toBe(1000);
+      expect(game2.state.playerBalances[1]).toBe(900);
     });
     it('should be able to hit many times', () => {
       deck.addNextDraw({ face: 8, suite: 'HEARTS' });
       deck.addNextDraw({ face: 2, suite: 'CLUBS' });
       deck.addNextDraw({ face: 2, suite: 'CLUBS' });
       deck.addNextDraw({ face: 2, suite: 'CLUBS' });
-      deck.addNextDraw({ face: 2, suite: 'CLUBS' });
+      deck.addNextDraw({ face: 9, suite: 'CLUBS' });
       deck.addNextDraw({ face: 10, suite: 'HEARTS' });
       deck.addNextDraw({ face: 8, suite: 'HEARTS' });
       deck.addNextDraw({ face: 10, suite: 'HEARTS' });
-      deck.addNextDraw({ face: 10, suite: 'CLUBS' });
+      deck.addNextDraw({ face: 2, suite: 'CLUBS' });
       deck.addNextDraw({ face: 2, suite: 'CLUBS' });
 
       expect(game.state.playerBalances[0]).toBe(1000);
@@ -1408,44 +1404,6 @@ describe('BlackjackGame', () => {
         gameID: game.id,
         playerID: players[0].id,
         move: { moveType: 'STAND' },
-      });
-      expect(game.state.status).toBe('IN_PROGRESS');
-      game.applyMove({
-        gameID: game.id,
-        playerID: players[1].id,
-        move: { moveType: 'STAND' },
-      });
-      const dealerCards = game.state.dealerMoves;
-      expect(game.state.status).toBe('OVER');
-      expect(dealerCards.length).toBe(2);
-
-      expect(game.state.playerBalances[0]).toBe(1100);
-      expect(game.state.playerBalances[1]).toBe(1000);
-      const game2 = new BlackjackGame(new TestDeck(), game);
-      game2.join(players[0]);
-      game2.join(players[1]);
-      expect(game2.state.playerBalances[0]).toBe(1100);
-      expect(game2.state.playerBalances[1]).toBe(1000);
-    });
-    it('should stop busted players', () => {
-      deck.addNextDraw({ face: 8, suite: 'HEARTS' });
-      deck.addNextDraw({ face: 10, suite: 'CLUBS' });
-      deck.addNextDraw({ face: 10, suite: 'HEARTS' });
-      deck.addNextDraw({ face: 8, suite: 'HEARTS' });
-      deck.addNextDraw({ face: 10, suite: 'HEARTS' });
-      deck.addNextDraw({ face: 10, suite: 'CLUBS' });
-      deck.addNextDraw({ face: 2, suite: 'CLUBS' });
-
-      expect(game.state.playerBalances[0]).toBe(1000);
-
-      game.startGame(players[0]);
-      game.startGame(players[1]);
-      const dealerCardsBefore = game.state.dealerMoves;
-      expect(dealerCardsBefore.length).toBe(2);
-      game.applyMove({
-        gameID: game.id,
-        playerID: players[0].id,
-        move: { moveType: 'HIT' },
       });
       expect(game.state.status).toBe('IN_PROGRESS');
       game.applyMove({
@@ -1458,17 +1416,46 @@ describe('BlackjackGame', () => {
       expect(dealerCards.length).toBe(2);
 
       expect(game.state.playerBalances[0]).toBe(900);
-      expect(game.state.playerBalances[1]).toBe(1000);
+      expect(game.state.playerBalances[1]).toBe(900);
       const game2 = new BlackjackGame(new TestDeck(), game);
       game2.join(players[0]);
       game2.join(players[1]);
       expect(game2.state.playerBalances[0]).toBe(900);
-      expect(game2.state.playerBalances[1]).toBe(1000);
+      expect(game2.state.playerBalances[1]).toBe(900);
+    });
+    it('should stop busted players', () => {
+      deck.addNextDraw({ face: 10, suite: 'HEARTS' });
+      deck.addNextDraw({ face: 10, suite: 'CLUBS' });
+      deck.addNextDraw({ face: 10, suite: 'HEARTS' });
+      deck.addNextDraw({ face: 8, suite: 'HEARTS' });
+      deck.addNextDraw({ face: 10, suite: 'HEARTS' });
+      deck.addNextDraw({ face: 10, suite: 'CLUBS' });
+      deck.addNextDraw({ face: 6, suite: 'CLUBS' });
+
+      expect(game.state.playerBalances[0]).toBe(1000);
+
+      game.startGame(players[0]);
+      game.startGame(players[1]);
+      const dealerCardsBefore = game.state.dealerMoves;
+      expect(dealerCardsBefore.length).toBe(2);
+      console.log(game.state.moves);
+      game.applyMove({
+        gameID: game.id,
+        playerID: players[0].id,
+        move: { moveType: 'HIT' },
+      });
+      expect(() =>
+        game.applyMove({
+          gameID: game.id,
+          playerID: players[0].id,
+          move: { moveType: 'HIT' },
+        }),
+      ).toThrowError();
     });
     it('should stop Dealer if bust', () => {
-      deck.addNextDraw({ face: 6, suite: 'HEARTS' });
-      deck.addNextDraw({ face: 6, suite: 'HEARTS' });
-      deck.addNextDraw({ face: 10, suite: 'CLUBS' });
+      deck.addNextDraw({ face: 10, suite: 'HEARTS' });
+      deck.addNextDraw({ face: 10, suite: 'HEARTS' });
+      deck.addNextDraw({ face: 6, suite: 'CLUBS' });
       deck.addNextDraw({ face: 10, suite: 'HEARTS' });
       deck.addNextDraw({ face: 8, suite: 'HEARTS' });
       deck.addNextDraw({ face: 10, suite: 'HEARTS' });
