@@ -17,9 +17,11 @@ import {
   ServerToClientEvents,
   SocketData,
   ViewingArea as ViewingAreaModel,
+  ShopArea as ShopAreaModel,
 } from '../types/CoveyTownSocket';
 import { logError } from '../Utils';
 import ConversationArea from './ConversationArea';
+import ShopArea from './ShopArea';
 import GameAreaFactory from './games/GameAreaFactory';
 import InteractableArea from './InteractableArea';
 import ViewingArea from './ViewingArea';
@@ -312,6 +314,33 @@ export default class Town {
   }
 
   /**
+   * Creates a new shop area in this town if there is not currently an active
+   * shop with the same ID. The conversation area ID must match the name of a
+   * conversation area that exists in this town's map, and the conversation area must not
+   * already have a topic set.
+   *
+   * If successful creating the shop area, this method:
+   *  Adds any players who are in the region defined by the conversation area to it.
+   *  Notifies all players in the town that the shop area has been updated
+   *
+   * @param shopArea Information describing the conversation area to create. Ignores any
+   *  occupantsById that are set on the conversation area that is passed to this method.
+   *
+   * @returns true if the conversation is successfully created, or false if there is no known
+   * conversation area with the specified ID or if there is already an active conversation area
+   * with the specified ID
+   */
+  public addShopArea(shopArea: ShopAreaModel): boolean {
+    const area = this._interactables.find(eachArea => eachArea.id === shopArea.id) as ShopArea;
+    if (!area) {
+      return false;
+    }
+    area.addPlayersWithinBounds(this._players);
+    this._broadcastEmitter.emit('interactableUpdate', area.toModel());
+    return true;
+  }
+
+  /**
    * Creates a new viewing area in this town if there is not currently an active
    * viewing area with the same ID. The viewing area ID must match the name of a
    * viewing area that exists in this town's map, and the viewing area must not
@@ -418,6 +447,12 @@ export default class Town {
         ConversationArea.fromMapObject(eachConvAreaObj, this._broadcastEmitter),
       );
 
+    const shopAreas = objectLayer.objects
+      .filter(eachObject => eachObject.type === 'ShopArea')
+      .map(eachShopAreaObject =>
+        ShopArea.fromMapObject(eachShopAreaObject, this._broadcastEmitter),
+      );
+
     const gameAreas = objectLayer.objects
       .filter(eachObject => eachObject.type === 'GameArea')
       .map(eachGameAreaObj => GameAreaFactory(eachGameAreaObj, this._broadcastEmitter));
@@ -425,6 +460,7 @@ export default class Town {
     this._interactables = this._interactables
       .concat(viewingAreas)
       .concat(conversationAreas)
+      .concat(shopAreas)
       .concat(gameAreas);
     this._validateInteractables();
   }

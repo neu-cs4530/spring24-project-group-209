@@ -3,6 +3,8 @@ import { BoundingBox, TownEmitter } from '../../types/CoveyTownSocket';
 import InteractableArea from '../InteractableArea';
 import ConnectFourGameArea from './ConnectFourGameArea';
 import TicTacToeGameArea from './TicTacToeGameArea';
+import PokerGameArea from './PokerGameArea';
+import BlackjackGameArea from './BlackjackGameArea';
 
 /**
  * Creates a new GameArea from a map object
@@ -26,6 +28,13 @@ export default function GameAreaFactory(
   }
   if (gameType === 'ConnectFour') {
     return new ConnectFourGameArea(name, rect, broadcastEmitter);
+  }
+  if (gameType === 'Poker') {
+    return new PokerGameArea(name, rect, broadcastEmitter);
+  }
+  // Needs to be updated to support Blackjack once the blackjack back end is pushed
+  if (gameType === 'Blackjack') {
+    return new BlackjackGameArea(name, rect, broadcastEmitter);
   }
   throw new Error(`Unknown game area type ${mapObject.class}`);
 }

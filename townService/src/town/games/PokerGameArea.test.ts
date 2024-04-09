@@ -29,9 +29,11 @@ class TestingGame extends Game<PokerGameState, PokerMove> {
       moves: [],
       smallBlind: 0,
       status: 'WAITING_TO_START', // Might need to be WAITING_FOR_PLAYERS
-      occupiedSeats: new Map<SeatNumber, PlayerID | undefined>(),
-      readyPlayers: new Map<SeatNumber, boolean | undefined>(),
-      playerBalances: new Map<SeatNumber, number | undefined>(),
+      occupiedSeats: new Array<PlayerID | undefined>(),
+      readyPlayers: new Array<boolean | undefined>(),
+      playerBalances: new Array<number | undefined>(),
+      foldedPlayers: new Array<boolean>(),
+      pot: 0,
     });
   }
 
@@ -47,8 +49,8 @@ class TestingGame extends Game<PokerGameState, PokerMove> {
 
   public startGame(player: Player) {
     for (let i = 0; i < 8; i++) {
-      if (this.state.occupiedSeats.get(i as SeatNumber) === player.id) {
-        this.state.readyPlayers.set(i as SeatNumber, true);
+      if (this.state.occupiedSeats[i] === player.id) {
+        this.state.readyPlayers[i] = true;
         return;
       }
     }
@@ -56,8 +58,8 @@ class TestingGame extends Game<PokerGameState, PokerMove> {
 
   protected _join(player: Player): void {
     for (let i = 0; i < 8; i++) {
-      if (this.state.occupiedSeats.get(i as SeatNumber) === undefined) {
-        this.state.occupiedSeats.set(i as SeatNumber, player.id);
+      if (this.state.occupiedSeats[i] === undefined) {
+        this.state.occupiedSeats[i] = player.id;
         return;
       }
     }

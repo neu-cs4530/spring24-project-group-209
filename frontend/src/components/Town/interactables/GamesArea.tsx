@@ -27,6 +27,8 @@ import ConnectFourArea from './ConnectFour/ConnectFourArea';
 import GameAreaInteractable from './GameArea';
 import Leaderboard from './Leaderboard';
 import TicTacToeArea from './TicTacToe/TicTacToeArea';
+import BlackJackArea from './Blackjack/BlackjackArea';
+import PokerArea from './Poker/PokerArea';
 
 export const INVALID_GAME_AREA_TYPE_MESSAGE = 'Invalid game area type';
 
@@ -100,6 +102,10 @@ function GameArea({ interactableID }: { interactableID: InteractableID }): JSX.E
             <ConnectFourArea interactableID={interactableID} />
           ) : gameAreaController.toInteractableAreaModel().type === 'TicTacToeArea' ? (
             <TicTacToeArea interactableID={interactableID} />
+          ) : gameAreaController.toInteractableAreaModel().type === 'PokerArea' ? (
+            <PokerArea interactableID={interactableID} />
+          ) : gameAreaController.toInteractableAreaModel().type === 'BlackjackArea' ? (
+            <BlackJackArea interactableID={interactableID} />
           ) : (
             <>{INVALID_GAME_AREA_TYPE_MESSAGE}</>
           )}
@@ -142,7 +148,7 @@ export default function GameAreaWrapper(): JSX.Element {
     return (
       <Modal isOpen={true} onClose={closeModal} closeOnOverlayClick={false} size='xl'>
         <ModalOverlay />
-        <ModalContent>
+        <ModalContent maxW='800px'>
           <ModalHeader>{gameArea.name}</ModalHeader>
           <ModalCloseButton />
           <ModalBody>

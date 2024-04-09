@@ -11,6 +11,7 @@ import {
   Input,
   Stack,
   Table,
+  Text,
   TableCaption,
   Tbody,
   Td,
@@ -24,9 +25,14 @@ import { Town } from '../../generated/client';
 import useLoginController from '../../hooks/useLoginController';
 import TownController from '../../classes/TownController';
 import useVideoContext from '../VideoCall/VideoFrontend/hooks/useVideoContext/useVideoContext';
+import * as firebaseUtils from '../../firebaseUtils';
+// import { getAuth } from '@firebase/auth';
+import { initializeApp } from '@firebase/app';
+import { firebaseConfig } from '../../firebaseInit';
 
 export default function TownSelection(): JSX.Element {
   const [userName, setUserName] = useState<string>('');
+  const [pass, setPass] = useState<string>('');
   const [newTownName, setNewTownName] = useState<string>('');
   const [newTownIsPublic, setNewTownIsPublic] = useState<boolean>(true);
   const [townIDToJoin, setTownIDToJoin] = useState<string>('');
@@ -44,6 +50,7 @@ export default function TownSelection(): JSX.Element {
     });
   }, [townsService]);
   useEffect(() => {
+    initializeApp(firebaseConfig);
     updateTownListings();
     const timer = setInterval(updateTownListings, 2000);
     return () => {
@@ -64,6 +71,14 @@ export default function TownSelection(): JSX.Element {
           });
           return;
         }
+        if (!pass || pass.length === 0) {
+          toast({
+            title: 'Unable to join town',
+            description: 'Please select a password',
+            status: 'error',
+          });
+          return;
+        }
         if (!coveyRoomID || coveyRoomID.length === 0) {
           toast({
             title: 'Unable to join town',
@@ -71,6 +86,17 @@ export default function TownSelection(): JSX.Element {
             status: 'error',
           });
           return;
+        }
+        const successfulLogin = await firebaseUtils.handleLogin(userName, pass);
+        if (!successfulLogin) {
+          toast({
+            title: 'Unable to join town',
+            description: 'Incorrect password or username already in use. Please try again.',
+            status: 'error',
+          });
+          return;
+        } else {
+          firebaseUtils.updateLoginTime(userName);
         }
         const isHighLatencyTownService =
           process.env.NEXT_PUBLIC_TOWNS_SERVICE_URL?.includes('onrender.com');
@@ -133,7 +159,7 @@ export default function TownSelection(): JSX.Element {
         }
       }
     },
-    [setTownController, userName, toast, videoConnect, loginController],
+    [setTownController, userName, pass, toast, videoConnect, loginController],
   );
 
   const handleCreate = async () => {
@@ -145,6 +171,14 @@ export default function TownSelection(): JSX.Element {
       });
       return;
     }
+    if (!pass || pass.length === 0) {
+      toast({
+        title: 'Unable to create town',
+        description: 'Please select a password before creating a town',
+        status: 'error',
+      });
+      return;
+    }
     if (!newTownName || newTownName.length === 0) {
       toast({
         title: 'Unable to create town',
@@ -152,6 +186,17 @@ export default function TownSelection(): JSX.Element {
         status: 'error',
       });
       return;
+    }
+    const successfulLogin = await firebaseUtils.handleLogin(userName, pass);
+    if (!successfulLogin) {
+      toast({
+        title: 'Unable to join town',
+        description: 'Incorrect password or username already in use. Please try again.',
+        status: 'error',
+      });
+      return;
+    } else {
+      firebaseUtils.updateLoginTime(userName);
     }
     const isHighLatencyTownService =
       process.env.NEXT_PUBLIC_TOWNS_SERVICE_URL?.includes('onrender.com');
@@ -240,8 +285,10 @@ export default function TownSelection(): JSX.Element {
         <Stack>
           <Box p='4' borderWidth='1px' borderRadius='lg'>
             <Heading as='h2' size='lg'>
-              Select a username
+              Select a username and password
             </Heading>
+            <Text fontSize='sm'>Enter existing username and password to log-in</Text>
+            <Text fontSize='sm'>Or new username and password to register</Text>
 
             <FormControl>
               <FormLabel htmlFor='name'>Name</FormLabel>
@@ -251,6 +298,15 @@ export default function TownSelection(): JSX.Element {
                 placeholder='Your name'
                 value={userName}
                 onChange={event => setUserName(event.target.value)}
+              />
+              <FormLabel htmlFor='password'>Password</FormLabel>
+              <Input
+                autoFocus
+                name='password'
+                placeholder='Your password'
+                type='password' // Add this line to hide the characters entered
+                value={pass}
+                onChange={event => setPass(event.target.value)}
               />
             </FormControl>
           </Box>

@@ -107,7 +107,6 @@ describe('PokerGame', () => {
     });
     describe('if the player is not in the game and the game is not full', () => {
       it('should add the player to the next avaiable seat  with the default balance', () => {
-        const seats: Array<SeatNumber> = [0, 1, 2, 3, 4, 5, 6, 7];
         const players: Array<Player> = [
           createPlayerForTesting(),
           createPlayerForTesting(),
@@ -121,112 +120,111 @@ describe('PokerGame', () => {
 
         game.join(players[0]);
         for (let i = 0; i < 1; i++) {
-          expect(game.state.occupiedSeats.get(seats[i])).toBe(players[i].id);
-          expect(game.state.readyPlayers.get(seats[i])).toBe(false);
-          expect(game.state.playerBalances.get(seats[i])).toBe(DEFAULT_BUY_IN);
+          expect(game.state.occupiedSeats[i]).toBe(players[i].id);
+          expect(game.state.readyPlayers[i]).toBe(false);
+          expect(game.state.playerBalances[i]).toBe(DEFAULT_BUY_IN);
         }
         for (let i = 1; i < 8; i++) {
-          expect(game.state.occupiedSeats.get(seats[i])).toBeUndefined();
-          expect(game.state.readyPlayers.get(seats[i])).toBeUndefined();
-          expect(game.state.playerBalances.get(seats[i])).toBeUndefined();
+          expect(game.state.occupiedSeats[i]).toBeUndefined();
+          expect(game.state.readyPlayers[i]).toBeUndefined();
+          expect(game.state.playerBalances[i]).toBeUndefined();
         }
 
         expect(game.state.status).toBe('WAITING_FOR_PLAYERS');
 
         game.join(players[1]);
         for (let i = 0; i < 2; i++) {
-          expect(game.state.occupiedSeats.get(seats[i])).toBe(players[i].id);
-          expect(game.state.readyPlayers.get(seats[i])).toBe(false);
-          expect(game.state.playerBalances.get(seats[i])).toBe(DEFAULT_BUY_IN);
+          expect(game.state.occupiedSeats[i]).toBe(players[i].id);
+          expect(game.state.readyPlayers[i]).toBe(false);
+          expect(game.state.playerBalances[i]).toBe(DEFAULT_BUY_IN);
         }
         for (let i = 2; i < 8; i++) {
-          expect(game.state.occupiedSeats.get(seats[i])).toBeUndefined();
-          expect(game.state.readyPlayers.get(seats[i])).toBeUndefined();
-          expect(game.state.playerBalances.get(seats[i])).toBeUndefined();
+          expect(game.state.occupiedSeats[i]).toBeUndefined();
+          expect(game.state.readyPlayers[i]).toBeUndefined();
+          expect(game.state.playerBalances[i]).toBeUndefined();
         }
 
         expect(game.state.status).toBe('WAITING_FOR_PLAYERS');
 
         game.join(players[2]);
         for (let i = 0; i < 3; i++) {
-          expect(game.state.occupiedSeats.get(seats[i])).toBe(players[i].id);
-          expect(game.state.readyPlayers.get(seats[i])).toBe(false);
-          expect(game.state.playerBalances.get(seats[i])).toBe(DEFAULT_BUY_IN);
+          expect(game.state.occupiedSeats[i]).toBe(players[i].id);
+          expect(game.state.readyPlayers[i]).toBe(false);
+          expect(game.state.playerBalances[i]).toBe(DEFAULT_BUY_IN);
         }
         for (let i = 3; i < 8; i++) {
-          expect(game.state.occupiedSeats.get(seats[i])).toBeUndefined();
-          expect(game.state.readyPlayers.get(seats[i])).toBeUndefined();
-          expect(game.state.playerBalances.get(seats[i])).toBeUndefined();
+          expect(game.state.occupiedSeats[i]).toBeUndefined();
+          expect(game.state.readyPlayers[i]).toBeUndefined();
+          expect(game.state.playerBalances[i]).toBeUndefined();
         }
 
         expect(game.state.status).toBe('WAITING_FOR_PLAYERS');
 
         game.join(players[3]);
         for (let i = 0; i < 4; i++) {
-          expect(game.state.occupiedSeats.get(seats[i])).toBe(players[i].id);
-          expect(game.state.readyPlayers.get(seats[i])).toBe(false);
-          expect(game.state.playerBalances.get(seats[i])).toBe(DEFAULT_BUY_IN);
+          expect(game.state.occupiedSeats[i]).toBe(players[i].id);
+          expect(game.state.readyPlayers[i]).toBe(false);
+          expect(game.state.playerBalances[i]).toBe(DEFAULT_BUY_IN);
         }
         for (let i = 4; i < 8; i++) {
-          expect(game.state.occupiedSeats.get(seats[i])).toBeUndefined();
-          expect(game.state.readyPlayers.get(seats[i])).toBeUndefined();
-          expect(game.state.playerBalances.get(seats[i])).toBeUndefined();
+          expect(game.state.occupiedSeats[i]).toBeUndefined();
+          expect(game.state.readyPlayers[i]).toBeUndefined();
+          expect(game.state.playerBalances[i]).toBeUndefined();
         }
 
         expect(game.state.status).toBe('WAITING_FOR_PLAYERS');
 
         game.join(players[4]);
         for (let i = 0; i < 5; i++) {
-          expect(game.state.occupiedSeats.get(seats[i])).toBe(players[i].id);
-          expect(game.state.readyPlayers.get(seats[i])).toBe(false);
-          expect(game.state.playerBalances.get(seats[i])).toBe(DEFAULT_BUY_IN);
+          expect(game.state.occupiedSeats[i]).toBe(players[i].id);
+          expect(game.state.readyPlayers[i]).toBe(false);
+          expect(game.state.playerBalances[i]).toBe(DEFAULT_BUY_IN);
         }
         for (let i = 5; i < 8; i++) {
-          expect(game.state.occupiedSeats.get(seats[i])).toBeUndefined();
-          expect(game.state.readyPlayers.get(seats[i])).toBeUndefined();
-          expect(game.state.playerBalances.get(seats[i])).toBeUndefined();
+          expect(game.state.occupiedSeats[i]).toBeUndefined();
+          expect(game.state.readyPlayers[i]).toBeUndefined();
+          expect(game.state.playerBalances[i]).toBeUndefined();
         }
 
         expect(game.state.status).toBe('WAITING_FOR_PLAYERS');
 
         game.join(players[5]);
         for (let i = 0; i < 6; i++) {
-          expect(game.state.occupiedSeats.get(seats[i])).toBe(players[i].id);
-          expect(game.state.readyPlayers.get(seats[i])).toBe(false);
-          expect(game.state.playerBalances.get(seats[i])).toBe(DEFAULT_BUY_IN);
+          expect(game.state.occupiedSeats[i]).toBe(players[i].id);
+          expect(game.state.readyPlayers[i]).toBe(false);
+          expect(game.state.playerBalances[i]).toBe(DEFAULT_BUY_IN);
         }
         for (let i = 6; i < 8; i++) {
-          expect(game.state.occupiedSeats.get(seats[i])).toBeUndefined();
-          expect(game.state.readyPlayers.get(seats[i])).toBeUndefined();
-          expect(game.state.playerBalances.get(seats[i])).toBeUndefined();
+          expect(game.state.occupiedSeats[i]).toBeUndefined();
+          expect(game.state.readyPlayers[i]).toBeUndefined();
+          expect(game.state.playerBalances[i]).toBeUndefined();
         }
 
         expect(game.state.status).toBe('WAITING_FOR_PLAYERS');
 
         game.join(players[6]);
         for (let i = 0; i < 7; i++) {
-          expect(game.state.occupiedSeats.get(seats[i])).toBe(players[i].id);
-          expect(game.state.readyPlayers.get(seats[i])).toBe(false);
-          expect(game.state.playerBalances.get(seats[i])).toBe(DEFAULT_BUY_IN);
+          expect(game.state.occupiedSeats[i]).toBe(players[i].id);
+          expect(game.state.readyPlayers[i]).toBe(false);
+          expect(game.state.playerBalances[i]).toBe(DEFAULT_BUY_IN);
         }
         for (let i = 7; i < 8; i++) {
-          expect(game.state.occupiedSeats.get(seats[i])).toBeUndefined();
-          expect(game.state.readyPlayers.get(seats[i])).toBeUndefined();
-          expect(game.state.playerBalances.get(seats[i])).toBeUndefined();
+          expect(game.state.occupiedSeats[i]).toBeUndefined();
+          expect(game.state.readyPlayers[i]).toBeUndefined();
+          expect(game.state.playerBalances[i]).toBeUndefined();
         }
 
         expect(game.state.status).toBe('WAITING_FOR_PLAYERS');
 
         game.join(players[7]);
         for (let i = 0; i < 8; i++) {
-          expect(game.state.occupiedSeats.get(seats[i])).toBe(players[i].id);
-          expect(game.state.readyPlayers.get(seats[i])).toBe(false);
-          expect(game.state.playerBalances.get(seats[i])).toBe(DEFAULT_BUY_IN);
+          expect(game.state.occupiedSeats[i]).toBe(players[i].id);
+          expect(game.state.readyPlayers[i]).toBe(false);
+          expect(game.state.playerBalances[i]).toBe(DEFAULT_BUY_IN);
         }
         expect(game.state.status).toBe('WAITING_TO_START');
       });
       it('if possible, should add players to the seat they were in the previous game', () => {
-        const seats: Array<SeatNumber> = [0, 1, 2, 3, 4, 5, 6, 7];
         const players: Array<Player> = [
           createPlayerForTesting(),
           createPlayerForTesting(),
@@ -248,38 +246,38 @@ describe('PokerGame', () => {
         game.join(players[7]);
 
         const secondGame = new PokerGame(new TestDeck(), game);
-        expect(secondGame.state.occupiedSeats.get(seats[0])).toBeUndefined();
-        expect(secondGame.state.occupiedSeats.get(seats[1])).toBeUndefined();
-        expect(secondGame.state.occupiedSeats.get(seats[2])).toBeUndefined();
-        expect(secondGame.state.occupiedSeats.get(seats[3])).toBeUndefined();
-        expect(secondGame.state.occupiedSeats.get(seats[4])).toBeUndefined();
-        expect(secondGame.state.occupiedSeats.get(seats[5])).toBeUndefined();
-        expect(secondGame.state.occupiedSeats.get(seats[6])).toBeUndefined();
-        expect(secondGame.state.occupiedSeats.get(seats[7])).toBeUndefined();
+        expect(secondGame.state.occupiedSeats[0]).toBeUndefined();
+        expect(secondGame.state.occupiedSeats[1]).toBeUndefined();
+        expect(secondGame.state.occupiedSeats[2]).toBeUndefined();
+        expect(secondGame.state.occupiedSeats[3]).toBeUndefined();
+        expect(secondGame.state.occupiedSeats[4]).toBeUndefined();
+        expect(secondGame.state.occupiedSeats[5]).toBeUndefined();
+        expect(secondGame.state.occupiedSeats[6]).toBeUndefined();
+        expect(secondGame.state.occupiedSeats[7]).toBeUndefined();
 
         secondGame.join(players[1]);
-        expect(secondGame.state.occupiedSeats.get(seats[1])).toBe(players[1].id);
+        expect(secondGame.state.occupiedSeats[1]).toBe(players[1].id);
 
         secondGame.join(players[2]);
-        expect(secondGame.state.occupiedSeats.get(seats[2])).toBe(players[2].id);
+        expect(secondGame.state.occupiedSeats[2]).toBe(players[2].id);
 
         secondGame.join(players[3]);
-        expect(secondGame.state.occupiedSeats.get(seats[3])).toBe(players[3].id);
+        expect(secondGame.state.occupiedSeats[3]).toBe(players[3].id);
 
         secondGame.join(players[4]);
-        expect(secondGame.state.occupiedSeats.get(seats[4])).toBe(players[4].id);
+        expect(secondGame.state.occupiedSeats[4]).toBe(players[4].id);
 
         secondGame.join(players[5]);
-        expect(secondGame.state.occupiedSeats.get(seats[5])).toBe(players[5].id);
+        expect(secondGame.state.occupiedSeats[5]).toBe(players[5].id);
 
         secondGame.join(players[6]);
-        expect(secondGame.state.occupiedSeats.get(seats[6])).toBe(players[6].id);
+        expect(secondGame.state.occupiedSeats[6]).toBe(players[6].id);
 
         secondGame.join(players[7]);
-        expect(secondGame.state.occupiedSeats.get(seats[7])).toBe(players[7].id);
+        expect(secondGame.state.occupiedSeats[7]).toBe(players[7].id);
 
         secondGame.join(players[0]);
-        expect(secondGame.state.occupiedSeats.get(seats[0])).toBe(players[0].id);
+        expect(secondGame.state.occupiedSeats[0]).toBe(players[0].id);
       });
       it('should update the game status to WAITING_TO_START if 8 players have joined', () => {
         const players: Array<Player> = [
@@ -305,7 +303,6 @@ describe('PokerGame', () => {
         expect(game.state.status).toBe('WAITING_TO_START');
       });
       it('should carry the balance of players between games if they rejoin', () => {
-        const seats: Array<SeatNumber> = [0, 1, 2, 3, 4, 5, 6, 7];
         const players: Array<Player> = [
           createPlayerForTesting(),
           createPlayerForTesting(),
@@ -328,8 +325,8 @@ describe('PokerGame', () => {
         game2.join(players[0]);
         game2.join(players[1]);
 
-        expect(game2.state.playerBalances.get(seats[0])).toBe(DEFAULT_BUY_IN - DEFAULT_SMALL_BLIND);
-        expect(game2.state.playerBalances.get(seats[1])).toBe(DEFAULT_BUY_IN - DEFAULT_BIG_BLIND);
+        expect(game2.state.playerBalances[0]).toBe(DEFAULT_BUY_IN - DEFAULT_SMALL_BLIND);
+        expect(game2.state.playerBalances[1]).toBe(DEFAULT_BUY_IN - DEFAULT_BIG_BLIND);
       });
     });
   });
@@ -380,14 +377,14 @@ describe('PokerGame', () => {
 
         game.startGame(players[0]);
 
-        expect(game.state.readyPlayers.get(seats[0])).toBe(true);
-        expect(game.state.readyPlayers.get(seats[1])).toBe(false);
-        expect(game.state.readyPlayers.get(seats[2])).toBe(false);
-        expect(game.state.readyPlayers.get(seats[3])).toBe(false);
-        expect(game.state.readyPlayers.get(seats[4])).toBe(false);
-        expect(game.state.readyPlayers.get(seats[5])).toBe(false);
-        expect(game.state.readyPlayers.get(seats[6])).toBe(false);
-        expect(game.state.readyPlayers.get(seats[7])).toBe(false);
+        expect(game.state.readyPlayers[0]).toBe(true);
+        expect(game.state.readyPlayers[1]).toBe(false);
+        expect(game.state.readyPlayers[2]).toBe(false);
+        expect(game.state.readyPlayers[3]).toBe(false);
+        expect(game.state.readyPlayers[4]).toBe(false);
+        expect(game.state.readyPlayers[5]).toBe(false);
+        expect(game.state.readyPlayers[6]).toBe(false);
+        expect(game.state.readyPlayers[7]).toBe(false);
 
         expect(game.state.status).toBe('WAITING_TO_START');
       });
@@ -401,14 +398,14 @@ describe('PokerGame', () => {
 
         game.startGame(players[1]);
 
-        expect(game.state.readyPlayers.get(seats[0])).toBe(false);
-        expect(game.state.readyPlayers.get(seats[1])).toBe(true);
-        expect(game.state.readyPlayers.get(seats[2])).toBe(false);
-        expect(game.state.readyPlayers.get(seats[3])).toBe(false);
-        expect(game.state.readyPlayers.get(seats[4])).toBe(false);
-        expect(game.state.readyPlayers.get(seats[5])).toBe(false);
-        expect(game.state.readyPlayers.get(seats[6])).toBe(false);
-        expect(game.state.readyPlayers.get(seats[7])).toBe(false);
+        expect(game.state.readyPlayers[0]).toBe(false);
+        expect(game.state.readyPlayers[1]).toBe(true);
+        expect(game.state.readyPlayers[2]).toBe(false);
+        expect(game.state.readyPlayers[3]).toBe(false);
+        expect(game.state.readyPlayers[4]).toBe(false);
+        expect(game.state.readyPlayers[5]).toBe(false);
+        expect(game.state.readyPlayers[6]).toBe(false);
+        expect(game.state.readyPlayers[7]).toBe(false);
 
         expect(game.state.status).toBe('WAITING_TO_START');
       });
@@ -422,14 +419,14 @@ describe('PokerGame', () => {
 
         game.startGame(players[2]);
 
-        expect(game.state.readyPlayers.get(seats[0])).toBe(false);
-        expect(game.state.readyPlayers.get(seats[1])).toBe(false);
-        expect(game.state.readyPlayers.get(seats[2])).toBe(true);
-        expect(game.state.readyPlayers.get(seats[3])).toBe(false);
-        expect(game.state.readyPlayers.get(seats[4])).toBe(false);
-        expect(game.state.readyPlayers.get(seats[5])).toBe(false);
-        expect(game.state.readyPlayers.get(seats[6])).toBe(false);
-        expect(game.state.readyPlayers.get(seats[7])).toBe(false);
+        expect(game.state.readyPlayers[0]).toBe(false);
+        expect(game.state.readyPlayers[1]).toBe(false);
+        expect(game.state.readyPlayers[2]).toBe(true);
+        expect(game.state.readyPlayers[3]).toBe(false);
+        expect(game.state.readyPlayers[4]).toBe(false);
+        expect(game.state.readyPlayers[5]).toBe(false);
+        expect(game.state.readyPlayers[6]).toBe(false);
+        expect(game.state.readyPlayers[7]).toBe(false);
 
         expect(game.state.status).toBe('WAITING_TO_START');
       });
@@ -443,14 +440,14 @@ describe('PokerGame', () => {
 
         game.startGame(players[3]);
 
-        expect(game.state.readyPlayers.get(seats[0])).toBe(false);
-        expect(game.state.readyPlayers.get(seats[1])).toBe(false);
-        expect(game.state.readyPlayers.get(seats[2])).toBe(false);
-        expect(game.state.readyPlayers.get(seats[3])).toBe(true);
-        expect(game.state.readyPlayers.get(seats[4])).toBe(false);
-        expect(game.state.readyPlayers.get(seats[5])).toBe(false);
-        expect(game.state.readyPlayers.get(seats[6])).toBe(false);
-        expect(game.state.readyPlayers.get(seats[7])).toBe(false);
+        expect(game.state.readyPlayers[0]).toBe(false);
+        expect(game.state.readyPlayers[1]).toBe(false);
+        expect(game.state.readyPlayers[2]).toBe(false);
+        expect(game.state.readyPlayers[3]).toBe(true);
+        expect(game.state.readyPlayers[4]).toBe(false);
+        expect(game.state.readyPlayers[5]).toBe(false);
+        expect(game.state.readyPlayers[6]).toBe(false);
+        expect(game.state.readyPlayers[7]).toBe(false);
 
         expect(game.state.status).toBe('WAITING_TO_START');
       });
@@ -464,14 +461,14 @@ describe('PokerGame', () => {
 
         game.startGame(players[4]);
 
-        expect(game.state.readyPlayers.get(seats[0])).toBe(false);
-        expect(game.state.readyPlayers.get(seats[1])).toBe(false);
-        expect(game.state.readyPlayers.get(seats[2])).toBe(false);
-        expect(game.state.readyPlayers.get(seats[3])).toBe(false);
-        expect(game.state.readyPlayers.get(seats[4])).toBe(true);
-        expect(game.state.readyPlayers.get(seats[5])).toBe(false);
-        expect(game.state.readyPlayers.get(seats[6])).toBe(false);
-        expect(game.state.readyPlayers.get(seats[7])).toBe(false);
+        expect(game.state.readyPlayers[0]).toBe(false);
+        expect(game.state.readyPlayers[1]).toBe(false);
+        expect(game.state.readyPlayers[2]).toBe(false);
+        expect(game.state.readyPlayers[3]).toBe(false);
+        expect(game.state.readyPlayers[4]).toBe(true);
+        expect(game.state.readyPlayers[5]).toBe(false);
+        expect(game.state.readyPlayers[6]).toBe(false);
+        expect(game.state.readyPlayers[7]).toBe(false);
 
         expect(game.state.status).toBe('WAITING_TO_START');
       });
@@ -485,14 +482,14 @@ describe('PokerGame', () => {
 
         game.startGame(players[5]);
 
-        expect(game.state.readyPlayers.get(seats[0])).toBe(false);
-        expect(game.state.readyPlayers.get(seats[1])).toBe(false);
-        expect(game.state.readyPlayers.get(seats[2])).toBe(false);
-        expect(game.state.readyPlayers.get(seats[3])).toBe(false);
-        expect(game.state.readyPlayers.get(seats[4])).toBe(false);
-        expect(game.state.readyPlayers.get(seats[5])).toBe(true);
-        expect(game.state.readyPlayers.get(seats[6])).toBe(false);
-        expect(game.state.readyPlayers.get(seats[7])).toBe(false);
+        expect(game.state.readyPlayers[0]).toBe(false);
+        expect(game.state.readyPlayers[1]).toBe(false);
+        expect(game.state.readyPlayers[2]).toBe(false);
+        expect(game.state.readyPlayers[3]).toBe(false);
+        expect(game.state.readyPlayers[4]).toBe(false);
+        expect(game.state.readyPlayers[5]).toBe(true);
+        expect(game.state.readyPlayers[6]).toBe(false);
+        expect(game.state.readyPlayers[7]).toBe(false);
 
         expect(game.state.status).toBe('WAITING_TO_START');
       });
@@ -506,14 +503,14 @@ describe('PokerGame', () => {
 
         game.startGame(players[6]);
 
-        expect(game.state.readyPlayers.get(seats[0])).toBe(false);
-        expect(game.state.readyPlayers.get(seats[1])).toBe(false);
-        expect(game.state.readyPlayers.get(seats[2])).toBe(false);
-        expect(game.state.readyPlayers.get(seats[3])).toBe(false);
-        expect(game.state.readyPlayers.get(seats[4])).toBe(false);
-        expect(game.state.readyPlayers.get(seats[5])).toBe(false);
-        expect(game.state.readyPlayers.get(seats[6])).toBe(true);
-        expect(game.state.readyPlayers.get(seats[7])).toBe(false);
+        expect(game.state.readyPlayers[0]).toBe(false);
+        expect(game.state.readyPlayers[1]).toBe(false);
+        expect(game.state.readyPlayers[2]).toBe(false);
+        expect(game.state.readyPlayers[3]).toBe(false);
+        expect(game.state.readyPlayers[4]).toBe(false);
+        expect(game.state.readyPlayers[5]).toBe(false);
+        expect(game.state.readyPlayers[6]).toBe(true);
+        expect(game.state.readyPlayers[7]).toBe(false);
 
         expect(game.state.status).toBe('WAITING_TO_START');
       });
@@ -527,14 +524,14 @@ describe('PokerGame', () => {
 
         game.startGame(players[7]);
 
-        expect(game.state.readyPlayers.get(seats[0])).toBe(false);
-        expect(game.state.readyPlayers.get(seats[1])).toBe(false);
-        expect(game.state.readyPlayers.get(seats[2])).toBe(false);
-        expect(game.state.readyPlayers.get(seats[3])).toBe(false);
-        expect(game.state.readyPlayers.get(seats[4])).toBe(false);
-        expect(game.state.readyPlayers.get(seats[5])).toBe(false);
-        expect(game.state.readyPlayers.get(seats[6])).toBe(false);
-        expect(game.state.readyPlayers.get(seats[7])).toBe(true);
+        expect(game.state.readyPlayers[0]).toBe(false);
+        expect(game.state.readyPlayers[1]).toBe(false);
+        expect(game.state.readyPlayers[2]).toBe(false);
+        expect(game.state.readyPlayers[3]).toBe(false);
+        expect(game.state.readyPlayers[4]).toBe(false);
+        expect(game.state.readyPlayers[5]).toBe(false);
+        expect(game.state.readyPlayers[6]).toBe(false);
+        expect(game.state.readyPlayers[7]).toBe(true);
 
         expect(game.state.status).toBe('WAITING_TO_START');
       });
@@ -648,7 +645,7 @@ describe('PokerGame', () => {
         game.startGame(players[0]);
         game.startGame(players[0]);
 
-        expect(game.state.readyPlayers.get(seats[0])).toBe(true);
+        expect(game.state.readyPlayers[0]).toBe(true);
         expect(game.state.status).toBe('WAITING_FOR_PLAYERS');
       });
       describe('should properly assign the blind based on players in the game', () => {
@@ -855,16 +852,14 @@ describe('PokerGame', () => {
           game.startGame(players[6]);
           game.startGame(players[7]);
 
-          expect(game.state.playerBalances.get(seats[0])).toBe(
-            DEFAULT_BUY_IN - DEFAULT_SMALL_BLIND,
-          );
-          expect(game.state.playerBalances.get(seats[1])).toBe(DEFAULT_BUY_IN - DEFAULT_BIG_BLIND);
-          expect(game.state.playerBalances.get(seats[2])).toBe(DEFAULT_BUY_IN);
-          expect(game.state.playerBalances.get(seats[3])).toBe(DEFAULT_BUY_IN);
-          expect(game.state.playerBalances.get(seats[4])).toBe(DEFAULT_BUY_IN);
-          expect(game.state.playerBalances.get(seats[5])).toBe(DEFAULT_BUY_IN);
-          expect(game.state.playerBalances.get(seats[6])).toBe(DEFAULT_BUY_IN);
-          expect(game.state.playerBalances.get(seats[7])).toBe(DEFAULT_BUY_IN);
+          expect(game.state.playerBalances[0]).toBe(DEFAULT_BUY_IN - DEFAULT_SMALL_BLIND);
+          expect(game.state.playerBalances[1]).toBe(DEFAULT_BUY_IN - DEFAULT_BIG_BLIND);
+          expect(game.state.playerBalances[2]).toBe(DEFAULT_BUY_IN);
+          expect(game.state.playerBalances[3]).toBe(DEFAULT_BUY_IN);
+          expect(game.state.playerBalances[4]).toBe(DEFAULT_BUY_IN);
+          expect(game.state.playerBalances[5]).toBe(DEFAULT_BUY_IN);
+          expect(game.state.playerBalances[6]).toBe(DEFAULT_BUY_IN);
+          expect(game.state.playerBalances[7]).toBe(DEFAULT_BUY_IN);
 
           const game2 = new PokerGame(new TestDeck(), game);
 
@@ -886,18 +881,16 @@ describe('PokerGame', () => {
           game2.startGame(players[6]);
           game2.startGame(players[7]);
 
-          expect(game2.state.playerBalances.get(seats[0])).toBe(
-            DEFAULT_BUY_IN - DEFAULT_SMALL_BLIND,
-          );
-          expect(game2.state.playerBalances.get(seats[1])).toBe(
+          expect(game2.state.playerBalances[0]).toBe(DEFAULT_BUY_IN - DEFAULT_SMALL_BLIND);
+          expect(game2.state.playerBalances[1]).toBe(
             DEFAULT_BUY_IN - DEFAULT_BIG_BLIND - DEFAULT_SMALL_BLIND,
           );
-          expect(game2.state.playerBalances.get(seats[2])).toBe(DEFAULT_BUY_IN - DEFAULT_BIG_BLIND);
-          expect(game2.state.playerBalances.get(seats[3])).toBe(DEFAULT_BUY_IN);
-          expect(game2.state.playerBalances.get(seats[4])).toBe(DEFAULT_BUY_IN);
-          expect(game2.state.playerBalances.get(seats[5])).toBe(DEFAULT_BUY_IN);
-          expect(game2.state.playerBalances.get(seats[6])).toBe(DEFAULT_BUY_IN);
-          expect(game2.state.playerBalances.get(seats[7])).toBe(DEFAULT_BUY_IN);
+          expect(game2.state.playerBalances[2]).toBe(DEFAULT_BUY_IN - DEFAULT_BIG_BLIND);
+          expect(game2.state.playerBalances[3]).toBe(DEFAULT_BUY_IN);
+          expect(game2.state.playerBalances[4]).toBe(DEFAULT_BUY_IN);
+          expect(game2.state.playerBalances[5]).toBe(DEFAULT_BUY_IN);
+          expect(game2.state.playerBalances[6]).toBe(DEFAULT_BUY_IN);
+          expect(game2.state.playerBalances[7]).toBe(DEFAULT_BUY_IN);
         });
       });
       describe('should deal 2 cards to each player in the game at the start of the game', () => {
@@ -1152,7 +1145,6 @@ describe('PokerGame', () => {
     });
   });
   describe('_leave', () => {
-    const seats: Array<SeatNumber> = [0, 1, 2, 3, 4, 5, 6, 7];
     const players: Array<Player> = [
       createPlayerForTesting(),
       createPlayerForTesting(),
@@ -1183,7 +1175,7 @@ describe('PokerGame', () => {
           game.leave(players[0]);
 
           expect(game.state.status).toBe('IN_PROGRESS');
-          expect(game.state.occupiedSeats.get(seats[0])).toBeUndefined();
+          expect(game.state.occupiedSeats[0]).toBeUndefined();
         });
         it('should concede the game to the last player still in the hand, if only one player is left in the hand', () => {
           game.join(players[0]);
@@ -1198,13 +1190,13 @@ describe('PokerGame', () => {
           game.leave(players[0]);
 
           expect(game.state.status).toBe('IN_PROGRESS');
-          expect(game.state.occupiedSeats.get(seats[0])).toBeUndefined();
+          expect(game.state.occupiedSeats[0]).toBeUndefined();
 
           game.leave(players[1]);
           expect(game.state.status).toBe('OVER');
-          expect(game.state.occupiedSeats.get(seats[1])).toBeUndefined();
+          expect(game.state.occupiedSeats[1]).toBeUndefined();
           expect(game.state.winner).toBe(players[2].id);
-          expect(game.state.playerBalances.get(seats[2])).toBe(
+          expect(game.state.playerBalances[2]).toBe(
             DEFAULT_BUY_IN + DEFAULT_BIG_BLIND + DEFAULT_SMALL_BLIND,
           );
         });
@@ -1223,19 +1215,17 @@ describe('PokerGame', () => {
           game.leave(players[0]);
 
           expect(game.state.status).toBe('IN_PROGRESS');
-          expect(game.state.occupiedSeats.get(seats[0])).toBeUndefined();
+          expect(game.state.occupiedSeats[0]).toBeUndefined();
 
           game.leave(players[2]);
           expect(game.state.status).toBe('IN_PROGRESS');
-          expect(game.state.occupiedSeats.get(seats[2])).toBeUndefined();
+          expect(game.state.occupiedSeats[2]).toBeUndefined();
 
           game.leave(players[4]);
           expect(game.state.status).toBe('OVER');
           expect(game.state.winner).toBe(players[1].id);
 
-          expect(game.state.playerBalances.get(seats[1])).toBe(
-            DEFAULT_BUY_IN + DEFAULT_SMALL_BLIND,
-          );
+          expect(game.state.playerBalances[1]).toBe(DEFAULT_BUY_IN + DEFAULT_SMALL_BLIND);
         });
       });
       it('should not update the state if the game is already over', () => {
@@ -1254,7 +1244,7 @@ describe('PokerGame', () => {
         expect(game.state.status).toBe('OVER');
         game.leave(players[2]);
         expect(game.state.status).toBe('OVER');
-        expect(game.state.occupiedSeats.get(seats[2])).toBe(players[2].id);
+        expect(game.state.occupiedSeats[2]).toBe(players[2].id);
         expect(game.state.winner).toBe(players[2].id);
       });
       it('should change the status if a player leaves while the game is WAITING_TO_START', () => {
@@ -1295,61 +1285,61 @@ describe('PokerGame', () => {
         game.join(players[7]);
 
         game.startGame(players[0]);
-        expect(game.state.occupiedSeats.get(seats[0])).toBe(players[0].id);
-        expect(game.state.readyPlayers.get(seats[0])).toBe(true);
+        expect(game.state.occupiedSeats[0]).toBe(players[0].id);
+        expect(game.state.readyPlayers[0]).toBe(true);
         game.leave(players[0]);
-        expect(game.state.occupiedSeats.get(seats[0])).toBeUndefined();
-        expect(game.state.readyPlayers.get(seats[0])).toBeUndefined();
+        expect(game.state.occupiedSeats[0]).toBeUndefined();
+        expect(game.state.readyPlayers[0]).toBeUndefined();
 
         game.startGame(players[1]);
-        expect(game.state.occupiedSeats.get(seats[1])).toBe(players[1].id);
-        expect(game.state.readyPlayers.get(seats[1])).toBe(true);
+        expect(game.state.occupiedSeats[1]).toBe(players[1].id);
+        expect(game.state.readyPlayers[1]).toBe(true);
         game.leave(players[1]);
-        expect(game.state.occupiedSeats.get(seats[1])).toBeUndefined();
-        expect(game.state.readyPlayers.get(seats[1])).toBeUndefined();
+        expect(game.state.occupiedSeats[1]).toBeUndefined();
+        expect(game.state.readyPlayers[1]).toBeUndefined();
 
         game.startGame(players[2]);
-        expect(game.state.occupiedSeats.get(seats[2])).toBe(players[2].id);
-        expect(game.state.readyPlayers.get(seats[2])).toBe(true);
+        expect(game.state.occupiedSeats[2]).toBe(players[2].id);
+        expect(game.state.readyPlayers[2]).toBe(true);
         game.leave(players[2]);
-        expect(game.state.occupiedSeats.get(seats[2])).toBeUndefined();
-        expect(game.state.readyPlayers.get(seats[2])).toBeUndefined();
+        expect(game.state.occupiedSeats[2]).toBeUndefined();
+        expect(game.state.readyPlayers[2]).toBeUndefined();
 
         game.startGame(players[3]);
-        expect(game.state.occupiedSeats.get(seats[3])).toBe(players[3].id);
-        expect(game.state.readyPlayers.get(seats[3])).toBe(true);
+        expect(game.state.occupiedSeats[3]).toBe(players[3].id);
+        expect(game.state.readyPlayers[3]).toBe(true);
         game.leave(players[3]);
-        expect(game.state.occupiedSeats.get(seats[3])).toBeUndefined();
-        expect(game.state.readyPlayers.get(seats[3])).toBeUndefined();
+        expect(game.state.occupiedSeats[3]).toBeUndefined();
+        expect(game.state.readyPlayers[3]).toBeUndefined();
 
         game.startGame(players[4]);
-        expect(game.state.occupiedSeats.get(seats[4])).toBe(players[4].id);
-        expect(game.state.readyPlayers.get(seats[4])).toBe(true);
+        expect(game.state.occupiedSeats[4]).toBe(players[4].id);
+        expect(game.state.readyPlayers[4]).toBe(true);
         game.leave(players[4]);
-        expect(game.state.occupiedSeats.get(seats[4])).toBeUndefined();
-        expect(game.state.readyPlayers.get(seats[4])).toBeUndefined();
+        expect(game.state.occupiedSeats[4]).toBeUndefined();
+        expect(game.state.readyPlayers[4]).toBeUndefined();
 
         game.startGame(players[5]);
-        expect(game.state.occupiedSeats.get(seats[5])).toBe(players[5].id);
-        expect(game.state.readyPlayers.get(seats[5])).toBe(true);
+        expect(game.state.occupiedSeats[5]).toBe(players[5].id);
+        expect(game.state.readyPlayers[5]).toBe(true);
         game.leave(players[5]);
-        expect(game.state.occupiedSeats.get(seats[5])).toBeUndefined();
-        expect(game.state.readyPlayers.get(seats[5])).toBeUndefined();
+        expect(game.state.occupiedSeats[5]).toBeUndefined();
+        expect(game.state.readyPlayers[5]).toBeUndefined();
 
         game.startGame(players[6]);
-        expect(game.state.occupiedSeats.get(seats[6])).toBe(players[6].id);
-        expect(game.state.readyPlayers.get(seats[6])).toBe(true);
+        expect(game.state.occupiedSeats[6]).toBe(players[6].id);
+        expect(game.state.readyPlayers[6]).toBe(true);
         game.leave(players[6]);
-        expect(game.state.occupiedSeats.get(seats[6])).toBeUndefined();
-        expect(game.state.readyPlayers.get(seats[6])).toBeUndefined();
+        expect(game.state.occupiedSeats[6]).toBeUndefined();
+        expect(game.state.readyPlayers[6]).toBeUndefined();
 
         game.join(players[0]);
         game.startGame(players[7]);
-        expect(game.state.occupiedSeats.get(seats[7])).toBe(players[7].id);
-        expect(game.state.readyPlayers.get(seats[7])).toBe(true);
+        expect(game.state.occupiedSeats[7]).toBe(players[7].id);
+        expect(game.state.readyPlayers[7]).toBe(true);
         game.leave(players[7]);
-        expect(game.state.occupiedSeats.get(seats[7])).toBeUndefined();
-        expect(game.state.readyPlayers.get(seats[7])).toBeUndefined();
+        expect(game.state.occupiedSeats[7]).toBeUndefined();
+        expect(game.state.readyPlayers[7]).toBeUndefined();
       });
       it('should make a player lose their preferred position, if it was taken by another player', () => {
         game.join(players[0]);
@@ -1364,13 +1354,12 @@ describe('PokerGame', () => {
 
         game2.join(players[0]);
 
-        expect(game2.state.occupiedSeats.get(seats[0])).toBe(players[2].id);
-        expect(game2.state.occupiedSeats.get(seats[1])).toBe(players[0].id);
+        expect(game2.state.occupiedSeats[0]).toBe(players[2].id);
+        expect(game2.state.occupiedSeats[1]).toBe(players[0].id);
       });
     });
   });
   describe('applyMove', () => {
-    const seats: Array<SeatNumber> = [0, 1, 2, 3, 4, 5, 6, 7];
     const players: Array<Player> = [
       createPlayerForTesting(),
       createPlayerForTesting(),
@@ -1487,7 +1476,7 @@ describe('PokerGame', () => {
         game.startGame(players[1]);
         game.startGame(players[2]);
 
-        expect(game.state.playerBalances.get(seats[2])).toBe(DEFAULT_BUY_IN);
+        expect(game.state.playerBalances[2]).toBe(DEFAULT_BUY_IN);
 
         game.applyMove({
           gameID: game.id,
@@ -1495,7 +1484,7 @@ describe('PokerGame', () => {
           move: { moveType: 'CALL' },
         });
 
-        expect(game.state.playerBalances.get(seats[2])).toBe(DEFAULT_BUY_IN - DEFAULT_BIG_BLIND);
+        expect(game.state.playerBalances[2]).toBe(DEFAULT_BUY_IN - DEFAULT_BIG_BLIND);
       });
       it('should correctly adjust the players balance if a raise is made, first adding the amount to call and then raising by the desired amount', () => {
         game.join(players[2]);
@@ -1504,7 +1493,7 @@ describe('PokerGame', () => {
         game.startGame(players[1]);
         game.startGame(players[2]);
 
-        expect(game.state.playerBalances.get(seats[2])).toBe(DEFAULT_BUY_IN);
+        expect(game.state.playerBalances[2]).toBe(DEFAULT_BUY_IN);
 
         game.applyMove({
           gameID: game.id,
@@ -1512,9 +1501,7 @@ describe('PokerGame', () => {
           move: { moveType: 'RAISE', raiseAmount: 100 },
         });
 
-        expect(game.state.playerBalances.get(seats[2])).toBe(
-          DEFAULT_BUY_IN - DEFAULT_BIG_BLIND - 100,
-        );
+        expect(game.state.playerBalances[2]).toBe(DEFAULT_BUY_IN - DEFAULT_BIG_BLIND - 100);
       });
       it('should modify the balance the correct amount to call based on the current pot vs a players current stake', () => {
         game.join(players[2]);
@@ -1523,7 +1510,7 @@ describe('PokerGame', () => {
         game.startGame(players[1]);
         game.startGame(players[2]);
 
-        expect(game.state.playerBalances.get(seats[2])).toBe(DEFAULT_BUY_IN);
+        expect(game.state.playerBalances[2]).toBe(DEFAULT_BUY_IN);
 
         game.applyMove({
           gameID: game.id,
@@ -1531,11 +1518,9 @@ describe('PokerGame', () => {
           move: { moveType: 'RAISE', raiseAmount: 100 },
         });
 
-        expect(game.state.playerBalances.get(seats[2])).toBe(
-          DEFAULT_BUY_IN - DEFAULT_BIG_BLIND - 100,
-        );
+        expect(game.state.playerBalances[2]).toBe(DEFAULT_BUY_IN - DEFAULT_BIG_BLIND - 100);
 
-        expect(game.state.playerBalances.get(seats[0])).toBe(DEFAULT_BUY_IN - DEFAULT_SMALL_BLIND);
+        expect(game.state.playerBalances[0]).toBe(DEFAULT_BUY_IN - DEFAULT_SMALL_BLIND);
 
         game.applyMove({
           gameID: game.id,
@@ -1543,9 +1528,7 @@ describe('PokerGame', () => {
           move: { moveType: 'CALL' },
         });
 
-        expect(game.state.playerBalances.get(seats[2])).toBe(
-          DEFAULT_BUY_IN - DEFAULT_BIG_BLIND - 100,
-        );
+        expect(game.state.playerBalances[2]).toBe(DEFAULT_BUY_IN - DEFAULT_BIG_BLIND - 100);
       });
       it('should allow a player to fold without modifying their balance', () => {
         game.join(players[2]);
@@ -1554,7 +1537,7 @@ describe('PokerGame', () => {
         game.startGame(players[1]);
         game.startGame(players[2]);
 
-        expect(game.state.playerBalances.get(seats[2])).toBe(DEFAULT_BUY_IN);
+        expect(game.state.playerBalances[2]).toBe(DEFAULT_BUY_IN);
 
         game.applyMove({
           gameID: game.id,
@@ -1562,11 +1545,9 @@ describe('PokerGame', () => {
           move: { moveType: 'RAISE', raiseAmount: 100 },
         });
 
-        expect(game.state.playerBalances.get(seats[2])).toBe(
-          DEFAULT_BUY_IN - DEFAULT_BIG_BLIND - 100,
-        );
+        expect(game.state.playerBalances[2]).toBe(DEFAULT_BUY_IN - DEFAULT_BIG_BLIND - 100);
 
-        expect(game.state.playerBalances.get(seats[0])).toBe(DEFAULT_BUY_IN - DEFAULT_SMALL_BLIND);
+        expect(game.state.playerBalances[0]).toBe(DEFAULT_BUY_IN - DEFAULT_SMALL_BLIND);
 
         game.applyMove({
           gameID: game.id,
@@ -1574,7 +1555,7 @@ describe('PokerGame', () => {
           move: { moveType: 'FOLD' },
         });
 
-        expect(game.state.playerBalances.get(seats[0])).toBe(DEFAULT_BUY_IN - DEFAULT_SMALL_BLIND);
+        expect(game.state.playerBalances[0]).toBe(DEFAULT_BUY_IN - DEFAULT_SMALL_BLIND);
       });
       it('should allow a player to check without modyfing their balance', () => {
         game.join(players[2]);
@@ -1595,7 +1576,7 @@ describe('PokerGame', () => {
           move: { moveType: 'CALL' },
         });
 
-        expect(game.state.playerBalances.get(seats[1])).toBe(DEFAULT_BUY_IN - DEFAULT_BIG_BLIND);
+        expect(game.state.playerBalances[1]).toBe(DEFAULT_BUY_IN - DEFAULT_BIG_BLIND);
 
         game.applyMove({
           gameID: game.id,
@@ -1603,7 +1584,7 @@ describe('PokerGame', () => {
           move: { moveType: 'CHECK' },
         });
 
-        expect(game.state.playerBalances.get(seats[1])).toBe(DEFAULT_BUY_IN - DEFAULT_BIG_BLIND);
+        expect(game.state.playerBalances[1]).toBe(DEFAULT_BUY_IN - DEFAULT_BIG_BLIND);
       });
       it('when the entire table goes around and either checks or calls, cards should be dealt to the pool - three, then one, then one', () => {
         game.join(players[2]);
@@ -2027,7 +2008,7 @@ describe('PokerGame', () => {
           move: { moveType: 'FOLD' },
         });
 
-        expect(game.state.playerBalances.get(seats[1])).toBe(
+        expect(game.state.playerBalances[1]).toBe(
           DEFAULT_BUY_IN + DEFAULT_BIG_BLIND + DEFAULT_SMALL_BLIND + 500,
         );
 
@@ -2041,10 +2022,8 @@ describe('PokerGame', () => {
         game2.startGame(players[1]);
         game2.startGame(players[2]);
 
-        expect(game2.state.playerBalances.get(seats[1])).toBe(
-          DEFAULT_BUY_IN + DEFAULT_BIG_BLIND + 500,
-        );
-        expect(game2.state.playerBalances.get(seats[2])).toBe(
+        expect(game2.state.playerBalances[1]).toBe(DEFAULT_BUY_IN + DEFAULT_BIG_BLIND + 500);
+        expect(game2.state.playerBalances[2]).toBe(
           DEFAULT_BUY_IN - 500 - DEFAULT_BIG_BLIND - DEFAULT_BIG_BLIND,
         );
 
@@ -2066,7 +2045,7 @@ describe('PokerGame', () => {
           move: { moveType: 'CALL' },
         });
 
-        expect(game2.state.playerBalances.get(seats[2])).toBe(0);
+        expect(game2.state.playerBalances[2]).toBe(0);
 
         game2.applyMove({
           gameID: game2.id,
@@ -2086,7 +2065,7 @@ describe('PokerGame', () => {
           move: { moveType: 'CALL' },
         });
 
-        expect(game2.state.playerBalances.get(seats[2])).toBe(0);
+        expect(game2.state.playerBalances[2]).toBe(0);
       });
     });
     describe('if a valid move is made which ends the game', () => {
@@ -2128,9 +2107,7 @@ describe('PokerGame', () => {
 
           expect(game.state.status).toBe('OVER');
           expect(game.state.winner).toBe(players[1].id);
-          expect(game.state.playerBalances.get(seats[1])).toBe(
-            DEFAULT_BUY_IN + DEFAULT_SMALL_BLIND,
-          );
+          expect(game.state.playerBalances[1]).toBe(DEFAULT_BUY_IN + DEFAULT_SMALL_BLIND);
         });
         it('should assign a winner properly after actions have been taken', () => {
           game.join(players[2]);
@@ -2171,7 +2148,7 @@ describe('PokerGame', () => {
 
           expect(game.state.status).toBe('OVER');
           expect(game.state.winner).toBe(players[2].id);
-          expect(game.state.playerBalances.get(seats[2])).toBe(
+          expect(game.state.playerBalances[2]).toBe(
             DEFAULT_BUY_IN + DEFAULT_SMALL_BLIND + DEFAULT_BIG_BLIND,
           );
         });
@@ -2239,7 +2216,7 @@ describe('PokerGame', () => {
 
           expect(game.state.status).toBe('OVER');
           expect(game.state.winner).toBe(players[2].id);
-          expect(game.state.playerBalances.get(seats[2])).toBe(
+          expect(game.state.playerBalances[2]).toBe(
             DEFAULT_BUY_IN + DEFAULT_BIG_BLIND + DEFAULT_SMALL_BLIND,
           );
         });
@@ -2299,7 +2276,7 @@ describe('PokerGame', () => {
 
           expect(game.state.status).toBe('OVER');
           expect(game.state.winner).toBe(players[1].id);
-          expect(game.state.playerBalances.get(seats[1])).toBe(DEFAULT_BUY_IN + DEFAULT_BIG_BLIND);
+          expect(game.state.playerBalances[1]).toBe(DEFAULT_BUY_IN + DEFAULT_BIG_BLIND);
         }
         describe('hands should beat the hands below them', () => {
           it('one pair should beat high card', () => {
@@ -2800,7 +2777,7 @@ describe('PokerGame', () => {
           game.startGame(players[1]);
           game.startGame(players[2]);
 
-          game.state.playerBalances.set(seats[2], DEFAULT_SMALL_BLIND);
+          game.state.playerBalances[2] = DEFAULT_SMALL_BLIND;
 
           game.applyMove({
             gameID: game.id,
@@ -2893,9 +2870,9 @@ describe('PokerGame', () => {
           });
 
           expect(game.state.status).toBe('OVER');
-          expect(game.state.playerBalances.get(seats[0])).toBe(DEFAULT_BUY_IN - DEFAULT_BIG_BLIND);
-          expect(game.state.playerBalances.get(seats[1])).toBe(DEFAULT_BUY_IN - DEFAULT_BIG_BLIND);
-          expect(game.state.playerBalances.get(seats[2])).toBe(DEFAULT_BIG_BLIND * 2);
+          expect(game.state.playerBalances[0]).toBe(DEFAULT_BUY_IN - DEFAULT_BIG_BLIND);
+          expect(game.state.playerBalances[1]).toBe(DEFAULT_BUY_IN - DEFAULT_BIG_BLIND);
+          expect(game.state.playerBalances[2]).toBe(DEFAULT_BIG_BLIND * 2);
         });
         it('should allow players to all-in by raising their remaining balance', () => {
           deck.addNextDraw({ face: 5, suite: 'HEARTS' });
@@ -2917,7 +2894,7 @@ describe('PokerGame', () => {
           game.startGame(players[1]);
           game.startGame(players[2]);
 
-          game.state.playerBalances.set(seats[2], DEFAULT_BIG_BLIND * 3);
+          game.state.playerBalances[2] = DEFAULT_BIG_BLIND * 3;
 
           game.applyMove({
             gameID: game.id,
@@ -3010,13 +2987,13 @@ describe('PokerGame', () => {
           });
 
           expect(game.state.status).toBe('OVER');
-          expect(game.state.playerBalances.get(seats[0])).toBe(
+          expect(game.state.playerBalances[0]).toBe(
             DEFAULT_BUY_IN - DEFAULT_BIG_BLIND - DEFAULT_SMALL_BLIND,
           );
-          expect(game.state.playerBalances.get(seats[1])).toBe(
+          expect(game.state.playerBalances[1]).toBe(
             DEFAULT_BUY_IN - DEFAULT_BIG_BLIND - DEFAULT_SMALL_BLIND,
           );
-          expect(game.state.playerBalances.get(seats[2])).toBe(DEFAULT_BIG_BLIND * 6);
+          expect(game.state.playerBalances[2]).toBe(DEFAULT_BIG_BLIND * 6);
         });
         describe('in the case of ties', () => {
           it('high card of the higher rank should win', () => {
@@ -3210,8 +3187,8 @@ describe('PokerGame', () => {
 
             expect(game.state.status).toBe('OVER');
             expect(game.state.winner).toBeUndefined();
-            expect(game.state.playerBalances.get(seats[0])).toBe(DEFAULT_BUY_IN);
-            expect(game.state.playerBalances.get(seats[1])).toBe(DEFAULT_BUY_IN);
+            expect(game.state.playerBalances[0]).toBe(DEFAULT_BUY_IN);
+            expect(game.state.playerBalances[1]).toBe(DEFAULT_BUY_IN);
           });
         });
       });
