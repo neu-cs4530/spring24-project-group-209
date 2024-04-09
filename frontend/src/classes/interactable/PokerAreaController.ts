@@ -140,7 +140,7 @@ export default class PokerAreaController extends GameAreaController<PokerGameSta
   private _nextActivePlayer(seat: SeatNumber): PlayerController {
     let nextTurn: PlayerController | undefined = undefined;
     while (!nextTurn) {
-      seat = (seat + 1) % 8;
+      seat = ((seat + 1) % 8) as SeatNumber;
       if (this.occupiedSeats[seat]) {
         nextTurn = this.occupiedSeats[seat];
       }
