@@ -1,14 +1,14 @@
 import assert from 'assert';
-import { generateKey } from 'crypto';
 import EventEmitter from 'events';
 import _ from 'lodash';
 import { nanoid } from 'nanoid';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import TypedEmitter from 'typed-emitter';
 import Interactable from '../components/Town/Interactable';
 import ConversationArea from '../components/Town/interactables/ConversationArea';
 import GameArea from '../components/Town/interactables/GameArea';
+import ShopArea from '../components/Town/interactables/ShopArea';
 import ViewingArea from '../components/Town/interactables/ViewingArea';
 import { LoginController } from '../contexts/LoginControllerContext';
 import { TownsService, TownsServiceClient } from '../generated/client';
@@ -32,6 +32,9 @@ import {
   isConversationArea,
   isTicTacToeArea,
   isViewingArea,
+  isShopArea,
+  isPokerArea,
+  isBlackJackArea,
 } from '../types/TypeUtils';
 import ConnectFourAreaController from './interactable/ConnectFourAreaController';
 import ConversationAreaController from './interactable/ConversationAreaController';
@@ -43,6 +46,9 @@ import InteractableAreaController, {
 import TicTacToeAreaController from './interactable/TicTacToeAreaController';
 import ViewingAreaController from './interactable/ViewingAreaController';
 import PlayerController from './PlayerController';
+import ShopAreaController from './interactable/ShopAreaController';
+import PokerAreaController from './interactable/PokerAreaController';
+import BlackjackAreaController from './interactable/BlackjackAreaController';
 
 const CALCULATE_NEARBY_PLAYERS_DELAY_MS = 300;
 const SOCKET_COMMAND_TIMEOUT_MS = 5000;
@@ -330,6 +336,13 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
       eachInteractable => eachInteractable instanceof ViewingAreaController,
     );
     return ret as ViewingAreaController[];
+  }
+
+  public get shopAreas() {
+    const ret = this._interactableControllers.filter(
+      eachInteractable => eachInteractable instanceof ShopAreaController,
+    );
+    return ret as ShopAreaController[];
   }
 
   public get gameAreas() {
@@ -623,6 +636,8 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
             );
           } else if (isViewingArea(eachInteractable)) {
             this._interactableControllers.push(new ViewingAreaController(eachInteractable));
+          } else if (isShopArea(eachInteractable)) {
+            this._interactableControllers.push(new ShopAreaController(eachInteractable));
           } else if (isTicTacToeArea(eachInteractable)) {
             this._interactableControllers.push(
               new TicTacToeAreaController(eachInteractable.id, eachInteractable, this),
@@ -630,6 +645,14 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
           } else if (isConnectFourArea(eachInteractable)) {
             this._interactableControllers.push(
               new ConnectFourAreaController(eachInteractable.id, eachInteractable, this),
+            );
+          } else if (isPokerArea(eachInteractable)) {
+            this._interactableControllers.push(
+              new PokerAreaController(eachInteractable.id, eachInteractable, this),
+            );
+          } else if (isBlackJackArea(eachInteractable)) {
+            this._interactableControllers.push(
+              new BlackjackAreaController(eachInteractable.id, eachInteractable, this),
             );
           }
         });
@@ -658,6 +681,23 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
       return existingController;
     } else {
       throw new Error(`No such viewing area controller ${existingController}`);
+    }
+  }
+
+  /**
+   * Retrieve the shop area controller that corresponds to a shopAreaModel, creating one if necessary
+   *
+   * @param shopArea
+   * @returns
+   */
+  public getShopAreaController(shopArea: ShopArea): ShopAreaController {
+    const existingController = this._interactableControllers.find(
+      eachExistingArea => eachExistingArea.id === shopArea.name,
+    );
+    if (existingController instanceof ShopAreaController) {
+      return existingController;
+    } else {
+      throw new Error(`No such shop area controller ${existingController}`);
     }
   }
 
@@ -701,6 +741,15 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
    */
   public emitViewingAreaUpdate(viewingArea: ViewingAreaController) {
     this._socket.emit('interactableUpdate', viewingArea.toInteractableAreaModel());
+  }
+
+  /**
+   * Emit a viewing area update to the townService
+   * @param shopArea The Shop Area Controller that is updated and should be emitted
+   *    with the event
+   */
+  public emitShopAreaUpdate(shopArea: ShopAreaController) {
+    this._socket.emit('interactableUpdate', shopArea.toInteractableAreaModel());
   }
 
   /**

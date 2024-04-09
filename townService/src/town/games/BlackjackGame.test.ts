@@ -103,6 +103,7 @@ describe('BlackjackGame', () => {
       const player3 = createPlayerForTesting();
       expect(() => game.join(player3)).toThrowError(GAME_FULL_MESSAGE);
     });
+
     it('should let a single player start', () => {
       const player = createPlayerForTesting();
       game.join(player);
@@ -153,6 +154,7 @@ describe('BlackjackGame', () => {
 
         game.join(players[2]);
         for (let i = 0; i < 3; i++) {
+
           expect(game.state.occupiedSeats[i]).toBe(players[i].id);
           expect(game.state.readyPlayers[i]).toBe(false);
           expect(game.state.playerBalances[i]).toBe(1000);
@@ -167,6 +169,7 @@ describe('BlackjackGame', () => {
 
         game.join(players[3]);
         for (let i = 0; i < 4; i++) {
+
           expect(game.state.occupiedSeats[i]).toBe(players[i].id);
           expect(game.state.readyPlayers[i]).toBe(false);
           expect(game.state.playerBalances[i]).toBe(1000);
@@ -175,12 +178,14 @@ describe('BlackjackGame', () => {
           expect(game.state.occupiedSeats[i]).toBeUndefined();
           expect(game.state.readyPlayers[i]).toBeUndefined();
           expect(game.state.playerBalances[i]).toBeUndefined();
+
         }
 
         expect(game.state.status).toBe('WAITING_FOR_PLAYERS');
 
         game.join(players[4]);
         for (let i = 0; i < 5; i++) {
+
           expect(game.state.occupiedSeats[i]).toBe(players[i].id);
           expect(game.state.readyPlayers[i]).toBe(false);
           expect(game.state.playerBalances[i]).toBe(1000);
@@ -189,12 +194,14 @@ describe('BlackjackGame', () => {
           expect(game.state.occupiedSeats[i]).toBeUndefined();
           expect(game.state.readyPlayers[i]).toBeUndefined();
           expect(game.state.playerBalances[i]).toBeUndefined();
+
         }
 
         expect(game.state.status).toBe('WAITING_FOR_PLAYERS');
 
         game.join(players[5]);
         for (let i = 0; i < 6; i++) {
+
           expect(game.state.occupiedSeats[i]).toBe(players[i].id);
           expect(game.state.readyPlayers[i]).toBe(false);
           expect(game.state.playerBalances[i]).toBe(1000);
@@ -203,12 +210,14 @@ describe('BlackjackGame', () => {
           expect(game.state.occupiedSeats[i]).toBeUndefined();
           expect(game.state.readyPlayers[i]).toBeUndefined();
           expect(game.state.playerBalances[i]).toBeUndefined();
+
         }
 
         expect(game.state.status).toBe('WAITING_FOR_PLAYERS');
 
         game.join(players[6]);
         for (let i = 0; i < 7; i++) {
+
           expect(game.state.occupiedSeats[i]).toBe(players[i].id);
           expect(game.state.readyPlayers[i]).toBe(false);
           expect(game.state.playerBalances[i]).toBe(1000);
@@ -217,15 +226,18 @@ describe('BlackjackGame', () => {
           expect(game.state.occupiedSeats[i]).toBeUndefined();
           expect(game.state.readyPlayers[i]).toBeUndefined();
           expect(game.state.playerBalances[i]).toBeUndefined();
+
         }
 
         expect(game.state.status).toBe('WAITING_FOR_PLAYERS');
 
         game.join(players[7]);
         for (let i = 0; i < 8; i++) {
+
           expect(game.state.occupiedSeats[i]).toBe(players[i].id);
           expect(game.state.readyPlayers[i]).toBe(false);
           expect(game.state.playerBalances[i]).toBe(1000);
+
         }
         expect(game.state.status).toBe('WAITING_TO_START');
       });
@@ -276,8 +288,10 @@ describe('BlackjackGame', () => {
         game2.join(players[0]);
         game2.join(players[1]);
 
+
         expect(game2.state.playerBalances[0]).toBe(1000);
         expect(game2.state.playerBalances[1]).toBe(1000);
+
       });
     });
   });
@@ -323,6 +337,7 @@ describe('BlackjackGame', () => {
 
         game.startGame(players[0]);
 
+
         expect(game.state.readyPlayers[0]).toBe(true);
         expect(game.state.readyPlayers[1]).toBe(false);
         expect(game.state.readyPlayers[2]).toBe(false);
@@ -331,6 +346,7 @@ describe('BlackjackGame', () => {
         expect(game.state.readyPlayers[5]).toBe(false);
         expect(game.state.readyPlayers[6]).toBe(false);
         expect(game.state.readyPlayers[7]).toBe(false);
+
 
         expect(game.state.status).toBe('WAITING_TO_START');
       });
@@ -344,6 +360,7 @@ describe('BlackjackGame', () => {
 
         game.startGame(players[1]);
 
+
         expect(game.state.readyPlayers[0]).toBe(false);
         expect(game.state.readyPlayers[1]).toBe(true);
         expect(game.state.readyPlayers[2]).toBe(false);
@@ -352,6 +369,7 @@ describe('BlackjackGame', () => {
         expect(game.state.readyPlayers[5]).toBe(false);
         expect(game.state.readyPlayers[6]).toBe(false);
         expect(game.state.readyPlayers[7]).toBe(false);
+
 
         expect(game.state.status).toBe('WAITING_TO_START');
       });
@@ -365,6 +383,7 @@ describe('BlackjackGame', () => {
 
         game.startGame(players[2]);
 
+
         expect(game.state.readyPlayers[0]).toBe(false);
         expect(game.state.readyPlayers[1]).toBe(false);
         expect(game.state.readyPlayers[2]).toBe(true);
@@ -373,6 +392,7 @@ describe('BlackjackGame', () => {
         expect(game.state.readyPlayers[5]).toBe(false);
         expect(game.state.readyPlayers[6]).toBe(false);
         expect(game.state.readyPlayers[7]).toBe(false);
+
 
         expect(game.state.status).toBe('WAITING_TO_START');
       });
@@ -386,6 +406,7 @@ describe('BlackjackGame', () => {
 
         game.startGame(players[3]);
 
+
         expect(game.state.readyPlayers[0]).toBe(false);
         expect(game.state.readyPlayers[1]).toBe(false);
         expect(game.state.readyPlayers[2]).toBe(false);
@@ -394,6 +415,7 @@ describe('BlackjackGame', () => {
         expect(game.state.readyPlayers[5]).toBe(false);
         expect(game.state.readyPlayers[6]).toBe(false);
         expect(game.state.readyPlayers[7]).toBe(false);
+
 
         expect(game.state.status).toBe('WAITING_TO_START');
       });
@@ -407,6 +429,7 @@ describe('BlackjackGame', () => {
 
         game.startGame(players[4]);
 
+
         expect(game.state.readyPlayers[0]).toBe(false);
         expect(game.state.readyPlayers[1]).toBe(false);
         expect(game.state.readyPlayers[2]).toBe(false);
@@ -415,6 +438,7 @@ describe('BlackjackGame', () => {
         expect(game.state.readyPlayers[5]).toBe(false);
         expect(game.state.readyPlayers[6]).toBe(false);
         expect(game.state.readyPlayers[7]).toBe(false);
+
 
         expect(game.state.status).toBe('WAITING_TO_START');
       });
@@ -437,6 +461,7 @@ describe('BlackjackGame', () => {
         expect(game.state.readyPlayers[6]).toBe(false);
         expect(game.state.readyPlayers[7]).toBe(false);
 
+
         expect(game.state.status).toBe('WAITING_TO_START');
       });
       it('should set the seventh player to ready correctly', () => {
@@ -449,6 +474,7 @@ describe('BlackjackGame', () => {
 
         game.startGame(players[6]);
 
+
         expect(game.state.readyPlayers[0]).toBe(false);
         expect(game.state.readyPlayers[1]).toBe(false);
         expect(game.state.readyPlayers[2]).toBe(false);
@@ -457,6 +483,7 @@ describe('BlackjackGame', () => {
         expect(game.state.readyPlayers[5]).toBe(false);
         expect(game.state.readyPlayers[6]).toBe(true);
         expect(game.state.readyPlayers[7]).toBe(false);
+
 
         expect(game.state.status).toBe('WAITING_TO_START');
       });
@@ -470,6 +497,7 @@ describe('BlackjackGame', () => {
 
         game.startGame(players[7]);
 
+
         expect(game.state.readyPlayers[0]).toBe(false);
         expect(game.state.readyPlayers[1]).toBe(false);
         expect(game.state.readyPlayers[2]).toBe(false);
@@ -478,6 +506,7 @@ describe('BlackjackGame', () => {
         expect(game.state.readyPlayers[5]).toBe(false);
         expect(game.state.readyPlayers[6]).toBe(false);
         expect(game.state.readyPlayers[7]).toBe(true);
+
 
         expect(game.state.status).toBe('WAITING_TO_START');
       });
@@ -591,7 +620,9 @@ describe('BlackjackGame', () => {
         game.startGame(players[0]);
         game.startGame(players[0]);
 
+
         expect(game.state.readyPlayers[0]).toBe(true);
+
         expect(game.state.status).toBe('WAITING_FOR_PLAYERS');
       });
       describe('should deal 2 cards to each player in the game at the start of the game', () => {
@@ -892,7 +923,9 @@ describe('BlackjackGame', () => {
           game.leave(players[0]);
 
           expect(game.state.status).toBe('IN_PROGRESS');
+
           expect(game.state.occupiedSeats[0]).toBeUndefined();
+
         });
       });
       it('should not update the state if the game is already over', () => {
@@ -949,6 +982,7 @@ describe('BlackjackGame', () => {
         game.join(players[7]);
 
         game.startGame(players[0]);
+
         expect(game.state.occupiedSeats[0]).toBe(players[0].id);
         expect(game.state.readyPlayers[0]).toBe(true);
         game.leave(players[0]);
@@ -1004,6 +1038,7 @@ describe('BlackjackGame', () => {
         game.leave(players[7]);
         expect(game.state.occupiedSeats[7]).toBeUndefined();
         expect(game.state.readyPlayers[7]).toBeUndefined();
+
       });
     });
   });
@@ -1065,7 +1100,9 @@ describe('BlackjackGame', () => {
       game.startGame(players[0]);
       game.startGame(players[1]);
       game.startGame(players[2]);
+
       game.state.playerBalances[0] = 1;
+
       expect(() =>
         game.applyMove({
           gameID: game.id,
@@ -1102,7 +1139,9 @@ describe('BlackjackGame', () => {
       deck.addNextDraw({ face: 2, suite: 'SPADES' });
       deck.addNextDraw({ face: 1, suite: 'CLUBS' });
       deck.addNextDraw({ face: 1, suite: 'SPADES' });
+
       expect(game.state.playerBalances[0]).toBe(1000);
+
       game.startGame(players[0]);
       game.startGame(players[1]);
       game.startGame(players[2]);
@@ -1123,6 +1162,7 @@ describe('BlackjackGame', () => {
       const dealerCards = game.state.dealerMoves;
       expect(game.state.status).toBe('OVER');
       expect(dealerCards.length).toBe(2);
+
       expect(game.state.playerBalances[0]).toBe(1000 - 100);
       expect(game.state.playerBalances[1]).toBe(1000 - 100);
       const game2 = new BlackjackGame(new TestDeck(), game);
@@ -1130,6 +1170,7 @@ describe('BlackjackGame', () => {
       game2.join(players[1]);
       expect(game2.state.playerBalances[0]).toBe(900);
       expect(game2.state.playerBalances[1]).toBe(900);
+
     });
     it('should end game and add money if player wins', () => {
       deck.addNextDraw({ face: 9, suite: 'HEARTS' });
@@ -1138,7 +1179,9 @@ describe('BlackjackGame', () => {
       deck.addNextDraw({ face: 10, suite: 'HEARTS' });
       deck.addNextDraw({ face: 13, suite: 'CLUBS' });
       deck.addNextDraw({ face: 13, suite: 'SPADES' });
+
       expect(game.state.playerBalances[0]).toBe(1000);
+
       game.startGame(players[0]);
       game.startGame(players[1]);
       const dealerCardsBefore = game.state.dealerMoves;
@@ -1157,6 +1200,7 @@ describe('BlackjackGame', () => {
       const dealerCards = game.state.dealerMoves;
       expect(game.state.status).toBe('OVER');
       expect(dealerCards.length).toBe(2);
+
       expect(game.state.playerBalances[0]).toBe(1000 + 100);
       expect(game.state.playerBalances[1]).toBe(1000 + 100);
       const game2 = new BlackjackGame(new TestDeck(), game);
@@ -1164,6 +1208,7 @@ describe('BlackjackGame', () => {
       game2.join(players[1]);
       expect(game2.state.playerBalances[0]).toBe(1100);
       expect(game2.state.playerBalances[1]).toBe(1100);
+
     });
     it('should end game and keep money if tie', () => {
       deck.addNextDraw({ face: 10, suite: 'HEARTS' });
@@ -1172,7 +1217,9 @@ describe('BlackjackGame', () => {
       deck.addNextDraw({ face: 10, suite: 'HEARTS' });
       deck.addNextDraw({ face: 10, suite: 'CLUBS' });
       deck.addNextDraw({ face: 10, suite: 'SPADES' });
+
       expect(game.state.playerBalances[0]).toBe(1000);
+
       game.startGame(players[0]);
       game.startGame(players[1]);
       const dealerCardsBefore = game.state.dealerMoves;
@@ -1191,6 +1238,7 @@ describe('BlackjackGame', () => {
       const dealerCards = game.state.dealerMoves;
       expect(game.state.status).toBe('OVER');
       expect(dealerCards.length).toBe(2);
+
       expect(game.state.playerBalances[0]).toBe(1000);
       expect(game.state.playerBalances[1]).toBe(1000);
       const game2 = new BlackjackGame(new TestDeck(), game);
@@ -1198,6 +1246,7 @@ describe('BlackjackGame', () => {
       game2.join(players[1]);
       expect(game2.state.playerBalances[0]).toBe(1000);
       expect(game2.state.playerBalances[1]).toBe(1000);
+
     });
     it('should treat aces as 11', () => {
       deck.addNextDraw({ face: 10, suite: 'HEARTS' });
@@ -1206,7 +1255,9 @@ describe('BlackjackGame', () => {
       deck.addNextDraw({ face: 10, suite: 'HEARTS' });
       deck.addNextDraw({ face: 10, suite: 'CLUBS' });
       deck.addNextDraw({ face: 1, suite: 'SPADES' });
+
       expect(game.state.playerBalances[0]).toBe(1000);
+
       game.startGame(players[0]);
       game.startGame(players[1]);
       const dealerCardsBefore = game.state.dealerMoves;
@@ -1225,6 +1276,7 @@ describe('BlackjackGame', () => {
       const dealerCards = game.state.dealerMoves;
       expect(game.state.status).toBe('OVER');
       expect(dealerCards.length).toBe(2);
+
       expect(game.state.playerBalances[0]).toBe(1100);
       expect(game.state.playerBalances[1]).toBe(1000);
       const game2 = new BlackjackGame(new TestDeck(), game);
@@ -1232,6 +1284,7 @@ describe('BlackjackGame', () => {
       game2.join(players[1]);
       expect(game2.state.playerBalances[0]).toBe(1100);
       expect(game2.state.playerBalances[1]).toBe(1000);
+
     });
     it('should treat aces as 1 if bust', () => {
       deck.addNextDraw({ face: 10, suite: 'HEARTS' });
@@ -1241,7 +1294,9 @@ describe('BlackjackGame', () => {
       deck.addNextDraw({ face: 10, suite: 'HEARTS' });
       deck.addNextDraw({ face: 10, suite: 'CLUBS' });
       deck.addNextDraw({ face: 10, suite: 'CLUBS' });
+
       expect(game.state.playerBalances[0]).toBe(1000);
+
       game.startGame(players[0]);
       game.startGame(players[1]);
       const dealerCardsBefore = game.state.dealerMoves;
@@ -1265,6 +1320,7 @@ describe('BlackjackGame', () => {
       const dealerCards = game.state.dealerMoves;
       expect(game.state.status).toBe('OVER');
       expect(dealerCards.length).toBe(2);
+
       expect(game.state.playerBalances[0]).toBe(1100);
       expect(game.state.playerBalances[1]).toBe(1000);
       const game2 = new BlackjackGame(new TestDeck(), game);
@@ -1272,6 +1328,7 @@ describe('BlackjackGame', () => {
       game2.join(players[1]);
       expect(game2.state.playerBalances[0]).toBe(1100);
       expect(game2.state.playerBalances[1]).toBe(1000);
+
     });
     it('should double wins with double', () => {
       deck.addNextDraw({ face: 8, suite: 'HEARTS' });
@@ -1281,7 +1338,9 @@ describe('BlackjackGame', () => {
       deck.addNextDraw({ face: 10, suite: 'HEARTS' });
       deck.addNextDraw({ face: 10, suite: 'CLUBS' });
       deck.addNextDraw({ face: 10, suite: 'CLUBS' });
+
       expect(game.state.playerBalances[0]).toBe(1000);
+
       game.startGame(players[0]);
       game.startGame(players[1]);
       const dealerCardsBefore = game.state.dealerMoves;
@@ -1300,6 +1359,7 @@ describe('BlackjackGame', () => {
       const dealerCards = game.state.dealerMoves;
       expect(game.state.status).toBe('OVER');
       expect(dealerCards.length).toBe(2);
+
       expect(game.state.playerBalances[0]).toBe(1200);
       expect(game.state.playerBalances[1]).toBe(1000);
       const game2 = new BlackjackGame(new TestDeck(), game);
@@ -1307,6 +1367,7 @@ describe('BlackjackGame', () => {
       game2.join(players[1]);
       expect(game2.state.playerBalances[0]).toBe(1200);
       expect(game2.state.playerBalances[1]).toBe(1000);
+
     });
     it('should double losses with double', () => {
       deck.addNextDraw({ face: 8, suite: 'HEARTS' });
@@ -1316,7 +1377,9 @@ describe('BlackjackGame', () => {
       deck.addNextDraw({ face: 10, suite: 'HEARTS' });
       deck.addNextDraw({ face: 10, suite: 'CLUBS' });
       deck.addNextDraw({ face: 2, suite: 'CLUBS' });
+
       expect(game.state.playerBalances[0]).toBe(1000);
+
       game.startGame(players[0]);
       game.startGame(players[1]);
       const dealerCardsBefore = game.state.dealerMoves;
@@ -1335,6 +1398,7 @@ describe('BlackjackGame', () => {
       const dealerCards = game.state.dealerMoves;
       expect(game.state.status).toBe('OVER');
       expect(dealerCards.length).toBe(2);
+
       expect(game.state.playerBalances[0]).toBe(800);
       expect(game.state.playerBalances[1]).toBe(1000);
       const game2 = new BlackjackGame(new TestDeck(), game);
@@ -1342,6 +1406,7 @@ describe('BlackjackGame', () => {
       game2.join(players[1]);
       expect(game2.state.playerBalances[0]).toBe(800);
       expect(game2.state.playerBalances[1]).toBe(1000);
+
     });
     it('should be able to hit many times', () => {
       deck.addNextDraw({ face: 8, suite: 'HEARTS' });
@@ -1354,7 +1419,9 @@ describe('BlackjackGame', () => {
       deck.addNextDraw({ face: 10, suite: 'HEARTS' });
       deck.addNextDraw({ face: 10, suite: 'CLUBS' });
       deck.addNextDraw({ face: 2, suite: 'CLUBS' });
+
       expect(game.state.playerBalances[0]).toBe(1000);
+
       game.startGame(players[0]);
       game.startGame(players[1]);
       const dealerCardsBefore = game.state.dealerMoves;
@@ -1393,6 +1460,7 @@ describe('BlackjackGame', () => {
       const dealerCards = game.state.dealerMoves;
       expect(game.state.status).toBe('OVER');
       expect(dealerCards.length).toBe(2);
+
       expect(game.state.playerBalances[0]).toBe(1100);
       expect(game.state.playerBalances[1]).toBe(1000);
       const game2 = new BlackjackGame(new TestDeck(), game);
@@ -1400,6 +1468,7 @@ describe('BlackjackGame', () => {
       game2.join(players[1]);
       expect(game2.state.playerBalances[0]).toBe(1100);
       expect(game2.state.playerBalances[1]).toBe(1000);
+
     });
     it('should stop busted players', () => {
       deck.addNextDraw({ face: 8, suite: 'HEARTS' });
@@ -1409,7 +1478,9 @@ describe('BlackjackGame', () => {
       deck.addNextDraw({ face: 10, suite: 'HEARTS' });
       deck.addNextDraw({ face: 10, suite: 'CLUBS' });
       deck.addNextDraw({ face: 2, suite: 'CLUBS' });
+
       expect(game.state.playerBalances[0]).toBe(1000);
+
       game.startGame(players[0]);
       game.startGame(players[1]);
       const dealerCardsBefore = game.state.dealerMoves;
@@ -1428,6 +1499,7 @@ describe('BlackjackGame', () => {
       const dealerCards = game.state.dealerMoves;
       expect(game.state.status).toBe('OVER');
       expect(dealerCards.length).toBe(2);
+
       expect(game.state.playerBalances[0]).toBe(900);
       expect(game.state.playerBalances[1]).toBe(1000);
       const game2 = new BlackjackGame(new TestDeck(), game);
@@ -1435,6 +1507,7 @@ describe('BlackjackGame', () => {
       game2.join(players[1]);
       expect(game2.state.playerBalances[0]).toBe(900);
       expect(game2.state.playerBalances[1]).toBe(1000);
+
     });
     it('should stop Dealer if bust', () => {
       deck.addNextDraw({ face: 6, suite: 'HEARTS' });
@@ -1445,7 +1518,9 @@ describe('BlackjackGame', () => {
       deck.addNextDraw({ face: 10, suite: 'HEARTS' });
       deck.addNextDraw({ face: 10, suite: 'CLUBS' });
       deck.addNextDraw({ face: 2, suite: 'CLUBS' });
+
       expect(game.state.playerBalances[0]).toBe(1000);
+
       game.startGame(players[0]);
       game.startGame(players[1]);
       const dealerCardsBefore = game.state.dealerMoves;
@@ -1464,6 +1539,7 @@ describe('BlackjackGame', () => {
       const dealerCards = game.state.dealerMoves;
       expect(game.state.status).toBe('OVER');
       expect(dealerCards.length).toBe(3);
+
       expect(game.state.playerBalances[0]).toBe(900);
       expect(game.state.playerBalances[1]).toBe(1100);
       const game2 = new BlackjackGame(new TestDeck(), game);
@@ -1471,6 +1547,7 @@ describe('BlackjackGame', () => {
       game2.join(players[1]);
       expect(game2.state.playerBalances[0]).toBe(900);
       expect(game2.state.playerBalances[1]).toBe(1100);
+
     });
   });
 });

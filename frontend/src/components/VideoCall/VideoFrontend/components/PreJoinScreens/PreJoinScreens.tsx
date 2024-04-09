@@ -10,6 +10,8 @@ import { Heading, Text } from '@chakra-ui/react';
 import TownSelection from '../../../../Login/TownSelection';
 import { TownJoinResponse } from '../../../../../types/CoveyTownSocket';
 
+
+
 export enum Steps {
   roomNameStep,
   deviceSelectionStep,

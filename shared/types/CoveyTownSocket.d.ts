@@ -16,8 +16,8 @@ export type TownJoinResponse = {
   /** Current state of interactables in this town */
   interactables: TypedInteractable[];
 }
+export type InteractableType = 'ConversationArea' | 'ViewingArea' | 'TicTacToeArea' | 'ConnectFourArea' | 'PokerArea' | 'BlackjackArea' | 'ShopArea';
 
-export type InteractableType = 'ConversationArea' | 'ViewingArea' | 'TicTacToeArea' | 'ConnectFourArea' | 'PokerArea' | 'BlackjackArea';
 export interface Interactable {
   type: InteractableType;
   id: InteractableID;
@@ -74,13 +74,19 @@ export interface ViewingArea extends Interactable {
   elapsedTimeSec: number;
 }
 
+export interface ShopArea extends Interactable {
+  items: ShopItem[];
+}
+
+export type ShopItem = 'SKIN1' | 'SKIN2' | 'SKIN3' | 'SKIN4';
+
 export type GameStatus = 'IN_PROGRESS' | 'WAITING_TO_START' | 'OVER' | 'WAITING_FOR_PLAYERS';
 /**
  * Base type for the state of a game
  */
 export interface GameState {
   status: GameStatus;
-} 
+}
 
 /**
  * Type for the state of a game that can be won
@@ -109,7 +115,7 @@ export interface TicTacToeMove {
   col: TicTacToeGridPosition;
 }
 
-export type PokerAction = 'RAISE' | 'CALL' | 'FOLD';
+export type PokerAction = 'RAISE' | 'CALL' | 'CHECK' | 'FOLD' | 'DEAL';
 
 /**
  * Type for the amount raised in a poker move, or undefined if the
@@ -129,11 +135,22 @@ export interface Card {
 }
 
 /**
- * Type for a move in Poker
+ * Type for a move in Poker - this can be an action taken by a player, like a raise or a call, or an action taken by
+ * the dealer, like a card being dealt.
  */
 export interface PokerMove {
   moveType: PokerAction;
-  raiseAmount: RaiseAmount;
+  raiseAmount?: RaiseAmount;
+  card?: Card;
+  player?: SeatNumber;
+
+  // The following need to be added for compatibility since other gamemoves require gamePiece, col, and row, even though these seem uncessecary
+  // for poker - future work might involve refactoring design to include card game function
+
+  gamePiece?: undefined;
+
+  col?: undefined;
+  row?: undefined;
 }
 
 /**
@@ -153,15 +170,44 @@ export interface DeckOfCards {
  */
 export interface PokerGameState extends WinnableGameState {
   // The moves in this game
-  moves: ReadOnlyArray<PokerMove>;
+  moves: ReadonlyArray<PokerMove>;
   // A map that represents the player at each seat in the table, if there is a player in that seat.
-  occupiedSeats: Map<SeatNumber, PlayerID | undefined>;
+  occupiedSeats: Array<Playerid | undefined>; // Map<SeatNumber, PlayerID | undefined>;
   // A map representing which players in the game are ready to start.
-  readyPlayers: Map<SeatNumber, boolean | undefined>;
+  readyPlayers: Array<boolean | undefined>; // Map<SeatNumber, boolean | undefined>;
+  // A map representing which players in the game have folded
+  foldedPlayers: Array<boolean>; // Map<SeatNumber, boolean>;
   // A map representing the balance of players in each seat.
-  playerBalances: Map<SeatNumber, Integer | undefined>;
+  playerBalances: Array<number | undefind>; // Map<SeatNumber, Integer | undefined>;
   // The player who will be the small blind
   smallBlind: SeatNumber;
+  // The player who will be the big blind
+  pot: number;
+}
+
+export type BlackjackAction = 'BET' | 'HIT' | 'STAND' | 'DEAL' | 'DOUBLE';
+
+/**
+ * Type for the amount bet in a blackjack hand, or undefined if the
+ * action was not a bet
+ */
+export type BetAmount = Integer | undefined;
+
+/**
+ * Type for a move in Blackjack
+ */
+export interface BlackjackMove {
+  moveType: BlackjackAction;
+  card?: Card;
+  player?: SeatNumber;
+
+  // The following need to be added for compatibility since other gamemoves require gamePiece, col, and row, even though these seem uncessecary
+  // for poker - future work might involve refactoring design to include card game function
+
+  gamePiece?: undefined;
+
+  col?: undefined;
+  row?: undefined;
 }
 
 export type BlackjackAction = 'BET' | 'HIT' | 'STAND' | 'DEAL' | 'DOUBLE';
@@ -216,6 +262,28 @@ export interface BlackjackGameState extends WinnableGameState {
 }
 
 
+/**
+ * Type for the state of a blackjack game
+ * The state of the game is represented as a list of moves, the playerIDs of the players in each seat,
+ * the starting balances of the players in those seats, and the seat which will be the next small blind.
+ * Players will be assigned to the first free seat when joining
+ */
+export interface BlackjackGameState extends WinnableGameState {
+  dealerMoves: ReadonlyArray<BlackjackMove>;
+  // The moves in this game
+  moves: ReadonlyArray<BlackjackMove>;
+  // A map that represents the player at each seat in the table, if there is a player in that seat.
+  occupiedSeats: Array<Playerid | undefined>;
+  // A map representing which players in the game are ready to start.
+  readyPlayers: Array<boolean | undefined>;
+  // A map representing the balance of players in each seat.
+  playerBalances: Array<number | undefined>;
+  // A map of busted players
+  bustedPlayers: Array<boolean>;
+  // A map of players standing
+  standPlayers: Array<boolean>;
+
+}
 /**
  * Type for the state of a TicTacToe game
  * The state of the game is represented as a list of moves, and the playerIDs of the players (x and o)
@@ -323,13 +391,17 @@ interface InteractableCommandBase {
   type: string;
 }
 
-export type InteractableCommand =  ViewingAreaUpdateCommand | JoinGameCommand | GameMoveCommand<TicTacToeMove> | GameMoveCommand<ConnectFourMove> | GameMoveCommand<BlackjackMove> | StartGameCommand | LeaveGameCommand;
-export interface ViewingAreaUpdateCommand  {
+export type InteractableCommand = ViewingAreaUpdateCommand | ShopAreaUpdateCommand | JoinGameCommand | GameMoveCommand<BlackjackMove> | GameMoveCommand<TicTacToeMove> | GameMoveCommand<ConnectFourMove> | GameMoveCommand<PokerMove> | StartGameCommand | LeaveGameCommand;
+export interface ViewingAreaUpdateCommand {
   type: 'ViewingAreaUpdate';
   update: ViewingArea;
 }
 export interface JoinGameCommand {
   type: 'JoinGame';
+}
+export interface ShopAreaUpdateCommand {
+  type: 'ShopAreaUpdate';
+  update: ShopArea;
 }
 export interface LeaveGameCommand {
   type: 'LeaveGame';
@@ -344,8 +416,8 @@ export interface GameMoveCommand<MoveType> {
   gameID: GameInstanceID;
   move: MoveType;
 }
-export type InteractableCommandReturnType<CommandType extends InteractableCommand> = 
-  CommandType extends JoinGameCommand ? { gameID: string}:
+export type InteractableCommandReturnType<CommandType extends InteractableCommand> =
+  CommandType extends JoinGameCommand ? { gameID: string } :
   CommandType extends ViewingAreaUpdateCommand ? undefined :
   CommandType extends GameMoveCommand<TicTacToeMove> ? undefined :
   CommandType extends LeaveGameCommand ? undefined :

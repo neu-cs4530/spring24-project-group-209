@@ -4,7 +4,10 @@ import {
   TicTacToeGameState,
   ViewingArea,
   GameArea,
+  ShopArea,
   ConnectFourGameState,
+  PokerGameState,
+  BlackjackGameState,
 } from './CoveyTownSocket';
 
 /**
@@ -12,6 +15,10 @@ import {
  */
 export function isConversationArea(interactable: Interactable): interactable is ConversationArea {
   return interactable.type === 'ConversationArea';
+}
+
+export function isShopArea(interactable: Interactable): interactable is ShopArea {
+  return interactable.type === 'ShopArea';
 }
 
 /**
@@ -30,4 +37,14 @@ export function isConnectFourArea(
   interactable: Interactable,
 ): interactable is GameArea<ConnectFourGameState> {
   return interactable.type === 'ConnectFourArea';
+}
+
+export function isBlackJackArea(
+  interactable: Interactable,
+): interactable is GameArea<BlackjackGameState> {
+  return interactable.type === 'BlackjackArea';
+}
+
+export function isPokerArea(interactable: Interactable): interactable is GameArea<PokerGameState> {
+  return interactable.type === 'PokerArea';
 }

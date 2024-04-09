@@ -1,8 +1,18 @@
+import InvalidParametersError, {
+  GAME_ID_MISSMATCH_MESSAGE,
+  GAME_NOT_IN_PROGRESS_MESSAGE,
+  INVALID_COMMAND_MESSAGE,
+} from '../../lib/InvalidParametersError';
 import Player from '../../lib/Player';
 import {
   InteractableType,
   InteractableCommand,
   InteractableCommandReturnType,
+  PokerMove,
+  GameInstance,
+  PokerGameState,
+  SeatNumber,
+  PlayerID,
 } from '../../types/CoveyTownSocket';
 import GameArea from './GameArea';
 import PokerGame from './PokerGame';
@@ -16,7 +26,45 @@ import PokerGame from './PokerGame';
  */
 export default class PokerGameArea extends GameArea<PokerGame> {
   protected getType(): InteractableType {
-    throw new Error('Method not implemented.');
+    return 'PokerArea';
+  }
+
+  private _stateUpdated(updatedState: GameInstance<PokerGameState>) {
+    if (updatedState.state.status === 'OVER') {
+      const gameID = this._game?.id;
+      if (gameID && !this._history.find(eachResult => eachResult.gameID === gameID)) {
+        const players: Array<PlayerID> = [];
+        for (let i = 0; i < 8; i++) {
+          const player = updatedState.state.occupiedSeats[i];
+          if (player) players.push(player);
+        }
+        if (players.length >= 2) {
+          const playerNames = [];
+          for (let i = 0; i < players.length; i++) {
+            playerNames.push(
+              this._occupants.find(eachPlayer => eachPlayer.id === players[i])?.userName ||
+                players[i],
+            );
+          }
+          if (updatedState.state.winner) {
+            let winner = '';
+            for (let i = 0; i < playerNames.length; i++) {
+              if (updatedState.state.winner === players[i]) winner = playerNames[i];
+            }
+            this.history.push({
+              gameID,
+              scores: { [winner]: 1 },
+            });
+          } else {
+            this.history.push({
+              gameID,
+              scores: {},
+            });
+          }
+        }
+      }
+    }
+    this._emitAreaChanged();
   }
 
   /**
@@ -46,6 +94,57 @@ export default class PokerGameArea extends GameArea<PokerGame> {
     command: CommandType,
     player: Player,
   ): InteractableCommandReturnType<CommandType> {
-    throw new Error('Method not implemented.');
+    if (command.type === 'GameMove') {
+      const game = this._game;
+      if (!game) {
+        throw new InvalidParametersError(GAME_NOT_IN_PROGRESS_MESSAGE);
+      }
+      if (game.id !== command.gameID) {
+        throw new InvalidParametersError(GAME_ID_MISSMATCH_MESSAGE);
+      }
+      const moveAsPoker = command.move as PokerMove;
+      if (!moveAsPoker.moveType) {
+        throw new InvalidParametersError('Invalid move type');
+      }
+      game.applyMove({
+        gameID: command.gameID,
+        playerID: player.id,
+        move: moveAsPoker,
+      });
+      this._stateUpdated(game.toModel());
+      return undefined as InteractableCommandReturnType<CommandType>;
+    }
+    if (command.type === 'JoinGame') {
+      let game = this._game;
+      if (!game || game.state.status === 'OVER') {
+        game = new PokerGame(undefined, game);
+        this._game = game;
+      }
+      game.join(player);
+      this._stateUpdated(game.toModel());
+      return { gameID: game.id } as InteractableCommandReturnType<CommandType>;
+    }
+    if (command.type === 'LeaveGame') {
+      const game = this._game;
+      if (!game) throw new InvalidParametersError(GAME_NOT_IN_PROGRESS_MESSAGE);
+      if (game.id !== command.gameID) throw new InvalidParametersError(GAME_ID_MISSMATCH_MESSAGE);
+      game.leave(player);
+      this._stateUpdated(game.toModel());
+
+      return undefined as InteractableCommandReturnType<CommandType>;
+    }
+    if (command.type === 'StartGame') {
+      const game = this._game;
+      if (!game) {
+        throw new InvalidParametersError(GAME_NOT_IN_PROGRESS_MESSAGE);
+      }
+      if (this._game?.id !== command.gameID) {
+        throw new InvalidParametersError(GAME_ID_MISSMATCH_MESSAGE);
+      }
+      game.startGame(player);
+      this._stateUpdated(game.toModel());
+      return undefined as InteractableCommandReturnType<CommandType>;
+    }
+    throw new InvalidParametersError(INVALID_COMMAND_MESSAGE);
   }
 }
