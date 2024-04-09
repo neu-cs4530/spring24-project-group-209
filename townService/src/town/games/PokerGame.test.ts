@@ -225,7 +225,6 @@ describe('PokerGame', () => {
         expect(game.state.status).toBe('WAITING_TO_START');
       });
       it('if possible, should add players to the seat they were in the previous game', () => {
-        const seats: Array<SeatNumber> = [0, 1, 2, 3, 4, 5, 6, 7];
         const players: Array<Player> = [
           createPlayerForTesting(),
           createPlayerForTesting(),
@@ -304,7 +303,6 @@ describe('PokerGame', () => {
         expect(game.state.status).toBe('WAITING_TO_START');
       });
       it('should carry the balance of players between games if they rejoin', () => {
-        const seats: Array<SeatNumber> = [0, 1, 2, 3, 4, 5, 6, 7];
         const players: Array<Player> = [
           createPlayerForTesting(),
           createPlayerForTesting(),
@@ -1147,7 +1145,6 @@ describe('PokerGame', () => {
     });
   });
   describe('_leave', () => {
-    const seats: Array<SeatNumber> = [0, 1, 2, 3, 4, 5, 6, 7];
     const players: Array<Player> = [
       createPlayerForTesting(),
       createPlayerForTesting(),
@@ -1363,7 +1360,6 @@ describe('PokerGame', () => {
     });
   });
   describe('applyMove', () => {
-    const seats: Array<SeatNumber> = [0, 1, 2, 3, 4, 5, 6, 7];
     const players: Array<Player> = [
       createPlayerForTesting(),
       createPlayerForTesting(),
