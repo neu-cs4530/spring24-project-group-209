@@ -14,7 +14,6 @@ import TownController from '../TownController';
 import BlackjackAreaController, { BLACKJACK_ROWS } from './BlackjackAreaController';
 import GameAreaController, { NO_GAME_IN_PROGRESS_ERROR } from './GameAreaController';
 import { BlackjackMove, GameResult, GameStatus } from '../../types/CoveyTownSocket';
-import { common } from '@material-ui/core/colors';
 import { POKER_ROWS } from './PokerAreaController';
 
 describe('BlackjackAreaController', () => {
