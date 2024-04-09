@@ -1116,7 +1116,7 @@ describe('BlackjackGame', () => {
       game.startGame(players[6]);
       game.startGame(players[7]);
       const dealerCardsBefore = game.state.dealerMoves;
-      expect(dealerCardsBefore.length).toBe(1);
+      expect(dealerCardsBefore.length).toBe(2);
       for (let i = 0; i < 8; i++) {
         game.applyMove({
           gameID: game.id,
@@ -1149,7 +1149,7 @@ describe('BlackjackGame', () => {
       game.startGame(players[0]);
       game.startGame(players[1]);
       const dealerCardsBefore = game.state.dealerMoves;
-      expect(dealerCardsBefore.length).toBe(1);
+      expect(dealerCardsBefore.length).toBe(2);
       game.applyMove({
         gameID: game.id,
         playerID: players[0].id,
@@ -1186,7 +1186,7 @@ describe('BlackjackGame', () => {
       game.startGame(players[0]);
       game.startGame(players[1]);
       const dealerCardsBefore = game.state.dealerMoves;
-      expect(dealerCardsBefore.length).toBe(1);
+      expect(dealerCardsBefore.length).toBe(2);
       game.applyMove({
         gameID: game.id,
         playerID: players[0].id,
@@ -1223,7 +1223,7 @@ describe('BlackjackGame', () => {
       game.startGame(players[0]);
       game.startGame(players[1]);
       const dealerCardsBefore = game.state.dealerMoves;
-      expect(dealerCardsBefore.length).toBe(1);
+      expect(dealerCardsBefore.length).toBe(2);
       game.applyMove({
         gameID: game.id,
         playerID: players[0].id,
@@ -1261,7 +1261,7 @@ describe('BlackjackGame', () => {
       game.startGame(players[0]);
       game.startGame(players[1]);
       const dealerCardsBefore = game.state.dealerMoves;
-      expect(dealerCardsBefore.length).toBe(1);
+      expect(dealerCardsBefore.length).toBe(2);
       game.applyMove({
         gameID: game.id,
         playerID: players[0].id,
@@ -1304,7 +1304,7 @@ describe('BlackjackGame', () => {
       game.startGame(players[0]);
       game.startGame(players[1]);
       const dealerCardsBefore = game.state.dealerMoves;
-      expect(dealerCardsBefore.length).toBe(1);
+      expect(dealerCardsBefore.length).toBe(2);
       game.applyMove({
         gameID: game.id,
         playerID: players[0].id,
@@ -1342,7 +1342,7 @@ describe('BlackjackGame', () => {
       game.startGame(players[0]);
       game.startGame(players[1]);
       const dealerCardsBefore = game.state.dealerMoves;
-      expect(dealerCardsBefore.length).toBe(1);
+      expect(dealerCardsBefore.length).toBe(2);
       game.applyMove({
         gameID: game.id,
         playerID: players[0].id,
@@ -1383,7 +1383,7 @@ describe('BlackjackGame', () => {
       game.startGame(players[0]);
       game.startGame(players[1]);
       const dealerCardsBefore = game.state.dealerMoves;
-      expect(dealerCardsBefore.length).toBe(1);
+      expect(dealerCardsBefore.length).toBe(2);
       game.applyMove({
         gameID: game.id,
         playerID: players[0].id,
@@ -1441,7 +1441,7 @@ describe('BlackjackGame', () => {
       game.startGame(players[0]);
       game.startGame(players[1]);
       const dealerCardsBefore = game.state.dealerMoves;
-      expect(dealerCardsBefore.length).toBe(1);
+      expect(dealerCardsBefore.length).toBe(2);
       game.applyMove({
         gameID: game.id,
         playerID: players[0].id,
@@ -1480,7 +1480,7 @@ describe('BlackjackGame', () => {
       game.startGame(players[0]);
       game.startGame(players[1]);
       const dealerCardsBefore = game.state.dealerMoves;
-      expect(dealerCardsBefore.length).toBe(1);
+      expect(dealerCardsBefore.length).toBe(2);
       game.applyMove({
         gameID: game.id,
         playerID: players[0].id,
