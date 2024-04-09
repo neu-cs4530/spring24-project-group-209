@@ -99,7 +99,7 @@ export default function BlackjackBoard({ gameAreaController }: BlackjackGameProp
                     key={`8.${colIndex}`}
                     aria-label={`Cell 8,${colIndex} (${cell ? 'Filled' : 'Empty'})`}>
                     {cell ? (
-                      <Image h='56px' w='28px' src={`/assets/cards/${activeSkin}/backOfCard.png`} />
+                      <Image h='56px' w='33px' src={`/assets/cards/${activeSkin}/backOfCard.png`} />
                     ) : (
                       'Empty'
                     )}
@@ -111,7 +111,7 @@ export default function BlackjackBoard({ gameAreaController }: BlackjackGameProp
                     key={`8.${colIndex}`}
                     aria-label={`Cell 8,${colIndex} (${cell ? 'Filled' : 'Empty'})`}>
                     {cell ? (
-                      <Image h='56px' w='28px' src={cardMap?.getCardUrl(cell.card)} />
+                      <Image h='56px' w='33px' src={cardMap?.getCardUrl(cell.card)} />
                     ) : (
                       'Empty'
                     )}

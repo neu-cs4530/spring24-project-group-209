@@ -15,6 +15,8 @@ import PhaserGameArea from '../GameArea';
 import TicTacToeAreaWrapper from './TicTacToeArea';
 import * as TicTacToeBoard from './TicTacToeBoard';
 import React from 'react';
+import { initializeApp } from '@firebase/app';
+import { firebaseConfig } from '../../../../firebaseInit';
 
 const mockToast = jest.fn();
 jest.mock('@chakra-ui/react', () => {
@@ -130,6 +132,7 @@ describe('[T2] TicTacToeArea', () => {
   // Spy on console.error and intercept react key warnings to fail test
   let consoleErrorSpy: jest.SpyInstance<void, [message?: any, ...optionalParms: any[]]>;
   beforeAll(() => {
+    initializeApp(firebaseConfig);
     // Spy on console.error and intercept react key warnings to fail test
     consoleErrorSpy = jest.spyOn(global.console, 'error');
     consoleErrorSpy.mockImplementation((message?, ...optionalParams) => {

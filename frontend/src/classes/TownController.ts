@@ -55,6 +55,7 @@ const SOCKET_COMMAND_TIMEOUT_MS = 5000;
 
 export type ConnectionProperties = {
   userName: string;
+  pass: string;
   townID: string;
   loginController: LoginController;
 };

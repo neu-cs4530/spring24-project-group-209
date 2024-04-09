@@ -22,6 +22,8 @@ import {
 import PhaserGameArea from '../GameArea';
 import ConnectFourArea from './ConnectFourArea';
 import * as ConnectFourBoard from './ConnectFourBoard';
+import { initializeApp } from '@firebase/app';
+import { firebaseConfig } from '../../../../firebaseInit';
 
 const mockToast = jest.fn();
 jest.mock('@chakra-ui/react', () => {
@@ -150,6 +152,7 @@ class MockConnectFourAreaController extends ConnectFourAreaController {
 describe('ConnectFourArea', () => {
   let consoleErrorSpy: jest.SpyInstance<void, [message?: any, ...optionalParms: any[]]>;
   beforeAll(() => {
+    initializeApp(firebaseConfig);
     // Spy on console.error and intercept react key warnings to fail test
     consoleErrorSpy = jest.spyOn(global.console, 'error');
     consoleErrorSpy.mockImplementation((message?, ...optionalParams) => {

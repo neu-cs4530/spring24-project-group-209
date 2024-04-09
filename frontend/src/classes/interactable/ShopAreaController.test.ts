@@ -31,7 +31,12 @@ describe('ShopAreaController', () => {
     return p;
   });
 });
-const area: ShopArea = { items: [], id: nanoid(), x: 0, y: 0 };
+const area: ShopArea = {
+  items: [],
+  id: nanoid(),
+  type: 'ShopArea',
+  occupants: [],
+};
 describe('properties of a new shop', () => {
   it('should have an id', () => {
     const shop = new ShopAreaController(area);

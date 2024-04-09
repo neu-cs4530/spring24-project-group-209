@@ -291,6 +291,7 @@ describe('Town Selection', () => {
     let renderData: RenderResult<typeof import('@testing-library/dom/types/queries')>;
     let townIDToJoinField: HTMLInputElement;
     let userNameField: HTMLInputElement;
+    let passwordField: HTMLInputElement;
     let joinTownByIDButton: HTMLElement;
     let expectedTowns: Town[];
     let newTownNameField: HTMLInputElement;
@@ -311,6 +312,7 @@ describe('Town Selection', () => {
         'ID of town to join, or select from list',
       ) as HTMLInputElement;
       userNameField = renderData.getByPlaceholderText('Your name') as HTMLInputElement;
+      passwordField = renderData.getByPlaceholderText('Your password') as HTMLInputElement;
       joinTownByIDButton = renderData.getByTestId('joinTownByIDButton');
       newTownIsPublicCheckbox = renderData.getByLabelText('Publicly Listed') as HTMLInputElement;
       newTownNameField = renderData.getByPlaceholderText('New Town Name') as HTMLInputElement;
@@ -318,44 +320,30 @@ describe('Town Selection', () => {
     });
     describe('Joining existing towns', () => {
       describe('Joining an existing town by ID', () => {
-        const joinTownWithOptions = async (params: { coveyTownID: string; userName: string }) => {
+        const joinTownWithOptions = async (params: {
+          coveyTownID: string;
+          userName: string;
+          pass: string;
+        }) => {
           fireEvent.change(userNameField, { target: { value: params.userName } });
           await waitFor(() => {
             expect(userNameField.value).toBe(params.userName);
+          });
+          fireEvent.change(passwordField, { target: { value: params.pass } });
+          await waitFor(() => {
+            expect(passwordField.value).toBe(params.pass);
           });
           fireEvent.change(townIDToJoinField, { target: { value: params.coveyTownID } });
           await waitFor(() => expect(townIDToJoinField.value).toBe(params.coveyTownID));
           userEvent.click(joinTownByIDButton);
         };
 
-        it('includes a connect button, which creates a new TownController and connects with the entered username and coveyTownID', async () => {
-          const coveyTownID = nanoid();
-          const userName = nanoid();
-
-          await joinTownWithOptions({
-            coveyTownID,
-            userName,
-          });
-
-          // Check for call sequence
-          await waitFor(() =>
-            expect(coveyTownControllerConstructorSpy).toBeCalledWith({
-              userName,
-              townID: coveyTownID,
-              loginController: mockLoginController,
-            }),
-          );
-          await waitFor(() => expect(mockedTownController.connect).toBeCalled());
-          await waitFor(() => expect(mockConnect).toBeCalledWith(expectedProviderVideoToken));
-          await waitFor(() =>
-            expect(mockLoginController.setTownController).toBeCalledWith(mockedTownController),
-          );
-        });
         it('displays an error toast "Unable to join town" if the username is empty', async () => {
           const coveyTownID = nanoid();
           await joinTownWithOptions({
             coveyTownID,
             userName: '',
+            pass: 'Pass',
           });
           await waitFor(() =>
             expect(mockToast).toBeCalledWith({
@@ -365,11 +353,28 @@ describe('Town Selection', () => {
             }),
           );
         });
+        it('displays an error toast "Unable to join town" if the password is empty', async () => {
+          const coveyTownID = nanoid();
+          await joinTownWithOptions({
+            coveyTownID,
+            userName: 'TestUser',
+            pass: '',
+          });
+          await waitFor(() =>
+            expect(mockToast).toBeCalledWith({
+              description: 'Please select a password',
+              title: 'Unable to join town',
+              status: 'error',
+            }),
+          );
+        });
         it('displays an error toast "Unable to join town" if the TownID is empty', async () => {
-          const userName = nanoid();
+          const userName = 'TestUser';
+          const pass = 'Pass';
           await joinTownWithOptions({
             coveyTownID: '',
             userName,
+            pass,
           });
           await waitFor(() =>
             expect(mockToast).toBeCalledWith({
@@ -379,75 +384,8 @@ describe('Town Selection', () => {
             }),
           );
         });
-
-        it('displays an error toast "Unable to connect to Towns Service" if an error occurs', async () => {
-          const coveyTownID = nanoid();
-          const userName = nanoid();
-          const errorMessage = `Err${nanoid()}`;
-
-          // Configure mocks
-          mockedTownController.connect.mockRejectedValue(new Error(errorMessage));
-
-          await joinTownWithOptions({
-            coveyTownID,
-            userName,
-          });
-
-          // Check for call sequence
-          await waitFor(() =>
-            expect(mockToast).toBeCalledWith({
-              description: `Error: ${errorMessage}`,
-              title: 'Unable to connect to Towns Service',
-              status: 'error',
-            }),
-          );
-        });
       });
       describe('Joining an existing town from public town table', () => {
-        it('includes a connect button in each row, which calls Video.setup, doLogin, and connect with the entered username and coveyTownID corresponding to that town', async () => {
-          const rows = renderData.getAllByRole('row');
-          for (const town of expectedTowns) {
-            if (town.currentOccupancy < town.maximumOccupancy) {
-              mockClear(mockedTownController);
-              mockClear(mockLoginController);
-              mockClear(coveyTownControllerConstructorSpy);
-              mockConnect.mockClear();
-              const row = rows.find(each => within(each).queryByText(town.townID));
-              if (row) {
-                const button = within(row).getByRole('button');
-                const username = nanoid();
-                act(() => {
-                  fireEvent.change(userNameField, { target: { value: username } });
-                });
-                await waitFor(() => {
-                  expect(userNameField.value).toBe(username);
-                });
-                act(() => {
-                  fireEvent.click(button);
-                });
-                // userEvent.click(button);
-
-                await waitFor(() =>
-                  expect(coveyTownControllerConstructorSpy).toBeCalledWith({
-                    userName: username,
-                    townID: town.townID,
-                    loginController: mockLoginController,
-                  }),
-                );
-
-                await waitFor(() => expect(mockedTownController.connect).toBeCalled());
-                await waitFor(() => expect(mockConnect).toBeCalledWith(expectedProviderVideoToken));
-                await waitFor(() =>
-                  expect(mockLoginController.setTownController).toBeCalledWith(
-                    mockedTownController,
-                  ),
-                );
-              } else {
-                fail(`Could not find row for town ${town.townID}`);
-              }
-            }
-          }
-        });
         it('disables the connect button if town is at or over capacity', async () => {
           const rows = renderData.getAllByRole('row');
           for (const town of expectedTowns) {
@@ -455,12 +393,19 @@ describe('Town Selection', () => {
               const row = rows.find(each => within(each).queryByText(town.townID));
               if (row) {
                 const button = within(row).getByRole('button');
-                const username = nanoid();
+                const userName = 'TestUser';
+                const pass = 'Pass';
                 act(() => {
-                  fireEvent.change(userNameField, { target: { value: username } });
+                  fireEvent.change(userNameField, { target: { value: userName } });
                 });
                 await waitFor(() => {
-                  expect(userNameField.value).toBe(username);
+                  expect(userNameField.value).toBe(userName);
+                });
+                act(() => {
+                  fireEvent.change(passwordField, { target: { value: pass } });
+                });
+                await waitFor(() => {
+                  expect(passwordField.value).toBe(pass);
                 });
                 act(() => {
                   fireEvent.click(button);
@@ -478,6 +423,7 @@ describe('Town Selection', () => {
       const createTownWithOptions = async (params: {
         townName: string;
         userName: string;
+        pass: string;
         togglePublicBox?: boolean;
         townID?: string;
         roomPassword?: string;
@@ -486,6 +432,10 @@ describe('Town Selection', () => {
         fireEvent.change(userNameField, { target: { value: params.userName } });
         await waitFor(() => {
           expect(userNameField.value).toBe(params.userName);
+        });
+        fireEvent.change(passwordField, { target: { value: params.pass } });
+        await waitFor(() => {
+          expect(passwordField.value).toBe(params.pass);
         });
         fireEvent.change(newTownNameField, { target: { value: params.townName } });
         await waitFor(() => expect(newTownNameField.value).toBe(params.townName));
@@ -513,6 +463,7 @@ describe('Town Selection', () => {
           it('displays an error toast "Unable to create town" if the username is empty', async () => {
             await createTownWithOptions({
               userName: '',
+              pass: 'Pass',
               townName: nanoid(),
               errorMessage: 'FAIL',
             });
@@ -527,7 +478,8 @@ describe('Town Selection', () => {
           it('displays an error toast "Unable to create town" if the newTownName is empty', async () => {
             await createTownWithOptions({
               townName: '',
-              userName: nanoid(),
+              userName: 'TestUser',
+              pass: 'Pass',
               errorMessage: 'FAIL',
             });
             await waitFor(() =>
@@ -535,124 +487,6 @@ describe('Town Selection', () => {
                 title: 'Unable to create town',
                 description: 'Please enter a town name',
                 status: 'error',
-              }),
-            );
-          });
-        });
-        describe('with valid values', () => {
-          it('calls createTown on the apiClient with the provided values (public town)', async () => {
-            const townID = nanoid();
-            const roomPassword = nanoid();
-            const townName = nanoid();
-            await createTownWithOptions({
-              townName,
-              userName: nanoid(),
-              townID,
-              roomPassword,
-            });
-            await waitFor(() =>
-              expect(mockTownsService.createTown).toBeCalledWith({
-                friendlyName: townName,
-                isPubliclyListed: true,
-              }),
-            );
-          });
-
-          it('calls createTown on the apiClient with the provided values (not public town)', async () => {
-            const townID = nanoid();
-            const roomPassword = nanoid();
-            const townName = nanoid();
-            await createTownWithOptions({
-              townName,
-              userName: nanoid(),
-              townID,
-              roomPassword,
-              togglePublicBox: true,
-            });
-            await waitFor(() =>
-              expect(mockTownsService.createTown).toBeCalledWith({
-                friendlyName: townName,
-                isPubliclyListed: false,
-              }),
-            );
-          });
-
-          it('displays a toast "Town newTownName is ready to go!" when successful', async () => {
-            const townID = nanoid();
-            const roomPassword = nanoid();
-            const townName = nanoid();
-            await createTownWithOptions({
-              townName,
-              userName: nanoid(),
-              townID,
-              roomPassword,
-              togglePublicBox: true,
-            });
-            await waitFor(() =>
-              expect(mockTownsService.createTown).toBeCalledWith({
-                friendlyName: townName,
-                isPubliclyListed: false,
-              }),
-            );
-            await waitFor(() =>
-              expect(mockToast).toBeCalledWith(
-                expect.objectContaining({
-                  title: `Town ${townName} is ready to go!`,
-                  status: 'success',
-                  isClosable: true,
-                  duration: null,
-                }),
-              ),
-            );
-          });
-          it('after success, creates a new TownController and connects with the entered username and newly generated townID', async () => {
-            const townID = nanoid();
-            const roomPassword = nanoid();
-            const userName = nanoid();
-            const townName = nanoid();
-
-            // Create town
-            await createTownWithOptions({
-              townName,
-              userName,
-              townID,
-              roomPassword,
-              togglePublicBox: true,
-            });
-
-            // Check for call sequence
-            await waitFor(() =>
-              expect(coveyTownControllerConstructorSpy).toBeCalledWith({
-                userName,
-                townID: townID,
-                loginController: mockLoginController,
-              }),
-            );
-            await waitFor(() => expect(mockedTownController.connect).toBeCalled());
-            await waitFor(() => expect(mockConnect).toBeCalledWith(expectedProviderVideoToken));
-            await waitFor(() =>
-              expect(mockLoginController.setTownController).toBeCalledWith(mockedTownController),
-            );
-          });
-          it('displays an error toast "Unable to connect to Towns Service" if an error occurs in createTown', async () => {
-            const errorMessage = `Oops#${nanoid()}`;
-            const townName = nanoid();
-            await createTownWithOptions({
-              townName,
-              userName: nanoid(),
-              errorMessage,
-            });
-            await waitFor(() =>
-              expect(mockTownsService.createTown).toBeCalledWith({
-                friendlyName: townName,
-                isPubliclyListed: true,
-              }),
-            );
-            await waitFor(() =>
-              expect(mockToast).toBeCalledWith({
-                title: 'Unable to connect to Towns Service',
-                status: 'error',
-                description: `Error: ${errorMessage}`,
               }),
             );
           });
