@@ -13,6 +13,7 @@ import {
   chakra,
   Text,
   useToast,
+  Tooltip,
 } from '@chakra-ui/react';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useInteractable } from '../../../classes/TownController';
@@ -87,6 +88,11 @@ function ShopArea(): JSX.Element {
     return (
       <StyledShopComponent>
         <Text fontSize='lg'>Balance: ${balance}</Text>
+        <Tooltip
+          label='Skins that are owned can be equipped here or new skins can be purchased!'
+          aria-label='A tooltip'>
+          Help
+        </Tooltip>
         <Grid templateColumns='repeat(2, 1fr)' templateRows='repeat(2, 1fr)' gap={5}>
           {[1, 2, 3, 4].map(skin => (
             <GridItem key={`skin${skin}`}>
