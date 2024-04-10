@@ -185,6 +185,11 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
   private readonly _userName: string;
 
   /**
+   * The password of the player whose browser created this TownController
+   */
+  private readonly _pass: string;
+
+  /**
    * The user ID of the player whose browser created this TownController. The user ID is set by the backend townsService, and
    * is only available after the service is connected.
    */
@@ -218,10 +223,11 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
    */
   private _interactableEmitter = new EventEmitter();
 
-  public constructor({ userName, townID, loginController }: ConnectionProperties) {
+  public constructor({ userName, pass, townID, loginController }: ConnectionProperties) {
     super();
     this._townID = townID;
     this._userName = userName;
+    this._pass = pass;
     this._loginController = loginController;
 
     /*
@@ -265,6 +271,10 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
 
   public get userName() {
     return this._userName;
+  }
+
+  public get pass() {
+    return this._pass;
   }
 
   public get friendlyName() {
