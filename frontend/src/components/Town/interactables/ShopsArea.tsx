@@ -109,7 +109,7 @@ function ShopArea(): JSX.Element {
                   onClick={() => {
                     handlePurchase(
                       `SKIN${skin}`,
-                      inventory.includes(`SKIN${skin}`) ? 0 : 1000 * skin,
+                      inventory.includes(`SKIN${skin}`) ? 0 : 2000 * skin,
                     );
                   }}>
                   {!inventory.includes(`SKIN${skin}`) ? 'Buy' : 'Equip'}

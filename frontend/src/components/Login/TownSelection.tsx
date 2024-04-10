@@ -123,6 +123,7 @@ export default function TownSelection(): JSX.Element {
         setIsJoining(true);
         const newController = new TownController({
           userName,
+          pass,
           townID: coveyRoomID,
           loginController,
         });
