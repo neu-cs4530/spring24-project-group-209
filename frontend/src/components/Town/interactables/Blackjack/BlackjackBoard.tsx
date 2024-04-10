@@ -18,7 +18,7 @@ const StyledBlackjackBoard = chakra(Container, {
     height: '400px',
     padding: '5px',
     flexWrap: 'nowrap',
-    backgroundImage: 'assets/cardTables/blackjackFelt.jpg',
+    backgroundImage: 'assets/cards/blackjackFelt.png',
     alignItems: 'flex-start',
     flexDirection: 'column',
     justifyContent: 'top',
