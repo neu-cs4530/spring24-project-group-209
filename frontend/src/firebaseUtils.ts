@@ -7,61 +7,15 @@ import {
   setDoc,
   updateDoc,
 } from '@firebase/firestore';
-// import {
-//   getAuth,
-//   createUserWithEmailAndPassword,
-//   signInWithEmailAndPassword,
-//   UserCredential,
-// } from '@firebase/auth';
 import { getApp } from '@firebase/app';
 
-// export const handleLogin = (userName: string, pass: string): boolean => {
-//
-//   const db = getFirestore(getApp());
-//   createUserWithEmailAndPassword(auth, userName, pass)
-//     .then((userCredential: UserCredential) => {
-//       const user = userCredential.user;
-//       setDoc(doc(db, 'users', user.uid), {
-//         // Use user.uid as the path for the document reference
-//         currency: 2000,
-//         inventory: [],
-//         lastLogin: Date.now(),
-//       });
-
-//       return;
-//     })
-//     .catch((error: { code: string; message: string }) => {
-//       const errorCode = error.code;
-//       console.log(errorCode);
-//       if (errorCode == 'auth/email-already-in-use') {
-//         signInWithEmailAndPassword(auth, userName, pass)
-//           .then((userCredential: UserCredential) => {
-//             // Signed in
-//             const user = userCredential.user;
-//             if (user) {
-//               return;
-//             }
-//           })
-//           .catch((errorSignin: { code: never; message: never }) => {
-//             if (errorSignin) {
-//               return;
-//             }
-//           });
-//       }
-//     });
-//   if (auth.currentUser) {
-//     return true;
-//   } else {
-//     return false;
-//   }
-// };
 export const updateLoginTime = async (userName: string) => {
   const db = getFirestore(getApp());
   const docRef = doc(db, 'users', userName);
   const docSnap = await getDoc(docRef);
   if (docSnap.exists()) {
     if (docSnap.data().lastLogin.valueOf() / 1000 < Date.now() / 1000 - 86400) {
-      updateDoc(docRef, { currency: increment(200), lastLogin: Date.now() });
+      updateDoc(docRef, { currency: increment(2000), lastLogin: Date.now() });
     }
   } else {
     throw new Error('User data not found');
@@ -82,7 +36,7 @@ export const handleLogin = async (userName: string, pass: string): Promise<boole
     await setDoc(docRef, {
       // Use user.uid as the path for the document reference
       activeSkin: 'SKIN1',
-      currency: 200,
+      currency: 6000,
       inventory: ['SKIN1'],
       lastLogin: Date.now(),
       password: pass,
