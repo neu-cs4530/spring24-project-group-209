@@ -12,7 +12,7 @@ import { nanoid } from 'nanoid';
 import PlayerController from '../PlayerController';
 import TownController from '../TownController';
 import PokerAreaController, { POKER_ROWS } from './PokerAreaController';
-import GameAreaController, { NO_GAME_IN_PROGRESS_ERROR } from './GameAreaController';
+import { NO_GAME_IN_PROGRESS_ERROR } from './GameAreaController';
 import { PokerMove, GameResult, GameStatus } from '../../types/CoveyTownSocket';
 
 describe('PokerAreaController', () => {
@@ -40,15 +40,6 @@ describe('PokerAreaController', () => {
     return p;
   });
 
-  function updateGameWithMove(controller: PokerAreaController, nextMove: PokerMove): void {
-    const nextState = Object.assign({}, controller.toInteractableAreaModel());
-    const nextGame = Object.assign({}, nextState.game);
-    nextState.game = nextGame;
-    const newState = Object.assign({}, nextGame.state);
-    nextGame.state = newState;
-    newState.moves = newState.moves.concat([nextMove]);
-    controller.updateFrom(nextState, controller.occupants);
-  }
   function PokerAreaControllerWithProps({
     _id,
     history,

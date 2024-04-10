@@ -1438,7 +1438,6 @@ describe('BlackjackGame', () => {
       game.startGame(players[1]);
       const dealerCardsBefore = game.state.dealerMoves;
       expect(dealerCardsBefore.length).toBe(2);
-      console.log(game.state.moves);
       game.applyMove({
         gameID: game.id,
         playerID: players[0].id,
